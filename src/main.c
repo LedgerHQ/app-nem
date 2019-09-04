@@ -102,9 +102,9 @@ volatile char txTypeName[30];
 volatile char fullAddress[40];
 
 //Registers save information to show on the top line of screen
-volatile char detailName[MAX_PRINT_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH];
+volatile char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH];
 //Registers save information to show on the bottom line of screen
-volatile char extraInfo[MAX_PRINT_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH];
+volatile char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH];
 
 bagl_element_t tmp_element;
 
@@ -274,17 +274,17 @@ unsigned int ui_address_nanos_button(unsigned int button_mask,
 
 #if defined(TARGET_NANOS)
 const char * const ui_approval_details[][2] = {
-    {detailName[0], extraInfo[0]},
-    {detailName[1], extraInfo[1]},
-    {detailName[2], extraInfo[2]},
-    {detailName[3], extraInfo[3]},
-    {detailName[4], extraInfo[4]},
-    {detailName[5], extraInfo[5]},
-    {detailName[6], extraInfo[6]},
-    {detailName[7], extraInfo[7]},
-    {detailName[8], extraInfo[8]},
-    {detailName[9], extraInfo[9]},
-    {detailName[10], extraInfo[10]},
+    {detailName[0], fullAddress},
+    {detailName[1], extraInfo[0]},
+    {detailName[2], extraInfo[1]},
+    {detailName[3], extraInfo[2]},
+    {detailName[4], extraInfo[3]},
+    {detailName[5], extraInfo[4]},
+    {detailName[6], extraInfo[5]},
+    {detailName[7], extraInfo[6]},
+    {detailName[8], extraInfo[7]},
+    {detailName[9], extraInfo[8]},
+    {detailName[10], extraInfo[9]},
 };
 
 const bagl_element_t ui_approval_nanos[] = {
@@ -682,9 +682,7 @@ void handleGetPublicKey(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
     uint8_t addressLength = sizeof(tmpCtx.publicKeyContext.address);
 
     os_memset(fullAddress, 0, sizeof(fullAddress));
-    os_memmove((void *)fullAddress, tmpCtx.publicKeyContext.address, 6);
-    os_memmove((void *)(fullAddress + 6), "~", 1);
-    os_memmove((void *)(fullAddress + 7), tmpCtx.publicKeyContext.address + addressLength - 4, 4);
+    os_memmove((void *)fullAddress, tmpCtx.publicKeyContext.address, 40);
 
     // prepare for a UI based reply//
 #if defined(TARGET_NANOS)
@@ -743,21 +741,23 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
     switch(txContent.txType){
         case NEMV1_TRANSFER: //Transfer 
             disIndex = 21; 
-            SPRINTF(txTypeName, "%s", "transfer tx");
+            SPRINTF(txTypeName, "%s", "Transfer TX");
             parse_transfer_tx (raw_tx + disIndex,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
+                fullAddress,
                 false
             ); 
             break;
         case NEMV1_MULTISIG_MODIFICATION:
             disIndex = 21;
-            SPRINTF(txTypeName, "%s", "Convert2Multisig");
+            SPRINTF(txTypeName, "%s", "Convert to Multisig");
             parse_aggregate_modification_tx (raw_tx + disIndex,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
+                fullAddress,
                 false,
                 tmpCtx.transactionContext.networkId
             ); 
@@ -768,7 +768,8 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
             parse_multisig_signature_tx (raw_tx + disIndex,
                 &ux_step_count, 
                 detailName,
-                extraInfo
+                extraInfo,
+                fullAddress
             );
             break;
         case NEMV1_MULTISIG_TRANSACTION:
@@ -778,6 +779,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
+                fullAddress,
                 tmpCtx.transactionContext.networkId
             );
             break;
@@ -788,6 +790,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
+                fullAddress,
                 false
             );
             break;                
@@ -798,6 +801,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
+                fullAddress,
                 false
             );
             break; 
@@ -808,6 +812,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
+                fullAddress,
                 false
             );
             break;         

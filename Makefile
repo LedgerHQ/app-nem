@@ -62,8 +62,8 @@ DEFINES   +=  HAVE_U2F HAVE_IO_U2F
 DEFINES   += U2F_PROXY_MAGIC=\"NEM\"
 
 # WebUSB
-# WEBUSB_URL     	= www.ledgerwallet.com
-# DEFINES       	+= HAVE_WEBUSB WEBUSB_URL_SIZE_B=$(shell echo -n $(WEBUSB_URL) | wc -c) WEBUSB_URL=$(shell echo -n $(WEBUSB_URL) | sed -e "s/./\\\'\0\\\',/g")
+WEBUSB_URL     	= www.ledgerwallet.com
+DEFINES       	+= HAVE_WEBUSB WEBUSB_URL_SIZE_B=$(shell echo -n $(WEBUSB_URL) | wc -c) WEBUSB_URL=$(shell echo -n $(WEBUSB_URL) | sed -e "s/./\\\'\0\\\',/g")
 
 DEFINES   += CX_COMPLIANCE_141
 

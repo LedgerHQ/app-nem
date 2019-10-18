@@ -127,7 +127,6 @@ typedef struct internalStorage_t {
 WIDE internalStorage_t N_storage_real;
 #define N_storage (*(WIDE internalStorage_t *)PIC(&N_storage_real))
 
-
 const bagl_element_t *ui_menu_item_out_over(const bagl_element_t *e) {
     // the selection rectangle is after the none|touchable
     e = (const bagl_element_t *)(((unsigned int)e) + sizeof(bagl_element_t));
@@ -514,7 +513,6 @@ unsigned int io_seproxyhal_touch_tx_ok(const bagl_element_t *e) {
                        NULL);
     cx_ecfp_generate_pair2(CX_CURVE_Ed25519, &publicKey, &privateKey, 1, tmpCtx.transactionContext.algo);
 
-
     //public 64
     os_memset(&privateKey, 0, sizeof(privateKey));
     os_memset(privateKeyData, 0, sizeof(privateKeyData));
@@ -727,99 +725,148 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
     
     // Load dataLength of tx
     tmpCtx.transactionContext.rawTxLength = dataLength - 21; 
-    
-    //NEM_MAINNET || NEM_TESTNET
-    //txType
-    uint32_t txType = getUint32(reverseBytes(&raw_tx[21], 4));
-    txContent.txType = (uint16_t *)txType;
 
-    uint32_t txVersion = getUint32(reverseBytes(&raw_tx[21+4], 4));
+    if (tmpCtx.transactionContext.algo == CX_KECCAK) {
+        //NEM_MAINNET || NEM_TESTNET
+        //txType
+        uint32_t txType = getUint32(reverseBytes(&raw_tx[21], 4));
+        txContent.txType = (uint16_t *)txType;
 
-    //Distance index: use for calculating the inner index of multisig tx
-    uint8_t disIndex; 
+        uint32_t txVersion = getUint32(reverseBytes(&raw_tx[21+4], 4));
 
-    switch(txContent.txType){
-        case NEMV1_TRANSFER: //Transfer 
-            disIndex = 21; 
-            SPRINTF(txTypeName, "%s", "Transfer TX");
-            parse_transfer_tx (raw_tx + disIndex,
-                &ux_step_count, 
-                detailName,
-                extraInfo,
-                fullAddress,
-                false
-            ); 
-            break;
-        case NEMV1_MULTISIG_MODIFICATION:
-            disIndex = 21;
-            SPRINTF(txTypeName, "%s", "Convert to Multisig");
-            parse_aggregate_modification_tx (raw_tx + disIndex,
-                &ux_step_count, 
-                detailName,
-                extraInfo,
-                fullAddress,
-                false,
-                tmpCtx.transactionContext.networkId
-            ); 
-            break;
-        case NEMV1_MULTISIG_SIGNATURE:
-            SPRINTF(txTypeName, "%s", "Mulisig signature");
-            disIndex = 21;
-            parse_multisig_signature_tx (raw_tx + disIndex,
-                &ux_step_count, 
-                detailName,
-                extraInfo,
-                fullAddress
-            );
-            break;
-        case NEMV1_MULTISIG_TRANSACTION:
-            SPRINTF(txTypeName, "%s", "Mulisig TX");
-            disIndex = 21+4+4+4+4+32+8+4+4;
-            parse_multisig_tx (raw_tx + disIndex,
-                &ux_step_count, 
-                detailName,
-                extraInfo,
-                fullAddress,
-                tmpCtx.transactionContext.networkId
-            );
-            break;
-        case NEMV1_PROVISION_NAMESPACE:
-            disIndex = 21;
-            SPRINTF(txTypeName, "%s", "Namespace TX");
-            parse_provision_namespace_tx (raw_tx + disIndex,
-                &ux_step_count, 
-                detailName,
-                extraInfo,
-                fullAddress,
-                false
-            );
-            break;                
-        case NEMV1_MOSAIC_DEFINITION:
-            disIndex = 21;
-            SPRINTF(txTypeName, "%s", "Create Mosaic");
-            parse_mosaic_definition_tx (raw_tx + disIndex,
-                &ux_step_count, 
-                detailName,
-                extraInfo,
-                fullAddress,
-                false
-            );
-            break; 
-        case NEMV1_MOSAIC_SUPPLY_CHANGE:
-            disIndex = 21;
-            SPRINTF(txTypeName, "%s", "Mosaic Supply");
-            parse_mosaic_supply_change_tx (raw_tx + disIndex,
-                &ux_step_count, 
-                detailName,
-                extraInfo,
-                fullAddress,
-                false
-            );
-            break;         
-        default:
-            SPRINTF(txTypeName, "tx type %d", txContent.txType); 
-            break;    
-    }   
+        //Distance index: use for calculating the inner index of multisig tx
+        uint8_t disIndex; 
+
+        switch(txContent.txType){
+            case NEMV1_TRANSFER: //Transfer 
+                disIndex = 21; 
+                SPRINTF(txTypeName, "%s", "Transfer TX");
+                parse_transfer_tx (raw_tx + disIndex,
+                    &ux_step_count, 
+                    detailName,
+                    extraInfo,
+                    fullAddress,
+                    false
+                ); 
+                break;
+            case NEMV1_MULTISIG_MODIFICATION:
+                disIndex = 21;
+                SPRINTF(txTypeName, "%s", "Convert to Multisig");
+                parse_aggregate_modification_tx (raw_tx + disIndex,
+                    &ux_step_count, 
+                    detailName,
+                    extraInfo,
+                    fullAddress,
+                    false,
+                    tmpCtx.transactionContext.networkId
+                ); 
+                break;
+            case NEMV1_MULTISIG_SIGNATURE:
+                SPRINTF(txTypeName, "%s", "Mulisig signature");
+                disIndex = 21;
+                parse_multisig_signature_tx (raw_tx + disIndex,
+                    &ux_step_count, 
+                    detailName,
+                    extraInfo,
+                    fullAddress
+                );
+                break;
+            case NEMV1_MULTISIG_TRANSACTION:
+                SPRINTF(txTypeName, "%s", "Mulisig TX");
+                disIndex = 21+4+4+4+4+32+8+4+4;
+                parse_multisig_tx (raw_tx + disIndex,
+                    &ux_step_count, 
+                    detailName,
+                    extraInfo,
+                    fullAddress,
+                    tmpCtx.transactionContext.networkId
+                );
+                break;
+            case NEMV1_PROVISION_NAMESPACE:
+                disIndex = 21;
+                SPRINTF(txTypeName, "%s", "Namespace TX");
+                parse_provision_namespace_tx (raw_tx + disIndex,
+                    &ux_step_count, 
+                    detailName,
+                    extraInfo,
+                    fullAddress,
+                    false
+                );
+                break;                
+            case NEMV1_MOSAIC_DEFINITION:
+                disIndex = 21;
+                SPRINTF(txTypeName, "%s", "Create Mosaic");
+                parse_mosaic_definition_tx (raw_tx + disIndex,
+                    &ux_step_count, 
+                    detailName,
+                    extraInfo,
+                    fullAddress,
+                    false
+                );
+                break; 
+            case NEMV1_MOSAIC_SUPPLY_CHANGE:
+                disIndex = 21;
+                SPRINTF(txTypeName, "%s", "Mosaic Supply");
+                parse_mosaic_supply_change_tx (raw_tx + disIndex,
+                    &ux_step_count, 
+                    detailName,
+                    extraInfo,
+                    fullAddress,
+                    false
+                );
+                break;         
+            default:
+                SPRINTF(txTypeName, "tx type %d", txContent.txType); 
+                break;    
+        }
+    } else {
+        //CATAPULT
+        //txType
+  
+        uint8_t disIndex;
+        uint8_t networkGenerationHashLength = 32;
+        txContent.txType = getUint16(reverseBytes(&raw_tx[21 + networkGenerationHashLength + 2], 2));
+        
+        switch(txContent.txType){
+            case TRANSFER: //Transfer 
+                disIndex = 21; 
+                SPRINTF(txTypeName, "%s", "Transfer TX");
+                parse_catapult_transfer_tx (raw_tx + disIndex + networkGenerationHashLength,
+                    &ux_step_count, 
+                    detailName,
+                    extraInfo,
+                    fullAddress,
+                    false
+                ); 
+                break;
+            case REGISTER_NAMESPACE:
+                disIndex = 21;
+                SPRINTF(txTypeName, "%s", "Namespace TX");
+                parse_catapult_provision_namespace_tx (raw_tx + disIndex + networkGenerationHashLength,
+                    &ux_step_count, 
+                    detailName,
+                    extraInfo,
+                    fullAddress,
+                    false
+                );
+                break; 
+            case AGGREGATE_COMPLETE:
+                disIndex = 21;
+                // SPRINTF(txTypeName, "%s", "Create Mosaic");
+                parse_catapult_aggregate_complete_tx (raw_tx + disIndex + networkGenerationHashLength,
+                    &ux_step_count, 
+                    txTypeName,
+                    detailName,
+                    extraInfo,
+                    fullAddress,
+                    false
+                );
+                break;
+            default:
+                SPRINTF(txTypeName, "Tx type %x", txContent.txType); 
+                break; 
+        }
+    } 
 
 #if defined(TARGET_NANOS)
     ux_step = 0;
@@ -923,6 +970,8 @@ void nem_main(void) {
                     hashTainted = 1;
                     THROW(0x6982);
                 }
+
+                PRINTF("New APDU received:\n%.*H\n", rx, G_io_apdu_buffer);
 
                 // if the buffer doesn't start with the magic byte, return an error.
                 if (G_io_apdu_buffer[OFFSET_CLA] != CLA) {

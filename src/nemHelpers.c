@@ -828,3 +828,313 @@ void parse_multisig_signature_tx (unsigned char raw_tx[],
     fee = getUint32(reverseBytes(&raw_tx[multisigFeeIndex], 4));
     print_amount((uint64_t *)fee, 6, "xem", &extraInfo[1]);
 }
+
+//Catapult
+void parse_catapult_transfer_tx (
+    unsigned char raw_tx[],
+    unsigned int* ux_step_count,
+    char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
+    char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
+    char extraInfo_0[NEM_ADDRESS_LENGTH],
+    bool isMultisig) {
+
+    //Recipient Address
+    uint8_t tmpAddress[41];
+
+    //Message
+    uint16_t msgSize;
+    uint16_t msgIndex;
+    char msg[MAX_PRINT_MESSAGE_LENGTH + 1];
+
+    //Fee
+    uint64_t fee;
+
+    //Mosaics
+    uint8_t numMosaic;
+    uint16_t offset;
+    uint32_t lowMosaicId;
+    uint32_t highMosaicId;
+    uint64_t amount;
+    uint8_t index;
+
+    *ux_step_count = 5;
+
+    //Recipient Address
+    SPRINTF(detailName[0], "%s", "Recipient");
+    base32_encode(&raw_tx[2+2+8+8], 25, &tmpAddress, 40);
+    tmpAddress[40] = '\0';
+    os_memset(extraInfo_0, 0, sizeof(extraInfo_0));
+    os_memmove((void *)extraInfo_0, tmpAddress, 41);
+
+    //Fee
+    fee = getUint64(reverseBytes(&raw_tx[2+2], 8));
+    SPRINTF(detailName[1], "%s", "Fee");
+    print_amount(fee, 6, "xem", &extraInfo[0]);
+
+    //Message
+    SPRINTF(detailName[2], "%s", "Message");
+    msgSize = getUint16(reverseBytes(&raw_tx[2+2+8+8+25], 2));
+    PRINTF("msg size: %d\n", msgSize);
+    if (msgSize <= 1) {
+        SPRINTF(extraInfo[1], "%s\0", "<empty msg>");
+    } else {
+        msgIndex = 2+2+8+8+25+2+1+1;
+        if (msgSize > MAX_PRINT_MESSAGE_LENGTH) {
+            uint2Ascii(&raw_tx[msgIndex], MAX_PRINT_MESSAGE_LENGTH, msg);
+            SPRINTF(extraInfo[1], "%s...\0", msg);
+        } else {
+            uint2Ascii(&raw_tx[msgIndex], msgSize, msg);
+            SPRINTF(extraInfo[1], "%s\0", msg);
+        }
+    }
+
+    //Mosaic
+    SPRINTF(detailName[3], "%s", "Mosaic");
+    numMosaic = raw_tx[2+2+8+8+25+2];
+    SPRINTF(extraInfo[2], "<find %d mosaics>", numMosaic);
+
+    offset = 48;
+    offset += msgSize;
+
+    for (index = 0; index < numMosaic; index++) {
+        *ux_step_count = *ux_step_count + 1;
+        //Mosaic ID
+        lowMosaicId = getUint32(reverseBytes(&raw_tx[offset], 4));
+        highMosaicId = getUint32(reverseBytes(&raw_tx[offset+4], 4));
+        //Quantity
+        offset +=8;
+        amount = getUint64(reverseBytes(&raw_tx[offset], 8));
+        offset +=8;
+
+        if ((highMosaicId == 0x77a19699) && (lowMosaicId == 0x32d987d7)) {
+            //nem.xem
+            SPRINTF(detailName[4+index], "Nem");
+            print_amount(amount, 6, "xem", &extraInfo[3+index]); // mosaicDivisibility = 6
+        } else {
+            //unkown mosaic
+            SPRINTF(extraInfo[3+index], "%x%x", highMosaicId, lowMosaicId);
+            print_amount(amount, 0, "", &detailName[4+index]); // mosaicDivisibility = 0
+        }
+    }
+}
+
+void parse_catapult_provision_namespace_tx (
+    unsigned char raw_tx[],
+    unsigned int* ux_step_count,
+    char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
+    char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
+    char extraInfo_0[NEM_ADDRESS_LENGTH],
+    bool isMultisig) {
+
+    //Fee
+    uint16_t feeIndex;
+    uint64_t fee;
+
+    //Type
+    uint16_t registrationTypeIndex;
+    uint8_t registrationType;
+
+    //Duration
+    uint16_t blockDurationIndex;
+    uint64_t blockDuration;
+    uint8_t day;
+    uint8_t hour;
+    uint8_t min;
+
+    //Parent Namespace
+    uint16_t namespaceIdIndex;
+    uint64_t namespaceId;
+
+    //Name
+    uint16_t nameSizeIndex;
+    uint8_t nameSize;
+
+    *ux_step_count = 4;
+
+    //Type; 0: Root namespace, 1: Child namespace
+    registrationTypeIndex = 4+8+8;
+    registrationType = raw_tx[registrationTypeIndex];
+
+    if (registrationType == 1) {
+        //Id, Parent namespace identifier is required for subnamespaces.
+        SPRINTF(detailName[2], "%s", "Parent ID");
+        namespaceIdIndex = 21+8;
+        uint32_t lowParentId = getUint32(reverseBytes(&raw_tx[namespaceIdIndex], 4));
+        uint32_t highParentId = getUint32(reverseBytes(&raw_tx[namespaceIdIndex+4], 4));
+        SPRINTF(extraInfo[1], "%x%x", highParentId, lowParentId);
+    } else {
+        //Duration
+        SPRINTF(detailName[2], "%s", "Duration");
+        blockDurationIndex = 20+1;
+        blockDuration = getUint64(reverseBytes(&raw_tx[blockDurationIndex], 8));
+        day = blockDuration / 7200;
+        hour = (blockDuration % 7200) / 300;
+        min = (blockDuration % 300) / 5;
+        SPRINTF(extraInfo[1], "%d%s%d%s%d%s", day, "d ", hour, "h ", min, "m");
+    }
+    
+    //Name
+    SPRINTF(detailName[0], "%s", "Name");
+    nameSizeIndex = 37;
+    nameSize = raw_tx[nameSizeIndex];
+    uint2Ascii(&raw_tx[nameSizeIndex+1], nameSize, extraInfo_0);
+
+    //Fee
+    SPRINTF(detailName[1], "%s", "Fee");
+    feeIndex = 4;
+    fee = getUint64(reverseBytes(&raw_tx[feeIndex], 8));
+    print_amount(fee, 6, "xem", &extraInfo[0]);
+}
+
+void parse_catapult_mosaic_definition_tx (
+    unsigned char raw_tx[],
+    unsigned int* ux_step_count, 
+    char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
+    char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
+    char extraInfo_0[NEM_ADDRESS_LENGTH],
+    bool isMultisig) {
+
+    //Fee
+    uint16_t feeIndex;
+    uint64_t fee;
+
+    //Duration
+    uint16_t blockDurationIndex;
+    uint64_t blockDuration;
+    uint8_t day;
+    uint8_t hour;
+    uint8_t min;
+
+    *ux_step_count = 1;
+
+
+    //Duration
+    blockDurationIndex = 34;
+    blockDuration = getUint64(reverseBytes(&raw_tx[blockDurationIndex], 8));
+    if (blockDuration != 0) {
+        day = blockDuration / 7200;
+        hour = (blockDuration % 7200) / 300;
+        min = (blockDuration % 300) / 5;
+        PRINTF("%d%s%d%s%d%s\n", day, "d ", hour, "h ", min, "m");
+    } else {
+        PRINTF("Ko thoi han \n");
+    }
+
+    //Fee
+    feeIndex = 4;
+
+    //Nonce index = 4+16
+    //Id index = 20 + 4
+    //Flags index = 24 + 8 
+    //divisibility index = 32+1
+    //Duration index = 33+1
+
+}
+
+void parse_catapult_aggregate_complete_tx (
+    unsigned char raw_tx[],
+    unsigned int* ux_step_count, 
+    char txTypeName[30],
+    char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
+    char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
+    char extraInfo_0[NEM_ADDRESS_LENGTH],
+    bool isMultisig) {
+
+    //Index for test
+    uint8_t testIndex = 24;
+
+    //Supply amount
+    uint16_t supplyAmountIndex;
+    uint64_t supplyAmount;
+
+    //Fee
+    uint16_t feeIndex = 4;
+    uint64_t fee;
+
+    //Divisibility
+    uint16_t divisibilityIndex;
+    uint8_t divisibility;
+
+    //Duration
+    uint16_t blockDurationIndex;
+    uint64_t blockDuration;
+    uint8_t day;
+    uint8_t hour;
+    uint8_t min;
+
+    //MosaicFlags
+    uint16_t mosaicFlagsIndex;
+    uint8_t mosaicFlags;
+
+    *ux_step_count = 8;
+
+    os_memset(txTypeName, 0, sizeof(txTypeName));
+    os_memmove((void *)txTypeName, "Create Mosaic", 14);
+    
+    //Supply amount
+    SPRINTF(detailName[0], "%s", "Supply amount");
+    supplyAmountIndex = testIndex + 62 + 49;
+    supplyAmount = getUint64(reverseBytes(&raw_tx[supplyAmountIndex], 8));
+    os_memset(extraInfo_0, 0, sizeof(extraInfo_0));
+    print_amount(supplyAmount*10, 1, "\0", extraInfo_0);
+
+    //Divisibility
+    SPRINTF(detailName[1], "%s", "Divisibility");
+    divisibilityIndex = testIndex + 4+32+17;
+    divisibility = raw_tx[divisibilityIndex];
+    SPRINTF(extraInfo[0], "%d", divisibility);
+
+    //Duration
+    SPRINTF(detailName[2], "%s", "Duration");
+    blockDurationIndex = testIndex+ 4+32+18;
+    blockDuration = getUint64(reverseBytes(&raw_tx[blockDurationIndex], 8));
+    if (blockDuration <= 0) {
+        SPRINTF(extraInfo[1], "%s", "Unlimited");
+    } else {
+        day = blockDuration / 7200;
+        hour = (blockDuration % 7200) / 300;
+        min = (blockDuration % 300) / 5;
+        SPRINTF(extraInfo[1], "%d%s%d%s%d%s", day, "d ", hour, "h ", min, "m");
+    }
+
+    //Fee
+    SPRINTF(detailName[3], "%s", "Fee");
+    fee = getUint64(reverseBytes(&raw_tx[feeIndex], 8));
+    print_amount(fee, 6, "xem", &extraInfo[2]);
+
+    //Mosaic Flags
+    mosaicFlagsIndex = testIndex + 4+32+16;
+    mosaicFlags = raw_tx[mosaicFlagsIndex];
+
+    //Transmittable
+    SPRINTF(detailName[4], "%s", "Transmittable");
+    if (mosaicFlags & 0x02 ) {
+        SPRINTF(extraInfo[3], "%s", "Yes");
+    } else {
+        SPRINTF(extraInfo[3], "%s", "No");
+    }
+
+    //Supply multable
+    SPRINTF(detailName[5], "%s", "SupplyMultable");
+    if (mosaicFlags & 0x01) {
+        SPRINTF(extraInfo[4], "%s", "Yes");
+    } else {
+        SPRINTF(extraInfo[4], "%s", "No");
+    }
+
+    //Restrictable
+    SPRINTF(detailName[6], "%s", "Restrictable");
+    if (mosaicFlags & 0x04) {
+        SPRINTF(extraInfo[5], "%s", "Yes");
+    } else {
+        SPRINTF(extraInfo[5], "%s", "No");
+    }
+
+    // parse_catapult_mosaic_definition_tx (
+    // unsigned char raw_tx[],
+    // unsigned int* ux_step_count, 
+    // char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
+    // char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
+    // char extraInfo_0[NEM_ADDRESS_LENGTH],
+    // bool isMultisig)
+}

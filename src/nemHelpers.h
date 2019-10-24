@@ -105,6 +105,9 @@ int string_length(char str[]);
 
 /** Convert 1 hex number to 2 characters */
 char hex2Ascii(uint8_t input);
+/** Convert hex string to character string 
+    outLen = inLen*2 + 1 */
+void hex2String(uint8_t *inBytes, uint8_t len, char *out);
 
 void parse_transfer_tx (unsigned char raw_tx[],
     unsigned int* ux_step_count, 
@@ -194,6 +197,25 @@ void parse_catapult_aggregate_complete_tx (
     unsigned char raw_tx[],
     unsigned int* ux_step_count, 
     char txTypeName[30],
+    char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
+    char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
+    char extraInfo_0[NEM_ADDRESS_LENGTH],
+    bool isMultisig
+);
+
+void parse_catapult_aggregate_bonded_tx (
+    unsigned char raw_tx[],
+    unsigned int* ux_step_count, 
+    char txTypeName[30],
+    char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
+    char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
+    char extraInfo_0[NEM_ADDRESS_LENGTH],
+    bool isMultisig
+);
+
+void parse_catapult_multisig_account_modification_tx (
+    unsigned char raw_tx[],
+    unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
     char extraInfo_0[NEM_ADDRESS_LENGTH],

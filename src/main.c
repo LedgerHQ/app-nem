@@ -862,6 +862,17 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
                     false
                 );
                 break;
+            case AGGREGATE_BONDED:
+                disIndex = 21;
+                parse_catapult_aggregate_bonded_tx (raw_tx + disIndex + networkGenerationHashLength,
+                    &ux_step_count, 
+                    txTypeName,
+                    detailName,
+                    extraInfo,
+                    fullAddress,
+                    false
+                );
+                break;
             default:
                 SPRINTF(txTypeName, "Tx type %x", txContent.txType); 
                 break; 

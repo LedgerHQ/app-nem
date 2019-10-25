@@ -60,7 +60,7 @@
 #define MODIFY_MULTISIG_ACCOUNT 0x4155
 #define AGGREGATE_COMPLETE 0x4141
 #define AGGREGATE_BONDED 0x4241
-#define LOCK 0x4148
+#define HASH_LOCK 0x4148
 #define SECRET_LOCK 0x4152
 #define SECRET_PROOF 0x4252
 #define MODIFY_ACCOUNT_PROPERTY_ADDRESS 0x4150
@@ -214,6 +214,15 @@ void parse_catapult_aggregate_bonded_tx (
 );
 
 void parse_catapult_multisig_account_modification_tx (
+    unsigned char raw_tx[],
+    unsigned int* ux_step_count, 
+    char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
+    char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
+    char extraInfo_0[NEM_ADDRESS_LENGTH],
+    bool isMultisig
+);
+
+void parse_catapult_hash_lock_tx (
     unsigned char raw_tx[],
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],

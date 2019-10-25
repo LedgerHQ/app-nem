@@ -1245,5 +1245,59 @@ void parse_catapult_multisig_account_modification_tx (
         modificationTypeIndex += 1 + 32;
         modificationsIndex = modificationTypeIndex + 1;
     }
+}
 
+void parse_catapult_hash_lock_tx (
+    unsigned char raw_tx[],
+    unsigned int* ux_step_count, 
+    char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
+    char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
+    char extraInfo_0[NEM_ADDRESS_LENGTH],
+    bool isMultisig
+) {
+    //Fee
+    uint16_t feeIndex = 4;
+    uint64_t fee;
+
+    //Quantity
+    uint16_t quantityIndex;
+    uint64_t quantity;
+
+    //Duration
+    uint16_t blockDurationIndex;
+    uint64_t blockDuration;
+    uint8_t day;
+    uint8_t hour;
+    uint8_t min;
+
+    *ux_step_count = 5;
+
+    //Description
+    SPRINTF(detailName[0], "%s", "Description");
+    os_memset(extraInfo_0, 0, sizeof(extraInfo_0));
+    os_memmove((void *)extraInfo_0, "Lock funds to prevent spamming", 41);
+
+    //Fee
+    SPRINTF(detailName[1], "%s", "Fee");
+    fee = getUint64(reverseBytes(&raw_tx[feeIndex], 8));
+    print_amount(fee, 6, "xem", &extraInfo[0]);
+
+    //Quantity
+    SPRINTF(detailName[2], "%s", "Locked Quan");
+    quantityIndex = 28;
+    quantity = getUint64(reverseBytes(&raw_tx[quantityIndex], 8));
+    print_amount(quantity, 6, "xem", &extraInfo[1]);
+
+    //Duration
+    SPRINTF(detailName[3], "%s", "Duration");
+    blockDurationIndex = 36;
+    blockDuration = getUint64(reverseBytes(&raw_tx[blockDurationIndex], 8));
+    if (blockDuration <= 0) {
+        SPRINTF(extraInfo[2], "%s", "Unlimited");
+    } else {
+        day = blockDuration / 7200;
+        hour = (blockDuration % 7200) / 300;
+        min = (blockDuration % 300) / 5;
+        SPRINTF(extraInfo[2], "%d%s%d%s%d%s", day, "d ", hour, "h ", min, "m");
+    }
 }

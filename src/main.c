@@ -873,6 +873,17 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
                     false
                 );
                 break;
+            case HASH_LOCK:
+                disIndex = 21;
+                SPRINTF(txTypeName, "%s", "Hash Lock TX");
+                parse_catapult_hash_lock_tx (raw_tx + disIndex + networkGenerationHashLength,
+                    &ux_step_count, 
+                    detailName,
+                    extraInfo,
+                    fullAddress,
+                    false
+                );
+                break;
             default:
                 SPRINTF(txTypeName, "Tx type %x", txContent.txType); 
                 break; 

@@ -514,18 +514,9 @@ unsigned int io_seproxyhal_touch_tx_ok(const bagl_element_t *e) {
                        NULL);
     cx_ecfp_generate_pair2(CX_CURVE_Ed25519, &publicKey, &privateKey, 1, tmpCtx.transactionContext.algo);
 
-
     //public 64
     os_memset(&privateKey, 0, sizeof(privateKey));
     os_memset(privateKeyData, 0, sizeof(privateKeyData));
-    
-    uint8_t nemPublicKey[32];
-    unsigned char outNemAddress[40];
-    to_nem_public_key_and_address(&publicKey, tmpCtx.transactionContext.networkId, tmpCtx.transactionContext.algo, &nemPublicKey, &outNemAddress);
-
-    G_io_apdu_buffer[tx++] = 32;
-    os_memmove(G_io_apdu_buffer + tx, nemPublicKey, 32);
-    tx += 32;
 
     G_io_apdu_buffer[tx++] = 0x90;
     G_io_apdu_buffer[tx++] = 0x00;

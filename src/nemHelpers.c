@@ -344,13 +344,13 @@ void parse_transfer_tx (unsigned char raw_tx[],
     mosaicIndex = numberOfMosaicsIndex+4;
     
     //amount
-    SPRINTF(detailName[3], "%s", "Amount");
+    SPRINTF(detailName[3], "%s", "Mosaics");
     if (numberOfMosaics == 0) {
         amountIndex = 4+4+4+4+32+4+4+4+4+40;
         amount = getUint32(reverseBytes(&raw_tx[amountIndex], 4));
         print_amount((uint64_t *)amount, 6, "xem", &extraInfo[2]);
     } else {
-        SPRINTF(extraInfo[2], "<find %d mosaics>", numberOfMosaics);
+        SPRINTF(extraInfo[2], "Found %d txs", numberOfMosaics);
         
         //Show all mosaics on Ledger
         for (arrayIndex = 0; arrayIndex < numberOfMosaics; arrayIndex++) {
@@ -372,10 +372,10 @@ void parse_transfer_tx (unsigned char raw_tx[],
             quantity = getUint32(reverseBytes(&raw_tx[mosaicIndex], 4));
             *ux_step_count = *ux_step_count + 1;
             if ((compare_strings(IDName,"nem") == 0) && (compare_strings(name,"xem") == 0)) {
-                SPRINTF(detailName[4 + arrayIndex], "%s %d", "Amount", 1 + arrayIndex);
+                SPRINTF(detailName[4 + arrayIndex], "%d %s", 1 + arrayIndex, ": NEM");
                 print_amount((uint64_t *)quantity, 6, "xem", extraInfo[3 + arrayIndex]);
             } else {
-                SPRINTF(detailName[4 + arrayIndex], "%s %d", "Raw units", 1 + arrayIndex);
+                SPRINTF(detailName[4 + arrayIndex], "%d %s", 1 + arrayIndex, ": MicroUnits");
                 if (string_length(name) < 13) {
                     SPRINTF(extraInfo[3 + arrayIndex], "%d %s", quantity, name);
                 } else {
@@ -691,9 +691,9 @@ void parse_aggregate_modification_tx (unsigned char raw_tx[],
         }
         //Bottom line
         os_memset(extraInfo[index], 0, sizeof(extraInfo[index]));                
-        os_memmove((void *)extraInfo[index], address, 6);
-        os_memmove((void *)(extraInfo[index] + 6), "~", 1);
-        os_memmove((void *)(extraInfo[index] + 6 + 1), address + 40 - 4, 4);
+        os_memmove((void *)extraInfo[index], address, 5);
+        os_memmove((void *)(extraInfo[index] + 5), "..", 2);
+        os_memmove((void *)(extraInfo[index] + 5 + 2), address + 40 - 4, 4);
 
         typeOfModificationIndex = typeOfModificationIndex + 4 + 4 + 32;
         numOfCosigModificationIndex = typeOfModificationIndex;
@@ -818,9 +818,9 @@ void parse_multisig_signature_tx (unsigned char raw_tx[],
         hashBytes[2*index + 1] = hex2Ascii(raw_tx[index + hashBytesIndex] & 0x0f);
     }
     os_memset(extraInfo[0], 0, sizeof(extraInfo[0]));                
-    os_memmove((void *)extraInfo[0], hashBytes, 6);
-    os_memmove((void *)(extraInfo[0] + 6), "~", 1);
-    os_memmove((void *)(extraInfo[0] + 6 + 1), hashBytes + 64 - 4, 4);
+    os_memmove((void *)extraInfo[0], hashBytes, 5);
+    os_memmove((void *)(extraInfo[0] + 5), "..", 2);
+    os_memmove((void *)(extraInfo[0] + 5 + 2), hashBytes + 64 - 4, 4);
 
     //Multisig fee
     SPRINTF(detailName[2], "%s", "Multisig fee");

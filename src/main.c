@@ -730,11 +730,12 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
     //Distance index: use for calculating the inner index of multisig tx
     uint8_t disIndex; 
 
+    int err = -1;
     switch(txContent.txType){
         case NEMV1_TRANSFER: //Transfer 
             disIndex = 21; 
             SPRINTF(txTypeName, "%s", "Transfer TX");
-            parse_transfer_tx (raw_tx + disIndex,
+            err = parse_transfer_tx (raw_tx + disIndex,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
@@ -745,7 +746,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
         case NEMV1_MULTISIG_MODIFICATION:
             disIndex = 21;
             SPRINTF(txTypeName, "%s", "Convert to Multisig");
-            parse_aggregate_modification_tx (raw_tx + disIndex,
+            err = parse_aggregate_modification_tx (raw_tx + disIndex,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
@@ -757,7 +758,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
         case NEMV1_MULTISIG_SIGNATURE:
             SPRINTF(txTypeName, "%s", "Mulisig signature");
             disIndex = 21;
-            parse_multisig_signature_tx (raw_tx + disIndex,
+            err = parse_multisig_signature_tx (raw_tx + disIndex,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
@@ -767,7 +768,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
         case NEMV1_MULTISIG_TRANSACTION:
             SPRINTF(txTypeName, "%s", "Mulisig TX");
             disIndex = 21+4+4+4+4+32+8+4+4;
-            parse_multisig_tx (raw_tx + disIndex,
+            err = parse_multisig_tx (raw_tx + disIndex,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
@@ -778,7 +779,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
         case NEMV1_PROVISION_NAMESPACE:
             disIndex = 21;
             SPRINTF(txTypeName, "%s", "Namespace TX");
-            parse_provision_namespace_tx (raw_tx + disIndex,
+            err = parse_provision_namespace_tx (raw_tx + disIndex,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
@@ -789,7 +790,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
         case NEMV1_MOSAIC_DEFINITION:
             disIndex = 21;
             SPRINTF(txTypeName, "%s", "Create Mosaic");
-            parse_mosaic_definition_tx (raw_tx + disIndex,
+            err = parse_mosaic_definition_tx (raw_tx + disIndex,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
@@ -800,7 +801,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
         case NEMV1_MOSAIC_SUPPLY_CHANGE:
             disIndex = 21;
             SPRINTF(txTypeName, "%s", "Mosaic Supply");
-            parse_mosaic_supply_change_tx (raw_tx + disIndex,
+            err = parse_mosaic_supply_change_tx (raw_tx + disIndex,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
@@ -811,7 +812,10 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
         default:
             SPRINTF(txTypeName, "tx type %d", txContent.txType); 
             break;    
-    }   
+    }
+    if (err) {
+        THROW(0x6700);
+    }
 
 #if defined(TARGET_NANOS)
     ux_step = 0;

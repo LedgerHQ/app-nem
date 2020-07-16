@@ -511,6 +511,7 @@ unsigned int io_seproxyhal_touch_tx_ok(const bagl_element_t *e) {
                        NULL, 
                        0, 
                        G_io_apdu_buffer, 
+                       IO_APDU_BUFFER_SIZE,
                        NULL);
     cx_ecfp_generate_pair2(CX_CURVE_Ed25519, &publicKey, &privateKey, 1, tmpCtx.transactionContext.algo);
 

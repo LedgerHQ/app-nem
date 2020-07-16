@@ -150,11 +150,11 @@ void to_nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t in
         cx_keccak_init(&temphash, 256);
     }
     unsigned char buffer1[32];
-    cx_hash(&hash1.header, CX_LAST, outNemPublicKey, 32, buffer1);
+    cx_hash(&hash1.header, CX_LAST, outNemPublicKey, 32, buffer1, sizeof(buffer1));
     unsigned char buffer2[20];
     cx_ripemd160_t hash2;
     cx_ripemd160_init(&hash2);
-    cx_hash(&hash2.header, CX_LAST, buffer1, 32, buffer2);
+    cx_hash(&hash2.header, CX_LAST, buffer1, 32, buffer2, sizeof(buffer2));
     unsigned char rawAddress[50];
     //step1: add network prefix char
     rawAddress[0] = inNetworkId;   //104,,,,,
@@ -162,7 +162,7 @@ void to_nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t in
     os_memmove(rawAddress + 1, buffer2, sizeof(buffer2));
     
     unsigned char buffer3[32];
-    cx_hash(&temphash.header, CX_LAST, rawAddress, 21, buffer3);
+    cx_hash(&temphash.header, CX_LAST, rawAddress, 21, buffer3, sizeof(buffer3));
     //step3: add checksum
     os_memmove(rawAddress + 21, buffer3, 4);
     base32_encode(rawAddress, sizeof(rawAddress), outNemAddress, 40);
@@ -175,11 +175,11 @@ void public_key_to_address(uint8_t inNetworkId, uint8_t *inNemPublicKey, unsigne
     cx_keccak_init(&temphash, 256);
 
     unsigned char buffer1[32];
-    cx_hash(&hash1.header, CX_LAST, inNemPublicKey, 32, buffer1);
+    cx_hash(&hash1.header, CX_LAST, inNemPublicKey, 32, buffer1, sizeof(buffer1));
     unsigned char buffer2[20];
     cx_ripemd160_t hash2;
     cx_ripemd160_init(&hash2);
-    cx_hash(&hash2.header, CX_LAST, buffer1, 32, buffer2);
+    cx_hash(&hash2.header, CX_LAST, buffer1, 32, buffer2, sizeof(buffer2));
     unsigned char rawAddress[50];
     //step1: add network prefix char
     rawAddress[0] = inNetworkId;   //104,,,,,
@@ -187,7 +187,7 @@ void public_key_to_address(uint8_t inNetworkId, uint8_t *inNemPublicKey, unsigne
     os_memmove(rawAddress + 1, buffer2, sizeof(buffer2));
     
     unsigned char buffer3[32];
-    cx_hash(&temphash.header, CX_LAST, rawAddress, 21, buffer3);
+    cx_hash(&temphash.header, CX_LAST, rawAddress, 21, buffer3, sizeof(buffer3));
     //step3: add checksum
     os_memmove(rawAddress + 21, buffer3, 4);
     base32_encode(rawAddress, sizeof(rawAddress), outNemAddress, 40);

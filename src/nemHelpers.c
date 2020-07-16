@@ -277,11 +277,7 @@ int parse_transfer_tx (unsigned char raw_tx[],
     char IDName[MAX_PRINT_EXTRA_INFOR_LENGTH];
     char name[MAX_PRINT_EXTRA_INFOR_LENGTH];
 
-    //Supply type
-    uint8_t supplyType; 
-
     //Quantity
-    uint16_t quantityIndex;
     uint32_t quantity;
 
     //Array index
@@ -423,13 +419,11 @@ int parse_mosaic_definition_tx (unsigned char raw_tx[],
     uint16_t lengthOfNameIndex;
     uint32_t lengthOfName;
     uint16_t nameIndex;
-    char IDName[MAX_PRINT_EXTRA_INFOR_LENGTH];
     char name[MAX_PRINT_EXTRA_INFOR_LENGTH];
 
     //Requires Levy
     uint16_t levySizeIndex;
     uint32_t levySize;
-    uint16_t insideLevyIndex;
 
     *ux_step_count = 11;
 
@@ -538,14 +532,12 @@ int parse_mosaic_supply_change_tx (unsigned char raw_tx[],
     uint16_t lengthOfNameIndex;
     uint32_t lengthOfName;
     uint16_t nameIndex;
-    char fullAddressIDName[MAX_PRINT_EXTRA_INFOR_LENGTH];
     char name[MAX_PRINT_EXTRA_INFOR_LENGTH];
 
     //Supply type
     uint8_t supplyType; 
 
     //Quantity
-    uint16_t quantityIndex;
     uint32_t quantity;
     
     *ux_step_count = 5;

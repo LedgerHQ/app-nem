@@ -63,8 +63,6 @@ unsigned int raw_tx_ix;
 /** current length of raw transaction. */
 unsigned int raw_tx_len;
 
-static const uint8_t const SIGN_PREFIX[] = { 0x53, 0x54, 0x58, 0x00 };
-
 typedef struct txContent_t {
     uint16_t txType;
     char mosaicName[16];
@@ -611,7 +609,6 @@ void handleGetPublicKey(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
     uint8_t bip32PathLength = *(dataBuffer++);
     cx_ecfp_private_key_t privateKey;
     uint8_t p2Chain = p2 & 0x3F;
-    cx_curve_t curve;
 
     //set default need confirm
     p1 = P1_CONFIRM;
@@ -671,8 +668,6 @@ void handleGetPublicKey(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
                                   &tmpCtx.publicKeyContext.address
                                   );
 
-    uint8_t addressLength = sizeof(tmpCtx.publicKeyContext.address);
-
     os_memset(fullAddress, 0, sizeof(fullAddress));
     os_memmove((void *)fullAddress, tmpCtx.publicKeyContext.address, 40);
 
@@ -696,7 +691,6 @@ void handleGetPublicKey(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
 void display_tx(uint8_t *raw_tx, uint16_t dataLength, 
                 volatile unsigned int *flags, volatile unsigned int *tx ) {
     UNUSED(tx);
-    uint8_t addressLength;
     uint32_t i;
 
     tmpCtx.transactionContext.pathLength = raw_tx[0];
@@ -725,7 +719,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
     uint32_t txType = getUint32(reverseBytes(&raw_tx[21], 4));
     txContent.txType = (uint16_t *)txType;
 
-    uint32_t txVersion = getUint32(reverseBytes(&raw_tx[21+4], 4));
+    // uint32_t txVersion = getUint32(reverseBytes(&raw_tx[21+4], 4));
 
     //Distance index: use for calculating the inner index of multisig tx
     uint8_t disIndex; 

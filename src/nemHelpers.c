@@ -17,9 +17,11 @@
 #include "os.h"
 #include "cx.h"
 #include "base32.h"
+#include "nemHelpers.h"
+
 #include <ctype.h>
 #include <inttypes.h>
-#include "nemHelpers.h"
+
 #define MAX_SAFE_INTEGER 9007199254740991
 
 static const uint8_t AMOUNT_MAX_SIZE = 17;
@@ -159,12 +161,12 @@ void to_nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t in
     //step1: add network prefix char
     rawAddress[0] = inNetworkId;   //104,,,,,
     //step2: add ripemd160 hash
-    os_memmove(rawAddress + 1, buffer2, sizeof(buffer2));
+    memmove(rawAddress + 1, buffer2, sizeof(buffer2));
     
     unsigned char buffer3[32];
     cx_hash(&temphash.header, CX_LAST, rawAddress, 21, buffer3, sizeof(buffer3));
     //step3: add checksum
-    os_memmove(rawAddress + 21, buffer3, 4);
+    memmove(rawAddress + 21, buffer3, 4);
     base32_encode(rawAddress, sizeof(rawAddress), outNemAddress, 40);
 }
 
@@ -184,12 +186,12 @@ void public_key_to_address(uint8_t inNetworkId, uint8_t *inNemPublicKey, unsigne
     //step1: add network prefix char
     rawAddress[0] = inNetworkId;   //104,,,,,
     //step2: add ripemd160 hash
-    os_memmove(rawAddress + 1, buffer2, sizeof(buffer2));
+    memmove(rawAddress + 1, buffer2, sizeof(buffer2));
     
     unsigned char buffer3[32];
     cx_hash(&temphash.header, CX_LAST, rawAddress, 21, buffer3, sizeof(buffer3));
     //step3: add checksum
-    os_memmove(rawAddress + 21, buffer3, 4);
+    memmove(rawAddress + 21, buffer3, 4);
     base32_encode(rawAddress, sizeof(rawAddress), outNemAddress, 40);
 }
 
@@ -679,8 +681,8 @@ int parse_aggregate_modification_tx (unsigned char raw_tx[],
     } else { //Converted
         SPRINTF(detailName[0], "%s", "Converted Acc");
     }
-    os_memset(fullAddress, 0, sizeof(fullAddress));                
-    os_memmove((void *)fullAddress, address, 40);
+    memset(fullAddress, 0, NEM_ADDRESS_LENGTH);
+    memmove((void *)fullAddress, address, 40);
 
     //Cosignatures
     numOfCosigModificationIndex = 4+4+4+4+32+8+4;
@@ -702,10 +704,10 @@ int parse_aggregate_modification_tx (unsigned char raw_tx[],
             SPRINTF(detailName[index+1], "%s", "Remove cosign");
         }
         //Bottom line
-        os_memset(extraInfo[index], 0, sizeof(extraInfo[index]));                
-        os_memmove((void *)extraInfo[index], address, 6);
-        os_memmove((void *)(extraInfo[index] + 6), "~", 1);
-        os_memmove((void *)(extraInfo[index] + 6 + 1), address + 40 - 4, 4);
+        memset(extraInfo[index], 0, MAX_PRINT_EXTRA_INFOR_LENGTH);
+        memmove((void *)extraInfo[index], address, 6);
+        memmove((void *)(extraInfo[index] + 6), "~", 1);
+        memmove((void *)(extraInfo[index] + 6 + 1), address + 40 - 4, 4);
 
         typeOfModificationIndex = typeOfModificationIndex + 4 + 4 + 32;
         numOfCosigModificationIndex = typeOfModificationIndex;
@@ -833,10 +835,10 @@ int parse_multisig_signature_tx (unsigned char raw_tx[],
         hashBytes[2*index] = hex2Ascii((raw_tx[index + hashBytesIndex] & 0xf0) >> 4);
         hashBytes[2*index + 1] = hex2Ascii(raw_tx[index + hashBytesIndex] & 0x0f);
     }
-    os_memset(extraInfo[0], 0, sizeof(extraInfo[0]));                
-    os_memmove((void *)extraInfo[0], hashBytes, 6);
-    os_memmove((void *)(extraInfo[0] + 6), "~", 1);
-    os_memmove((void *)(extraInfo[0] + 6 + 1), hashBytes + 64 - 4, 4);
+    memset(extraInfo[0], 0, MAX_PRINT_EXTRA_INFOR_LENGTH);
+    memmove((void *)extraInfo[0], hashBytes, 6);
+    memmove((void *)(extraInfo[0] + 6), "~", 1);
+    memmove((void *)(extraInfo[0] + 6 + 1), hashBytes + 64 - 4, 4);
 
     //Multisig fee
     SPRINTF(detailName[2], "%s", "Multisig fee");

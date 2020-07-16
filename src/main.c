@@ -17,13 +17,13 @@
 
 #include "os.h"
 #include "cx.h"
-#include <stdbool.h>
 #include "os_io_seproxyhal.h"
-#include "string.h"
 #include "base32.h"
 #include "nemHelpers.h"
-
 #include "glyphs.h"
+
+#include <stdbool.h>
+#include <string.h>
 
 bagl_element_t tmp_element;
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
@@ -380,7 +380,7 @@ unsigned int ui_approval_prepro(const bagl_element_t *element) {
                 break;
             case 0x02:
             case 0x12:
-                os_memmove(&tmp_element, element, sizeof(bagl_element_t));                
+                memmove(&tmp_element, element, sizeof(bagl_element_t));
                 display = ux_step - 1;
                 switch(display) {
                     case 0:
@@ -492,7 +492,7 @@ unsigned int io_seproxyhal_touch_tx_ok(const bagl_element_t *e) {
         }
 
         cx_ecfp_init_private_key(CX_CURVE_Ed25519, privateKeyDataR, 32, &privateKey);
-        os_memset(privateKeyDataR, 0, sizeof(privateKeyDataR));
+        memset(privateKeyDataR, 0, sizeof(privateKeyDataR));
     }else if (tmpCtx.transactionContext.algo == CX_SHA3) {
         cx_ecfp_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, &privateKey);
     }else{
@@ -514,8 +514,8 @@ unsigned int io_seproxyhal_touch_tx_ok(const bagl_element_t *e) {
     cx_ecfp_generate_pair2(CX_CURVE_Ed25519, &publicKey, &privateKey, 1, tmpCtx.transactionContext.algo);
 
     //public 64
-    os_memset(&privateKey, 0, sizeof(privateKey));
-    os_memset(privateKeyData, 0, sizeof(privateKeyData));
+    memset(&privateKey, 0, sizeof(privateKey));
+    memset(privateKeyData, 0, sizeof(privateKeyData));
 
     G_io_apdu_buffer[tx++] = 0x90;
     G_io_apdu_buffer[tx++] = 0x00;
@@ -588,12 +588,12 @@ uint32_t set_result_get_publicKey() {
 
     //address
     G_io_apdu_buffer[tx++] = addressLength;
-    os_memmove(G_io_apdu_buffer + tx, tmpCtx.publicKeyContext.address, addressLength);
+    memmove(G_io_apdu_buffer + tx, tmpCtx.publicKeyContext.address, addressLength);
     tx += addressLength;
 
     //publicKey
     G_io_apdu_buffer[tx++] = 32;
-    os_memmove(G_io_apdu_buffer + tx, tmpCtx.publicKeyContext.nemPublicKey, 32);
+    memmove(G_io_apdu_buffer + tx, tmpCtx.publicKeyContext.nemPublicKey, 32);
     tx += 32;
 
     return tx;
@@ -651,14 +651,14 @@ void handleGetPublicKey(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
             privateKeyDataR[j] = privateKeyData[31 - j];
         }
         cx_ecfp_init_private_key(CX_CURVE_Ed25519, privateKeyDataR, 32, &privateKey);
-        os_memset(privateKeyDataR, 0, sizeof(privateKeyDataR));
+        memset(privateKeyDataR, 0, sizeof(privateKeyDataR));
     }else{ 
         THROW(0x6a80);
     }
     cx_ecfp_generate_pair2(CX_CURVE_Ed25519, &tmpCtx.publicKeyContext.publicKey, &privateKey, 1, tmpCtx.publicKeyContext.algo);
 
-    os_memset(privateKeyData, 0, sizeof(privateKeyData));
-    os_memset(&privateKey, 0, sizeof(privateKey));
+    memset(privateKeyData, 0, sizeof(privateKeyData));
+    memset(&privateKey, 0, sizeof(privateKey));
 
     to_nem_public_key_and_address(
                                   &tmpCtx.publicKeyContext.publicKey, 
@@ -668,8 +668,8 @@ void handleGetPublicKey(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
                                   &tmpCtx.publicKeyContext.address
                                   );
 
-    os_memset(fullAddress, 0, sizeof(fullAddress));
-    os_memmove((void *)fullAddress, tmpCtx.publicKeyContext.address, 40);
+    memset(fullAddress, 0, sizeof(fullAddress));
+    memmove((void *)fullAddress, tmpCtx.publicKeyContext.address, 40);
 
     // prepare for a UI based reply//
 #if defined(TARGET_NANOS)
@@ -849,7 +849,7 @@ void handleSign(volatile unsigned int *flags, volatile unsigned int *tx) {
         hashTainted = 1;
         THROW(0x6D08);
     }
-    os_memmove(out, in, len);
+    memmove(out, in, len);
     raw_tx_ix += len;
 
     // set the buffer to end with a zero.
@@ -952,7 +952,7 @@ void nem_main(void) {
                 case 0x6000:
                     // Wipe the transaction context and report the exception
                     sw = e;
-                    os_memset(&txContent, 0, sizeof(txContent));
+                    memset(&txContent, 0, sizeof(txContent));
                     break;
                 case 0x9000:
                     // All is well
@@ -1063,7 +1063,7 @@ __attribute__((section(".boot"))) int main(void) {
     os_boot();
 
     for (;;) {
-	    os_memset(&txContent, 0, sizeof(txContent));
+	    memset(&txContent, 0, sizeof(txContent));
 	
         UX_INIT();
         BEGIN_TRY {

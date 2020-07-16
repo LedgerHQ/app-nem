@@ -299,7 +299,7 @@ int parse_transfer_tx (unsigned char raw_tx[],
     msgIndex = lengthOfMessFeildIndex+4+4+4;
     msgType = getUint32(reverseBytes(&raw_tx[msgTypeIndex], 4));
     if (lengthOfMessFeild == 0) {
-        SPRINTF(extraInfo[0], "%s\0", "<empty msg>");
+        SPRINTF(extraInfo[0], "%s", "<empty msg>");
     }
     else if(msgType == 1) {
         if (raw_tx[msgIndex] == 0xFE) {
@@ -311,19 +311,19 @@ int parse_transfer_tx (unsigned char raw_tx[],
                 msg[2*arrayIndex + 2] = '\0';
             }
             if ( arrayIndex*2 + 1> MAX_PRINT_MESSAGE_LENGTH) {
-                SPRINTF(extraInfo[0], "%s ...\0", msg);
+                SPRINTF(extraInfo[0], "%s ...", msg);
             } else {
-                SPRINTF(extraInfo[0], "%s\0", msg);
+                SPRINTF(extraInfo[0], "%s", msg);
             }
         } else if (msgSize > MAX_PRINT_MESSAGE_LENGTH) {
             uint2Ascii(&raw_tx[msgIndex], MAX_PRINT_MESSAGE_LENGTH, msg);
-            SPRINTF(extraInfo[0], "%s ...\0", msg);
+            SPRINTF(extraInfo[0], "%s ...", msg);
         } else {
             uint2Ascii(&raw_tx[msgIndex], msgSize, msg);
             SPRINTF(extraInfo[0], "%s", msg);
         }
     } else {
-        SPRINTF(extraInfo[0], "%s\0", "<encrypted msg>");
+        SPRINTF(extraInfo[0], "%s", "<encrypted msg>");
     }
 
     //Fee
@@ -459,10 +459,10 @@ int parse_mosaic_definition_tx (unsigned char raw_tx[],
     msgIndex = msgSizeIndex+4;
     if(msgSize > MAX_PRINT_MESSAGE_LENGTH){
         uint2Ascii(&raw_tx[msgIndex], MAX_PRINT_MESSAGE_LENGTH, msg);
-        SPRINTF(extraInfo[3], "%s...\0", msg);
+        SPRINTF(extraInfo[3], "%s...", msg);
     } else {
         uint2Ascii(&raw_tx[msgIndex], msgSize, msg);
-        SPRINTF(extraInfo[3], "%s\0", msg);
+        SPRINTF(extraInfo[3], "%s", msg);
     }
 
     //Start Properties

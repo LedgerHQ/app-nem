@@ -636,10 +636,10 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
     
     //NEM_MAINNET || NEM_TESTNET
     //txType
-    uint32_t txType = getUint32(reverseBytes(&raw_tx[21], 4));
+    uint32_t txType = get_uint32_le(&raw_tx[21]);
     txContent.txType = (uint16_t)txType;
 
-    // uint32_t txVersion = getUint32(reverseBytes(&raw_tx[21+4], 4));
+    // uint32_t txVersion = get_uint32_le(&raw_tx[21+4]);
 
     //Distance index: use for calculating the inner index of multisig tx
     uint8_t disIndex; 

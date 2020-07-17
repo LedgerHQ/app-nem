@@ -54,14 +54,6 @@ uint8_t readNetworkIdFromBip32path(const uint32_t bip32Path[]) {
 }
 #endif
 
-uint8_t *reverseBytes(const uint8_t *sourceArray, uint16_t len){
-    uint8_t outArray[len];
-    for (uint8_t j=0; j<len; j++) {
-        outArray[j] = sourceArray[len - j -1];
-    }
-    return outArray;
-}
-
 #ifndef TESTING
 void to_nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo, uint8_t *outNemPublicKey, char *outNemAddress) {
     uint8_t i;

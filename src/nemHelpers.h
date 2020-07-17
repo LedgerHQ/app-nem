@@ -69,19 +69,11 @@ levyMosaicFullName:
 
 */
 
-static inline uint32_t getUint32(const uint8_t *data) {
-    return ((uint32_t)data[3]) | ((uint32_t)data[2] << 8) | ((uint32_t)data[1] << 16) |
-             ((uint32_t)data[0] << 24);
-}
-
-static inline uint64_t getUint64(const uint8_t *data) {
-    return ((uint64_t)data[7]) | ((uint64_t)data[6] << 8) | ((uint64_t)data[5] << 16) |
-             ((uint64_t)data[4] << 24) | ((uint64_t)data[3] << 32) | ((uint64_t)data[2] << 40) |
-             ((uint64_t)data[1] << 48) | ((uint64_t)data[0] << 56);
+static inline uint32_t get_uint32_le(const uint8_t *data) {
+    return (data[3] << 24) | (data[2] << 16) | (data[1] << 8) | data[0];
 }
 
 uint8_t readNetworkIdFromBip32path(const uint32_t bip32Path[]);
-uint8_t *reverseBytes(const uint8_t *sourceArray, uint16_t len);
 
 void to_nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo, uint8_t *outNemPublicKey, char *outNemAddress);
 void public_key_to_address(uint8_t inNetworkId, const uint8_t *outNemPublicKey, char *outNemAddress);

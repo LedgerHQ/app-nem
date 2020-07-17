@@ -26,7 +26,7 @@
 
 static const uint8_t AMOUNT_MAX_SIZE = 17;
 
-uint8_t readNetworkIdFromBip32path(uint32_t bip32Path[]) {
+uint8_t readNetworkIdFromBip32path(const uint32_t bip32Path[]) {
     uint8_t outNetworkId;
     switch(bip32Path[2]) {
         case 0x80000068: 
@@ -48,15 +48,15 @@ uint8_t readNetworkIdFromBip32path(uint32_t bip32Path[]) {
 }
 
 //todo nonprintable ch + utf8
-void uint2Ascii(uint8_t *inBytes, uint8_t len, char *out){
-    char *tmpCh = (char *)inBytes;
+void uint2Ascii(const uint8_t *inBytes, uint8_t len, char *out){
+    const char *tmpCh = (const char *)inBytes;
     for (uint8_t j=0; j<len; j++){
         out[j] = tmpCh[j];
     }
     out[len] = '\0';
 }
 
-uint8_t *reverseBytes(uint8_t *sourceArray, uint16_t len){
+uint8_t *reverseBytes(const uint8_t *sourceArray, uint16_t len){
     uint8_t outArray[len];
     for (uint8_t j=0; j<len; j++) {
         outArray[j] = sourceArray[len - j -1];
@@ -64,7 +64,7 @@ uint8_t *reverseBytes(uint8_t *sourceArray, uint16_t len){
     return outArray;
 }
 
-int print_amount(uint64_t amount, uint8_t divisibility, char *asset, char *out) {
+int print_amount(uint64_t amount, uint8_t divisibility, const char *asset, char *out) {
     char buffer[AMOUNT_MAX_SIZE];
     uint64_t dVal = amount;
     int i, j;
@@ -116,16 +116,16 @@ int print_amount(uint64_t amount, uint8_t divisibility, char *asset, char *out) 
     return 0;
 }
 
-uint16_t getUint16(uint8_t *buffer) {
-    return ((uint16_t)buffer[1]) | ((uint16_t)buffer[0] << 8);
+uint16_t getUint16(const uint8_t *data) {
+    return ((uint16_t)data[1]) | ((uint16_t)data[0] << 8);
 }
 
-uint32_t getUint32(uint8_t *data) {
+uint32_t getUint32(const uint8_t *data) {
     return ((uint32_t)data[3]) | ((uint32_t)data[2] << 8) | ((uint32_t)data[1] << 16) |
              ((uint32_t)data[0] << 24);
 }
 
-uint64_t getUint64(uint8_t *data) {
+uint64_t getUint64(const uint8_t *data) {
     return ((uint64_t)data[7]) | ((uint64_t)data[6] << 8) | ((uint64_t)data[5] << 16) |
              ((uint64_t)data[4] << 24) | ((uint64_t)data[3] << 32) | ((uint64_t)data[2] << 40) |
              ((uint64_t)data[1] << 48) | ((uint64_t)data[0] << 56);
@@ -170,7 +170,7 @@ void to_nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t in
     base32_encode(rawAddress, sizeof(rawAddress), outNemAddress, 40);
 }
 
-void public_key_to_address(uint8_t inNetworkId, uint8_t *inNemPublicKey, char *outNemAddress) {
+void public_key_to_address(uint8_t inNetworkId, const uint8_t *inNemPublicKey, char *outNemAddress) {
     cx_sha3_t hash1;
     cx_sha3_t temphash;
     cx_keccak_init(&hash1, 256);
@@ -208,7 +208,7 @@ void clean_raw_tx(unsigned char *raw_tx) {
     }
 }
 
-int compare_strings (char str1[], char str2[]) {
+int compare_strings (const char str1[], const char str2[]) {
     int index = 0;
  
     while (str1[index] == str2[index]) {
@@ -223,7 +223,7 @@ int compare_strings (char str1[], char str2[]) {
         return -1;
 }
 
-int string_length(char str[]) {
+int string_length(const char str[]) {
     int index = 0;
  
     while (str[index] != '\0') {
@@ -238,7 +238,7 @@ char hex2Ascii(uint8_t input){
     return input > 9 ? (char)(input + 87) : (char)(input + 48);
 }
 
-int parse_transfer_tx (unsigned char raw_tx[],
+int parse_transfer_tx (const uint8_t *raw_tx,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -392,7 +392,7 @@ int parse_transfer_tx (unsigned char raw_tx[],
     return 0;
 }
 
-int parse_mosaic_definition_tx (unsigned char raw_tx[],
+int parse_mosaic_definition_tx (const uint8_t *raw_tx,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -515,7 +515,7 @@ int parse_mosaic_definition_tx (unsigned char raw_tx[],
     return 0;
 }
 
-int parse_mosaic_supply_change_tx (unsigned char raw_tx[],
+int parse_mosaic_supply_change_tx (const uint8_t *raw_tx,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -581,7 +581,7 @@ int parse_mosaic_supply_change_tx (unsigned char raw_tx[],
     return 0;
 }
 
-int parse_provision_namespace_tx (unsigned char raw_tx[],
+int parse_provision_namespace_tx (const uint8_t *raw_tx,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -647,7 +647,7 @@ int parse_provision_namespace_tx (unsigned char raw_tx[],
     return 0;
 }
 
-int parse_aggregate_modification_tx (unsigned char raw_tx[],
+int parse_aggregate_modification_tx (const uint8_t *raw_tx,
     unsigned int* ux_step_count,
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -740,7 +740,7 @@ int parse_aggregate_modification_tx (unsigned char raw_tx[],
     return 0;
 }
 
-int parse_multisig_tx (unsigned char raw_tx[],
+int parse_multisig_tx (const uint8_t *raw_tx,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -802,7 +802,7 @@ int parse_multisig_tx (unsigned char raw_tx[],
     return ret;
 }
 
-int parse_multisig_signature_tx (unsigned char raw_tx[],
+int parse_multisig_signature_tx (const uint8_t *raw_tx,
     unsigned int* ux_step_count,
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],

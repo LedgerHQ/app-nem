@@ -79,16 +79,16 @@ levyMosaicFullName:
 
 */
 
-uint8_t readNetworkIdFromBip32path(uint32_t bip32Path[]);
-uint8_t *reverseBytes(uint8_t *sourceArray, uint16_t len);
-void uint2Ascii(uint8_t *inBytes, uint8_t len, char *out);
-int print_amount(uint64_t amount, uint8_t divisibility, char *asset, char *out);
+uint8_t readNetworkIdFromBip32path(const uint32_t bip32Path[]);
+uint8_t *reverseBytes(const uint8_t *sourceArray, uint16_t len);
+void uint2Ascii(const uint8_t *inBytes, uint8_t len, char *out);
+int print_amount(uint64_t amount, uint8_t divisibility, const char *asset, char *out);
 
-uint16_t getUint16(uint8_t *buffer);
-uint32_t getUint32(uint8_t *data);
-uint64_t getUint64(uint8_t *data);
+uint16_t getUint16(const uint8_t *data);
+uint32_t getUint32(const uint8_t *data);
+uint64_t getUint64(const uint8_t *data);
 void to_nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo, uint8_t *outNemPublicKey, char *outNemAddress);
-void public_key_to_address(uint8_t inNetworkId, uint8_t *outNemPublicKey, char *outNemAddress);
+void public_key_to_address(uint8_t inNetworkId, const uint8_t *outNemPublicKey, char *outNemAddress);
 
 /** returns the length of the transaction in the buffer. */
 unsigned int get_apdu_buffer_length();
@@ -96,14 +96,14 @@ unsigned int get_apdu_buffer_length();
 /** Clean the buffer of tx. */
 void clean_raw_tx(unsigned char *raw_tx);
 
-int compare_strings(char str1[], char str2[]);
+int compare_strings(const char str1[], const char str2[]);
 
-int string_length(char str[]);
+int string_length(const char str[]);
 
 /** Convert 1 hex number to 2 characters */
 char hex2Ascii(uint8_t input);
 
-int parse_transfer_tx (unsigned char raw_tx[],
+int parse_transfer_tx (const uint8_t *raw_tx,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -111,7 +111,7 @@ int parse_transfer_tx (unsigned char raw_tx[],
     bool isMultisig
 );
 
-int parse_mosaic_definition_tx (unsigned char raw_tx[],
+int parse_mosaic_definition_tx (const uint8_t *raw_tx,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -119,7 +119,7 @@ int parse_mosaic_definition_tx (unsigned char raw_tx[],
     bool isMultisig
 );
 
-int parse_mosaic_supply_change_tx (unsigned char raw_tx[],
+int parse_mosaic_supply_change_tx (const uint8_t *raw_tx,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -127,7 +127,7 @@ int parse_mosaic_supply_change_tx (unsigned char raw_tx[],
     bool isMultisig
 );
 
-int parse_provision_namespace_tx (unsigned char raw_tx[],
+int parse_provision_namespace_tx (const uint8_t *raw_tx,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -135,7 +135,7 @@ int parse_provision_namespace_tx (unsigned char raw_tx[],
     bool isMultisig
 );
 
-int parse_aggregate_modification_tx (unsigned char raw_tx[],
+int parse_aggregate_modification_tx (const uint8_t *raw_tx,
     unsigned int* ux_step_count,
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -144,7 +144,7 @@ int parse_aggregate_modification_tx (unsigned char raw_tx[],
     uint8_t networkId
 );
 
-int parse_multisig_tx (unsigned char raw_tx[],
+int parse_multisig_tx (const uint8_t *raw_tx,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -152,7 +152,7 @@ int parse_multisig_tx (unsigned char raw_tx[],
     uint8_t networkId
 );
 
-int parse_multisig_signature_tx (unsigned char raw_tx[],
+int parse_multisig_signature_tx (const uint8_t *raw_tx,
     unsigned int* ux_step_count,
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],

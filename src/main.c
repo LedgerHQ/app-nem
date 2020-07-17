@@ -650,6 +650,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
             disIndex = 21; 
             SPRINTF(txTypeName, "%s", "Transfer TX");
             err = parse_transfer_tx (raw_tx + disIndex,
+                tmpCtx.transactionContext.rawTxLength,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
@@ -661,6 +662,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
             disIndex = 21;
             SPRINTF(txTypeName, "%s", "Convert to Multisig");
             err = parse_aggregate_modification_tx (raw_tx + disIndex,
+                tmpCtx.transactionContext.rawTxLength,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
@@ -673,6 +675,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
             SPRINTF(txTypeName, "%s", "Mulisig signature");
             disIndex = 21;
             err = parse_multisig_signature_tx (raw_tx + disIndex,
+                tmpCtx.transactionContext.rawTxLength,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
@@ -683,6 +686,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
             SPRINTF(txTypeName, "%s", "Mulisig TX");
             disIndex = 21+4+4+4+4+32+8+4+4;
             err = parse_multisig_tx (raw_tx + disIndex,
+                tmpCtx.transactionContext.rawTxLength - (4+4+4+4+32+8+4+4),
                 &ux_step_count, 
                 detailName,
                 extraInfo,
@@ -694,6 +698,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
             disIndex = 21;
             SPRINTF(txTypeName, "%s", "Namespace TX");
             err = parse_provision_namespace_tx (raw_tx + disIndex,
+                tmpCtx.transactionContext.rawTxLength,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
@@ -705,6 +710,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
             disIndex = 21;
             SPRINTF(txTypeName, "%s", "Create Mosaic");
             err = parse_mosaic_definition_tx (raw_tx + disIndex,
+                tmpCtx.transactionContext.rawTxLength,
                 &ux_step_count, 
                 detailName,
                 extraInfo,
@@ -716,6 +722,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
             disIndex = 21;
             SPRINTF(txTypeName, "%s", "Mosaic Supply");
             err = parse_mosaic_supply_change_tx (raw_tx + disIndex,
+                tmpCtx.transactionContext.rawTxLength,
                 &ux_step_count, 
                 detailName,
                 extraInfo,

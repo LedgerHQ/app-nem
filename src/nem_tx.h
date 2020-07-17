@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #define MAX_PRINT_MESSAGE_LENGTH 11
@@ -21,6 +22,7 @@ static const uint16_t NEMV1_MOSAIC_SUPPLY_CHANGE = 0x4002;
 static const uint16_t NEMV1_MOSAIC_SUPPLY = 0x4002;
 
 int parse_transfer_tx (const uint8_t *raw_tx,
+    size_t tx_len,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -29,6 +31,7 @@ int parse_transfer_tx (const uint8_t *raw_tx,
 );
 
 int parse_mosaic_definition_tx (const uint8_t *raw_tx,
+    size_t tx_len,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -37,6 +40,7 @@ int parse_mosaic_definition_tx (const uint8_t *raw_tx,
 );
 
 int parse_mosaic_supply_change_tx (const uint8_t *raw_tx,
+    size_t tx_len,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -45,6 +49,7 @@ int parse_mosaic_supply_change_tx (const uint8_t *raw_tx,
 );
 
 int parse_provision_namespace_tx (const uint8_t *raw_tx,
+    size_t tx_len,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -53,6 +58,7 @@ int parse_provision_namespace_tx (const uint8_t *raw_tx,
 );
 
 int parse_aggregate_modification_tx (const uint8_t *raw_tx,
+    size_t tx_len,
     unsigned int* ux_step_count,
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -62,6 +68,7 @@ int parse_aggregate_modification_tx (const uint8_t *raw_tx,
 );
 
 int parse_multisig_tx (const uint8_t *raw_tx,
+    size_t tx_len,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -70,6 +77,7 @@ int parse_multisig_tx (const uint8_t *raw_tx,
 );
 
 int parse_multisig_signature_tx (const uint8_t *raw_tx,
+    size_t tx_len,
     unsigned int* ux_step_count,
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],

@@ -107,6 +107,7 @@ static int print_amount(uint64_t amount, uint8_t divisibility, const char *asset
 }
 
 int parse_transfer_tx (const uint8_t *raw_tx,
+    size_t tx_len,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -261,6 +262,7 @@ int parse_transfer_tx (const uint8_t *raw_tx,
 }
 
 int parse_mosaic_definition_tx (const uint8_t *raw_tx,
+    size_t tx_len,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -384,6 +386,7 @@ int parse_mosaic_definition_tx (const uint8_t *raw_tx,
 }
 
 int parse_mosaic_supply_change_tx (const uint8_t *raw_tx,
+    size_t tx_len,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -450,6 +453,7 @@ int parse_mosaic_supply_change_tx (const uint8_t *raw_tx,
 }
 
 int parse_provision_namespace_tx (const uint8_t *raw_tx,
+    size_t tx_len,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -516,6 +520,7 @@ int parse_provision_namespace_tx (const uint8_t *raw_tx,
 }
 
 int parse_aggregate_modification_tx (const uint8_t *raw_tx,
+    size_t tx_len,
     unsigned int* ux_step_count,
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -609,6 +614,7 @@ int parse_aggregate_modification_tx (const uint8_t *raw_tx,
 }
 
 int parse_multisig_tx (const uint8_t *raw_tx,
+    size_t tx_len,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
@@ -620,6 +626,7 @@ int parse_multisig_tx (const uint8_t *raw_tx,
     switch (otherTxType) {
         case NEMV1_TRANSFER:
             ret = parse_transfer_tx (raw_tx,
+                tx_len,
                 ux_step_count, 
                 detailName,
                 extraInfo,
@@ -629,6 +636,7 @@ int parse_multisig_tx (const uint8_t *raw_tx,
             break;
         case NEMV1_PROVISION_NAMESPACE:
             ret = parse_provision_namespace_tx (raw_tx,
+                tx_len,
                 ux_step_count, 
                 detailName,
                 extraInfo,
@@ -638,6 +646,7 @@ int parse_multisig_tx (const uint8_t *raw_tx,
             break;
         case NEMV1_MOSAIC_DEFINITION:
             ret = parse_mosaic_definition_tx (raw_tx,
+                tx_len,
                 ux_step_count, 
                 detailName,
                 extraInfo,
@@ -647,6 +656,7 @@ int parse_multisig_tx (const uint8_t *raw_tx,
             break;
         case NEMV1_MOSAIC_SUPPLY_CHANGE:
             ret = parse_mosaic_supply_change_tx (raw_tx,
+                tx_len,
                 ux_step_count, 
                 detailName,
                 extraInfo,
@@ -656,6 +666,7 @@ int parse_multisig_tx (const uint8_t *raw_tx,
             break;
         case NEMV1_MULTISIG_MODIFICATION:
             ret = parse_aggregate_modification_tx (raw_tx,
+                tx_len,
                 ux_step_count, 
                 detailName,
                 extraInfo,
@@ -671,6 +682,7 @@ int parse_multisig_tx (const uint8_t *raw_tx,
 }
 
 int parse_multisig_signature_tx (const uint8_t *raw_tx,
+    size_t tx_len,
     unsigned int* ux_step_count,
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
     char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],

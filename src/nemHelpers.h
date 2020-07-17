@@ -87,8 +87,8 @@ int print_amount(uint64_t amount, uint8_t divisibility, char *asset, char *out);
 uint16_t getUint16(uint8_t *buffer);
 uint32_t getUint32(uint8_t *data);
 uint64_t getUint64(uint8_t *data);
-void to_nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo, uint8_t *outNemPublicKey, unsigned char *outNemAddress);
-void public_key_to_address(uint8_t inNetworkId, uint8_t *outNemPublicKey, unsigned char *outNemAddress);
+void to_nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo, uint8_t *outNemPublicKey, char *outNemAddress);
+void public_key_to_address(uint8_t inNetworkId, uint8_t *outNemPublicKey, char *outNemAddress);
 
 /** returns the length of the transaction in the buffer. */
 unsigned int get_apdu_buffer_length();

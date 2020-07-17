@@ -131,7 +131,7 @@ uint64_t getUint64(uint8_t *data) {
              ((uint64_t)data[1] << 48) | ((uint64_t)data[0] << 56);
 }
 
-void to_nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo, uint8_t *outNemPublicKey, unsigned char *outNemAddress) {
+void to_nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo, uint8_t *outNemPublicKey, char *outNemAddress) {
     uint8_t i;
     for (i=0; i<32; i++) {
         outNemPublicKey[i] = inPublicKey->W[64 - i];
@@ -170,7 +170,7 @@ void to_nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t in
     base32_encode(rawAddress, sizeof(rawAddress), outNemAddress, 40);
 }
 
-void public_key_to_address(uint8_t inNetworkId, uint8_t *inNemPublicKey, unsigned char *outNemAddress) {
+void public_key_to_address(uint8_t inNetworkId, uint8_t *inNemPublicKey, char *outNemAddress) {
     cx_sha3_t hash1;
     cx_sha3_t temphash;
     cx_keccak_init(&hash1, 256);
@@ -334,7 +334,7 @@ int parse_transfer_tx (unsigned char raw_tx[],
     if (isMultisig) {
         fee += 150000;
     }
-    if (print_amount((uint64_t *)fee, 6, "xem", &extraInfo[1])) {
+    if (print_amount(fee, 6, "xem", extraInfo[1])) {
         return -1;
     }
 
@@ -348,7 +348,7 @@ int parse_transfer_tx (unsigned char raw_tx[],
     if (numberOfMosaics == 0) {
         amountIndex = 4+4+4+4+32+4+4+4+4+40;
         amount = getUint32(reverseBytes(&raw_tx[amountIndex], 4));
-        if (print_amount((uint64_t *)amount, 6, "xem", &extraInfo[2])) {
+        if (print_amount(amount, 6, "xem", extraInfo[2])) {
             return -1;
         }
     } else {
@@ -375,7 +375,7 @@ int parse_transfer_tx (unsigned char raw_tx[],
             *ux_step_count = *ux_step_count + 1;
             if ((compare_strings(IDName,"nem") == 0) && (compare_strings(name,"xem") == 0)) {
                 SPRINTF(detailName[4 + arrayIndex], "%s %d", "Amount", 1 + arrayIndex);
-                if (print_amount((uint64_t *)quantity, 6, "xem", extraInfo[3 + arrayIndex])) {
+                if (print_amount(quantity, 6, "xem", extraInfo[3 + arrayIndex])) {
                     return -1;
                 }
             } else {
@@ -450,7 +450,7 @@ int parse_mosaic_definition_tx (unsigned char raw_tx[],
     if (isMultisig) {
         fee += 150000;
     }
-    if (print_amount((uint64_t *)fee, 6, "xem", &extraInfo[1])) {
+    if (print_amount(fee, 6, "xem", extraInfo[1])) {
         return -1;
     }
     
@@ -508,7 +508,7 @@ int parse_mosaic_definition_tx (unsigned char raw_tx[],
     SPRINTF(detailName[3], "%s", "Rental Fee");
     amountIndex = levySizeIndex+levySize + 4+4+40;
     amount = getUint32(reverseBytes(&raw_tx[amountIndex], 4));
-    if (print_amount((uint64_t *)amount, 6, "xem", extraInfo[2])) {
+    if (print_amount(amount, 6, "xem", extraInfo[2])) {
         return -1;
     }
     //End Properties
@@ -565,7 +565,7 @@ int parse_mosaic_supply_change_tx (unsigned char raw_tx[],
     if (isMultisig) {
         fee += 150000;
     }
-    if (print_amount((uint64_t *)fee, 6, "xem", &extraInfo[1])) {
+    if (print_amount(fee, 6, "xem", extraInfo[1])) {
         return -1;
     }
 
@@ -611,7 +611,7 @@ int parse_provision_namespace_tx (unsigned char raw_tx[],
     SPRINTF(detailName[1], "%s", "Rental Fee");
     quantityIndex = 4+4+4+4+32+4+4+4+4+40;
     quantity = getUint32(reverseBytes(&raw_tx[quantityIndex], 4));
-    if (print_amount((uint64_t *)quantity, 6, "xem", extraInfo[0])) {
+    if (print_amount(quantity, 6, "xem", extraInfo[0])) {
         return -1;
     }
 
@@ -621,7 +621,7 @@ int parse_provision_namespace_tx (unsigned char raw_tx[],
     if (isMultisig) {
         fee += 150000;
     }
-    if (print_amount((uint64_t *)fee, 6, "xem", &extraInfo[1])) {
+    if (print_amount(fee, 6, "xem", extraInfo[1])) {
         return -1;
     }
 
@@ -734,7 +734,7 @@ int parse_aggregate_modification_tx (unsigned char raw_tx[],
     if (isMultisig) {
         fee += 150000;
     }
-    if (print_amount((uint64_t *)fee, 6, "xem", &extraInfo[numOfCosigModification])) {
+    if (print_amount(fee, 6, "xem", extraInfo[numOfCosigModification])) {
         return -1;
     }
     return 0;
@@ -844,7 +844,7 @@ int parse_multisig_signature_tx (unsigned char raw_tx[],
     SPRINTF(detailName[2], "%s", "Multisig fee");
     multisigFeeIndex = 4+4+4+4+32;
     fee = getUint32(reverseBytes(&raw_tx[multisigFeeIndex], 4));
-    if (print_amount((uint64_t *)fee, 6, "xem", &extraInfo[1])) {
+    if (print_amount(fee, 6, "xem", extraInfo[1])) {
         return -1;
     }
     return 0;

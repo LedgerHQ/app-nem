@@ -73,7 +73,7 @@ typedef struct publicKeyContext_t {
     uint8_t networkId;
     uint8_t algo;    
     uint8_t nemPublicKey[32];
-    uint8_t address[40];
+    char address[40];
     uint8_t pathLength;
     uint32_t bip32Path[MAX_BIP32_PATH];
 } publicKeyContext_t;
@@ -96,13 +96,13 @@ txContent_t txContent;
 
 volatile uint8_t fidoTransport;
 volatile int maxInterval;
-volatile char txTypeName[30];
-volatile char fullAddress[40];
+static char txTypeName[30];
+static char fullAddress[40];
 
 //Registers save information to show on the top line of screen
-volatile char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH];
+static char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH];
 //Registers save information to show on the bottom line of screen
-volatile char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH];
+static char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH];
 
 bagl_element_t tmp_element;
 
@@ -151,10 +151,14 @@ const ux_menu_entry_t menu_about[] = {
     {menu_main, NULL, 1, &C_icon_back, "Back", NULL, 61, 40},
     UX_MENU_END};
 
+void os_exit(unsigned int id) {
+    os_sched_exit(0);
+}
+
 const ux_menu_entry_t menu_main[] = {
     {NULL, NULL, 0, &C_icon_NEM, "Welcome to", "  NEM wallet", 33, 12},
     {menu_about, NULL, 0, NULL, "About", NULL, 0, 0},
-    {NULL, os_sched_exit, 0, &C_icon_dashboard, "Quit app", NULL, 50, 29},
+    {NULL, os_exit, 0, &C_icon_dashboard, "Quit app", NULL, 50, 29},
     UX_MENU_END};
 
 #endif // #if TARGET_NANOS
@@ -165,31 +169,13 @@ const bagl_element_t ui_address_nanos[] = {
     // fill      fg        bg      fid iid  txt   touchparams...       ]
     {{BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF,
       0, 0},
-     NULL,
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
      NULL},
 
     {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
       BAGL_GLYPH_ICON_CROSS},
-     NULL,
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
      NULL},
     {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
       BAGL_GLYPH_ICON_CHECK},
-     NULL,
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
      NULL},
 
     //{{BAGL_ICON                           , 0x01,  31,   9,  14,  14, 0, 0, 0
@@ -197,41 +183,17 @@ const bagl_element_t ui_address_nanos[] = {
     //NULL, NULL, NULL },
     {{BAGL_LABELINE, 0x01, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "Export",
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
-     NULL},
+     "Export"},
     {{BAGL_LABELINE, 0x01, 0, 26, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "NEM account",
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
-     NULL},
+     "NEM account"},
 
     {{BAGL_LABELINE, 0x02, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "Address",
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
-     NULL},
+     "Address"},
     {{BAGL_LABELINE, 0x02, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)fullAddress,
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
-     NULL},
+     (char *)fullAddress},
 };
 
 unsigned int ui_address_prepro(const bagl_element_t *element) {
@@ -290,31 +252,13 @@ const bagl_element_t ui_approval_nanos[] = {
     // fill      fg        bg      fid iid  txt   touchparams...       ]
     {{BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF,
       0, 0},
-     NULL,
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
      NULL},
 
     {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
       BAGL_GLYPH_ICON_CROSS},
-     NULL,
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
      NULL},
     {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
       BAGL_GLYPH_ICON_CHECK},
-     NULL,
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
      NULL},
 
     //{{BAGL_ICON                           , 0x01,  21,   9,  14,  14, 0, 0, 0
@@ -322,42 +266,17 @@ const bagl_element_t ui_approval_nanos[] = {
     //0, NULL, NULL, NULL },
     {{BAGL_LABELINE, 0x01, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "Confirm",
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
-     NULL},
+     "Confirm"},
     {{BAGL_LABELINE, 0x01, 0, 26, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     (char *)txTypeName, //"transaction",
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
-     NULL},
+     (char *)txTypeName}, //"transaction",
 
     {{BAGL_LABELINE, 0x02, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     NULL, //"Amount",
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
-     NULL},
+     NULL}, //"Amount",
     {{BAGL_LABELINE, 0x12, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     NULL, //(char *)fullAmount,
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
-     NULL},
-
+     NULL}, //(char *)fullAmount,
 };
 
 /*
@@ -664,8 +583,8 @@ void handleGetPublicKey(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
                                   &tmpCtx.publicKeyContext.publicKey, 
                                   tmpCtx.publicKeyContext.networkId, 
                                   tmpCtx.publicKeyContext.algo, 
-                                  &tmpCtx.publicKeyContext.nemPublicKey, 
-                                  &tmpCtx.publicKeyContext.address
+                                  tmpCtx.publicKeyContext.nemPublicKey,
+                                  tmpCtx.publicKeyContext.address
                                   );
 
     memset(fullAddress, 0, sizeof(fullAddress));
@@ -717,7 +636,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
     //NEM_MAINNET || NEM_TESTNET
     //txType
     uint32_t txType = getUint32(reverseBytes(&raw_tx[21], 4));
-    txContent.txType = (uint16_t *)txType;
+    txContent.txType = (uint16_t)txType;
 
     // uint32_t txVersion = getUint32(reverseBytes(&raw_tx[21+4], 4));
 
@@ -861,7 +780,7 @@ void handleSign(volatile unsigned int *flags, volatile unsigned int *tx) {
         raw_tx_ix = 0;
 
         // parse the transaction into human readable text.
-        display_tx(&raw_tx, raw_tx_len, flags, tx);
+        display_tx(raw_tx, raw_tx_len, flags, tx);
     } else {
         // continue reading the tx
         THROW(0x9000);  

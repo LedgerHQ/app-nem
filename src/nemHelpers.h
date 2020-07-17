@@ -15,18 +15,18 @@
 *  limitations under the License.
 ********************************************************************************/
 
+#ifndef TESTING
 #include "os.h"
 #include "cx.h"
 #include "os_io_seproxyhal.h"
-#include <stdbool.h>
-#define MAX_BIP32_PATH 5
+#else
+#include "lcx_ecfp.h"
+#endif
 
-#define MAX_PRINT_MESSAGE_LENGTH 11
-#define MAX_PRINT_DETAIL_NAME_LENGTH 15
-#define MAX_PRINT_EXTRA_INFOR_LENGTH 17
-#define MAX_PRINT_DETAIL_NAME_SCREEN 11
-#define MAX_PRINT_EXTRA_INFO_SCREEN 10
-#define NEM_ADDRESS_LENGTH 41
+#include <stdbool.h>
+#include <stdint.h>
+
+#define MAX_BIP32_PATH 5
 
 static const int MAX_UX_CALLBACK_INTERVAL = 2;
 
@@ -43,16 +43,6 @@ static const int32_t MINJIN_NETWORK_VERSION = 0x60000001;
 
 //rootNamespaceRentalFeePerBlock = 1'000'000
 //childNamespaceRentalFee = 1'000'000
-
-static const uint16_t NEMV1_TRANSFER = 0x101;
-static const uint16_t NEMV1_IMPORTANCE_TRANSFER = 0x801;
-static const uint16_t NEMV1_MULTISIG_MODIFICATION = 0x1001;
-static const uint16_t NEMV1_MULTISIG_SIGNATURE = 0x1002;
-static const uint16_t NEMV1_MULTISIG_TRANSACTION = 0x1004;
-static const uint16_t NEMV1_PROVISION_NAMESPACE = 0x2001;
-static const uint16_t NEMV1_MOSAIC_DEFINITION = 0x4001;
-static const uint16_t NEMV1_MOSAIC_SUPPLY_CHANGE = 0x4002;
-static const uint16_t NEMV1_MOSAIC_SUPPLY = 0x4002;
 
 /**
  * Nano S has 320 KB flash, 10 KB RAM, uses a ST31H320 chip.
@@ -79,14 +69,20 @@ levyMosaicFullName:
 
 */
 
+static inline uint32_t getUint32(const uint8_t *data) {
+    return ((uint32_t)data[3]) | ((uint32_t)data[2] << 8) | ((uint32_t)data[1] << 16) |
+             ((uint32_t)data[0] << 24);
+}
+
+static inline uint64_t getUint64(const uint8_t *data) {
+    return ((uint64_t)data[7]) | ((uint64_t)data[6] << 8) | ((uint64_t)data[5] << 16) |
+             ((uint64_t)data[4] << 24) | ((uint64_t)data[3] << 32) | ((uint64_t)data[2] << 40) |
+             ((uint64_t)data[1] << 48) | ((uint64_t)data[0] << 56);
+}
+
 uint8_t readNetworkIdFromBip32path(const uint32_t bip32Path[]);
 uint8_t *reverseBytes(const uint8_t *sourceArray, uint16_t len);
-void uint2Ascii(const uint8_t *inBytes, uint8_t len, char *out);
-int print_amount(uint64_t amount, uint8_t divisibility, const char *asset, char *out);
 
-uint16_t getUint16(const uint8_t *data);
-uint32_t getUint32(const uint8_t *data);
-uint64_t getUint64(const uint8_t *data);
 void to_nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo, uint8_t *outNemPublicKey, char *outNemAddress);
 void public_key_to_address(uint8_t inNetworkId, const uint8_t *outNemPublicKey, char *outNemAddress);
 
@@ -95,66 +91,3 @@ unsigned int get_apdu_buffer_length();
 
 /** Clean the buffer of tx. */
 void clean_raw_tx(unsigned char *raw_tx);
-
-int compare_strings(const char str1[], const char str2[]);
-
-int string_length(const char str[]);
-
-/** Convert 1 hex number to 2 characters */
-char hex2Ascii(uint8_t input);
-
-int parse_transfer_tx (const uint8_t *raw_tx,
-    unsigned int* ux_step_count, 
-    char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
-    char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
-    char fullAddress[NEM_ADDRESS_LENGTH],
-    bool isMultisig
-);
-
-int parse_mosaic_definition_tx (const uint8_t *raw_tx,
-    unsigned int* ux_step_count, 
-    char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
-    char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
-    char fullAddress[NEM_ADDRESS_LENGTH],
-    bool isMultisig
-);
-
-int parse_mosaic_supply_change_tx (const uint8_t *raw_tx,
-    unsigned int* ux_step_count, 
-    char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
-    char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
-    char fullAddress[NEM_ADDRESS_LENGTH],
-    bool isMultisig
-);
-
-int parse_provision_namespace_tx (const uint8_t *raw_tx,
-    unsigned int* ux_step_count, 
-    char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
-    char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
-    char fullAddress[NEM_ADDRESS_LENGTH],
-    bool isMultisig
-);
-
-int parse_aggregate_modification_tx (const uint8_t *raw_tx,
-    unsigned int* ux_step_count,
-    char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
-    char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
-    char fullAddress[NEM_ADDRESS_LENGTH],
-    bool isMultisig,
-    uint8_t networkId
-);
-
-int parse_multisig_tx (const uint8_t *raw_tx,
-    unsigned int* ux_step_count, 
-    char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
-    char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
-    char fullAddress[NEM_ADDRESS_LENGTH],
-    uint8_t networkId
-);
-
-int parse_multisig_signature_tx (const uint8_t *raw_tx,
-    unsigned int* ux_step_count,
-    char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
-    char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH],
-    char fullAddress[NEM_ADDRESS_LENGTH]
-);

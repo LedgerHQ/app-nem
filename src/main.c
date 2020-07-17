@@ -20,6 +20,7 @@
 #include "os_io_seproxyhal.h"
 #include "base32.h"
 #include "nemHelpers.h"
+#include "nem_tx.h"
 #include "glyphs.h"
 
 #include <stdbool.h>

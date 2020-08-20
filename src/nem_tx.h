@@ -18,7 +18,6 @@ static const uint16_t NEMV1_MULTISIG_SIGNATURE = 0x1002;
 static const uint16_t NEMV1_MULTISIG_TRANSACTION = 0x1004;
 static const uint16_t NEMV1_PROVISION_NAMESPACE = 0x2001;
 static const uint16_t NEMV1_MOSAIC_DEFINITION = 0x4001;
-static const uint16_t NEMV1_MOSAIC_SUPPLY_CHANGE = 0x4002;
 static const uint16_t NEMV1_MOSAIC_SUPPLY = 0x4002;
 
 int parse_transfer_tx (const uint8_t *raw_tx,
@@ -39,7 +38,7 @@ int parse_mosaic_definition_tx (const uint8_t *raw_tx,
     bool isMultisig
 );
 
-int parse_mosaic_supply_change_tx (const uint8_t *raw_tx,
+int parse_mosaic_supply_tx (const uint8_t *raw_tx,
     size_t tx_len,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],

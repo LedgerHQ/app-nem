@@ -385,7 +385,7 @@ int parse_mosaic_definition_tx (const uint8_t *raw_tx,
     return 0;
 }
 
-int parse_mosaic_supply_change_tx (const uint8_t *raw_tx,
+int parse_mosaic_supply_tx (const uint8_t *raw_tx,
     size_t tx_len,
     unsigned int* ux_step_count, 
     char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH],
@@ -654,8 +654,8 @@ int parse_multisig_tx (const uint8_t *raw_tx,
                 true
             );
             break;
-        case NEMV1_MOSAIC_SUPPLY_CHANGE:
-            ret = parse_mosaic_supply_change_tx (raw_tx,
+        case NEMV1_MOSAIC_SUPPLY:
+            ret = parse_mosaic_supply_tx (raw_tx,
                 tx_len,
                 ux_step_count, 
                 detailName,

@@ -718,10 +718,10 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
                 false
             );
             break; 
-        case NEMV1_MOSAIC_SUPPLY_CHANGE:
+        case NEMV1_MOSAIC_SUPPLY:
             disIndex = 21;
             SPRINTF(txTypeName, "%s", "Mosaic Supply");
-            err = parse_mosaic_supply_change_tx (raw_tx + disIndex,
+            err = parse_mosaic_supply_tx (raw_tx + disIndex,
                 tmpCtx.transactionContext.rawTxLength,
                 &ux_step_count, 
                 detailName,

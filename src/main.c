@@ -26,10 +26,12 @@
 #include <stdbool.h>
 #include <string.h>
 
-bagl_element_t tmp_element;
+ux_state_t G_ux;
+bolos_ux_params_t G_ux_params;
+
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
-uint32_t set_result_get_publicKey(void);
+uint8_t set_result_get_publicKey(void);
 
 #define CLA 0xE0
 #define INS_GET_PUBLIC_KEY 0x02
@@ -42,8 +44,6 @@ uint32_t set_result_get_publicKey(void);
 #define P1_FIRST 0x00
 #define P1_MORE 0x80
 #define P1_LAST 0x90
-#define P2_SECP256K1 0x40
-#define P2_ED25519 0x80
 
 #define OFFSET_CLA 0
 #define OFFSET_INS 1
@@ -95,307 +95,139 @@ union {
 txContent_t txContent;
 
 
-volatile uint8_t fidoTransport;
-volatile int maxInterval;
 static char txTypeName[30];
-static char fullAddress[40];
+static char fullAddress[40 + 1];
 
 //Registers save information to show on the top line of screen
 static char detailName[MAX_PRINT_DETAIL_NAME_SCREEN][MAX_PRINT_DETAIL_NAME_LENGTH];
 //Registers save information to show on the bottom line of screen
 static char extraInfo[MAX_PRINT_EXTRA_INFO_SCREEN][MAX_PRINT_EXTRA_INFOR_LENGTH];
 
-bagl_element_t tmp_element;
-
-unsigned int io_seproxyhal_touch_settings(const bagl_element_t *e);
-unsigned int io_seproxyhal_touch_exit(const bagl_element_t *e);
-unsigned int io_seproxyhal_touch_tx_ok(const bagl_element_t *e);
-unsigned int io_seproxyhal_touch_tx_cancel(const bagl_element_t *e);
-unsigned int io_seproxyhal_touch_address_ok(const bagl_element_t *e);
-unsigned int io_seproxyhal_touch_address_cancel(const bagl_element_t *e);
 void ui_idle(void);
-ux_state_t ux;
-// display stepped screens
-unsigned int ux_step;
-unsigned int ux_step_count;
 
-typedef struct internalStorage_t {
-    uint8_t initialized;
-} internalStorage_t;
-
-WIDE internalStorage_t N_storage_real;
-#define N_storage (*(WIDE internalStorage_t *)PIC(&N_storage_real))
-
-
-const bagl_element_t *ui_menu_item_out_over(const bagl_element_t *e) {
-    // the selection rectangle is after the none|touchable
-    e = (const bagl_element_t *)(((unsigned int)e) + sizeof(bagl_element_t));
-    return e;
-}
-
-#define BAGL_FONT_OPEN_SANS_LIGHT_16_22PX_AVG_WIDTH 10
-#define BAGL_FONT_OPEN_SANS_REGULAR_10_13PX_AVG_WIDTH 8
-#define MAX_CHAR_PER_LINE 25
-
-#define COLOR_BG_1 0xF9F9F9
-#define COLOR_APP 0x27a2db
-#define COLOR_APP_LIGHT 0x93d1ed
-
-#if defined(TARGET_NANOS)
-
-const ux_menu_entry_t menu_main[];
-
-const ux_menu_entry_t menu_about[] = {
-    {NULL, NULL, 0, NULL, "Version", APPVERSION, 0, 0},
-    {NULL, NULL, 0, NULL, "Author", "FDS", 0, 0},
-    {NULL, NULL, 0, NULL, "Co-Author", "009", 0, 0},
-    {menu_main, NULL, 1, &C_icon_back, "Back", NULL, 61, 40},
-    UX_MENU_END};
-
-void os_exit(unsigned int id) {
-    os_sched_exit(0);
-}
-
-const ux_menu_entry_t menu_main[] = {
-    {NULL, NULL, 0, &C_icon_NEM, "Welcome to", "  NEM wallet", 33, 12},
-    {menu_about, NULL, 0, NULL, "About", NULL, 0, 0},
-    {NULL, os_exit, 0, &C_icon_dashboard, "Quit app", NULL, 50, 29},
-    UX_MENU_END};
-
-#endif // #if TARGET_NANOS
-
-#if defined(TARGET_NANOS)
-const bagl_element_t ui_address_nanos[] = {
-    // type                               userid    x    y   w    h  str rad
-    // fill      fg        bg      fid iid  txt   touchparams...       ]
-    {{BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF,
-      0, 0},
-     NULL},
-
-    {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-      BAGL_GLYPH_ICON_CROSS},
-     NULL},
-    {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-      BAGL_GLYPH_ICON_CHECK},
-     NULL},
-
-    //{{BAGL_ICON                           , 0x01,  31,   9,  14,  14, 0, 0, 0
-    //, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_EYE_BADGE  }, NULL, 0, 0, 0,
-    //NULL, NULL, NULL },
-    {{BAGL_LABELINE, 0x01, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-      BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "Export"},
-    {{BAGL_LABELINE, 0x01, 0, 26, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-      BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "NEM account"},
-
-    {{BAGL_LABELINE, 0x02, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-      BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "Address"},
-    {{BAGL_LABELINE, 0x02, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
-      BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)fullAddress},
-};
-
-unsigned int ui_address_prepro(const bagl_element_t *element) {
-    if (element->component.userid > 0) {
-        unsigned int display = (ux_step == element->component.userid - 1);
-        if (display) {
-            switch (element->component.userid) {
-            case 1:
-                UX_CALLBACK_SET_INTERVAL(2000);
-                break;
-            case 2:                
-                //back home
-                //UX_CALLBACK_SET_INTERVAL(MAX(
-                //    3000, 1000 + bagl_label_roundtrip_duration_ms(element, 7)));     
-                if(maxInterval == 0){
-                    G_io_apdu_buffer[0] = 0x69; //0x9000 timeout
-                    G_io_apdu_buffer[1] = 0x85;
-                    // Send back the response, do not restart the event loop
-                    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, 2);
-                    ui_idle();
-
-                }else{
-                    maxInterval--;
-                    UX_CALLBACK_SET_INTERVAL(MAX(
-                        3000, 1000 + bagl_label_roundtrip_duration_ms(element, 7)));                    
-                }
-                break;
-            }
-        }
-        return display;
-    }
-    return 1;
-}
-
-unsigned int ui_address_nanos_button(unsigned int button_mask,
-                                     unsigned int button_mask_counter);
-#endif // #if defined(TARGET_NANOS)
-
-#if defined(TARGET_NANOS)
-const char * const ui_approval_details[][2] = {
-    {detailName[0], fullAddress},
-    {detailName[1], extraInfo[0]},
-    {detailName[2], extraInfo[1]},
-    {detailName[3], extraInfo[2]},
-    {detailName[4], extraInfo[3]},
-    {detailName[5], extraInfo[4]},
-    {detailName[6], extraInfo[5]},
-    {detailName[7], extraInfo[6]},
-    {detailName[8], extraInfo[7]},
-    {detailName[9], extraInfo[8]},
-    {detailName[10], extraInfo[9]},
-};
-
-const bagl_element_t ui_approval_nanos[] = {
-    // type                               userid    x    y   w    h  str rad
-    // fill      fg        bg      fid iid  txt   touchparams...       ]
-    {{BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF,
-      0, 0},
-     NULL},
-
-    {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-      BAGL_GLYPH_ICON_CROSS},
-     NULL},
-    {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
-      BAGL_GLYPH_ICON_CHECK},
-     NULL},
-
-    //{{BAGL_ICON                           , 0x01,  21,   9,  14,  14, 0, 0, 0
-    //, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_TRANSACTION_BADGE  }, NULL, 0, 0,
-    //0, NULL, NULL, NULL },
-    {{BAGL_LABELINE, 0x01, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-      BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "Confirm"},
-    {{BAGL_LABELINE, 0x01, 0, 26, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-      BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     (char *)txTypeName}, //"transaction",
-
-    {{BAGL_LABELINE, 0x02, 0, 12, 128, 32, 0, 0, 0, 0xFFFFFF, 0x000000,
-      BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     NULL}, //"Amount",
-    {{BAGL_LABELINE, 0x12, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
-      BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     NULL}, //(char *)fullAmount,
-};
-
-/*
- ux_step 0: confirm
-*//*
-unsigned int ui_approval_prepro(const bagl_element_t *element) {
-    unsigned int display = 1;
-    return display;
-}*/
-
-unsigned int ui_approval_prepro(const bagl_element_t *element) {
-    unsigned int display = 1;
-    if (element->component.userid > 0) {
-        // display the meta element when at least bigger
-        display = (ux_step == element->component.userid - 1) || (element->component.userid >= 0x02 && ux_step >= 1);
-        if (display) {
-            switch (element->component.userid) {
-            case 0x01:                           
-                UX_CALLBACK_SET_INTERVAL(2000);                
-                break;
-            case 0x02:
-            case 0x12:
-                memmove(&tmp_element, element, sizeof(bagl_element_t));
-                display = ux_step - 1;
-                switch(display) {
-                    case 0:
-                    display_detail:
-                        tmp_element.text = ui_approval_details[display][(element->component.userid)>>4];
-                        break;
-                    case 1: 
-                    case 2: 
-                    case 3: 
-                    case 4: 
-                    case 5: 
-                    case 6:                     
-                    case 7:                     
-                    case 8:                     
-                    case 9:                   
-                    case 10:                     
-                    case 11:                     
-                        if (display == (ux_step_count - 1)) {
-                            maxInterval--;//back home 
-                        }                     
-                        goto display_detail;
-                }                                    
-                UX_CALLBACK_SET_INTERVAL(MAX(
-                    3000, 1000 + bagl_label_roundtrip_duration_ms(&tmp_element, 7)));
-                return &tmp_element;
-            }
-        }      
-    }
-    if(maxInterval < 0) { //back home     
-        G_io_apdu_buffer[0] = 0x69; //0x9000 timeout
-        G_io_apdu_buffer[1] = 0x85;
-        // Send back the response, do not restart the event loop
-        io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, 2);
-        ui_idle();        
-    }
-    return display;
-}
-
-unsigned int ui_approval_nanos_button(unsigned int button_mask,
-                                      unsigned int button_mask_counter);
-
-#endif // #if defined(TARGET_NANOS)
-
-void ui_idle(void) {
-#if defined(TARGET_NANOS)
-    UX_MENU_DISPLAY(0, menu_main, NULL);
-#endif // #if TARGET_ID
-}
-
-unsigned int io_seproxyhal_touch_exit(const bagl_element_t *e) {
-    // Go back to the dashboard
-    os_sched_exit(0);
-    return 0; // do not redraw the widget
-}
-
-unsigned int io_seproxyhal_touch_address_ok(const bagl_element_t *e) {
-    uint32_t tx = set_result_get_publicKey();
-    G_io_apdu_buffer[tx++] = 0x90;
-    G_io_apdu_buffer[tx++] = 0x00;
+void sendResponse(uint8_t tx, bool approve) {
+    G_io_apdu_buffer[tx++] = approve? 0x90 : 0x69;
+    G_io_apdu_buffer[tx++] = approve? 0x00 : 0x85;
     // Send back the response, do not restart the event loop
+
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
     // Display back the original UX
     ui_idle();
-    return 0; // do not redraw the widget
 }
 
-unsigned int io_seproxyhal_touch_address_cancel(const bagl_element_t *e) {
-    G_io_apdu_buffer[0] = 0x69;
-    G_io_apdu_buffer[1] = 0x85;
-    // Send back the response, do not restart the event loop
-    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, 2);
-    // Display back the original UX
-    ui_idle();
-    return 0; // do not redraw the widget
+uint8_t set_result_get_publicKey() {
+    uint32_t tx = 0;
+    uint32_t addressLength = sizeof(tmpCtx.publicKeyContext.address);
+
+    //address
+    G_io_apdu_buffer[tx++] = addressLength;
+    memmove(G_io_apdu_buffer + tx, tmpCtx.publicKeyContext.address, addressLength);
+    tx += addressLength;
+
+    //publicKey
+    G_io_apdu_buffer[tx++] = 32;
+    memmove(G_io_apdu_buffer + tx, tmpCtx.publicKeyContext.nemPublicKey, 32);
+    tx += 32;
+
+    return tx;
 }
 
-#if defined(TARGET_NANOS)
-unsigned int ui_address_nanos_button(unsigned int button_mask,
-                                     unsigned int button_mask_counter) {
-    switch (button_mask) {
-    case BUTTON_EVT_RELEASED | BUTTON_LEFT: // CANCEL
-        io_seproxyhal_touch_address_cancel(NULL);
-        break;
+UX_STEP_NOCB(
+    ux_display_public_flow_1_step,
+    bb,
+    {
+        .line1 = "Export",
+        .line2 = "NEM Account"
+    });
 
-    case BUTTON_EVT_RELEASED | BUTTON_RIGHT: { // OK
-        io_seproxyhal_touch_address_ok(NULL);
-        break;
+UX_STEP_NOCB(
+    ux_display_public_flow_5_step,
+    bnnn_paging,
+    {
+        .title = "Address",
+        .text = fullAddress,
+    });
+
+UX_STEP_VALID(
+    ux_display_public_flow_6_step,
+    pb,
+    sendResponse(set_result_get_publicKey(), true),
+    {
+        &C_icon_validate_14,
+        "Approve",
+    });
+UX_STEP_VALID(
+    ux_display_public_flow_7_step,
+    pb,
+    sendResponse(0, false),
+    {
+        &C_icon_crossmark,
+        "Reject",
+    });
+
+UX_FLOW(ux_display_public_flow,
+    &ux_display_public_flow_1_step,
+    &ux_display_public_flow_5_step,
+    &ux_display_public_flow_6_step,
+    &ux_display_public_flow_7_step
+);
+
+ux_state_t ux;
+unsigned int ux_step_count;
+
+UX_STEP_NOCB(
+    ux_idle_flow_1_step,
+    pnn,
+    {
+        &C_icon_NEM,
+        "Welcome to",
+        "NEM wallet",
+    });
+UX_STEP_NOCB(
+    ux_idle_flow_2_step,
+    bn,
+    {
+        "Version",
+        APPVERSION,
+    });
+UX_STEP_VALID(
+    ux_idle_flow_3_step,
+    pb,
+    os_sched_exit(0),
+    {
+        &C_icon_dashboard,
+        "Quit app",
+    });
+UX_FLOW(ux_idle_flow,
+    &ux_idle_flow_1_step,
+    &ux_idle_flow_2_step,
+    &ux_idle_flow_3_step,
+    FLOW_END_STEP
+);
+
+// Display transaction summary
+#define TITLE_SIZE 32
+#define TEXT_BUFFER_LENGTH 64
+
+char G_transaction_summary_title[TITLE_SIZE];
+char G_transaction_summary_text[TEXT_BUFFER_LENGTH];
+
+int transaction_summary_display_item(size_t item_index) {
+    if (item_index == 0) {
+        os_sched_exit(-1);
     }
+
+    if (item_index == 1) {
+        strcpy(G_transaction_summary_title, detailName[0]);
+        strcpy(G_transaction_summary_text, fullAddress);
+    } else {
+        strcpy(G_transaction_summary_title, detailName[item_index - 1]);
+        strcpy(G_transaction_summary_text, extraInfo[item_index - 2]);
     }
     return 0;
 }
-#endif // #if defined(TARGET_NANOS)
 
-unsigned int io_seproxyhal_touch_tx_ok(const bagl_element_t *e) {
-
+static uint8_t set_result_sign_message() {
     uint8_t privateKeyData[32];
     cx_ecfp_private_key_t privateKey;
     cx_ecfp_public_key_t publicKey;
@@ -437,44 +269,75 @@ unsigned int io_seproxyhal_touch_tx_ok(const bagl_element_t *e) {
     memset(&privateKey, 0, sizeof(privateKey));
     memset(privateKeyData, 0, sizeof(privateKeyData));
 
-    G_io_apdu_buffer[tx++] = 0x90;
-    G_io_apdu_buffer[tx++] = 0x00;
-    
-    // Send back the response, do not restart the event loop
-    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-    // Display back the original UX
-    ui_idle();
-    return 0; // do not redraw the widget
+  G_io_apdu_buffer[tx++] = 0x90;
+  G_io_apdu_buffer[tx++] = 0x00;
+  tx = 64;
+  return tx;
 }
 
-unsigned int io_seproxyhal_touch_tx_cancel(const bagl_element_t *e) {
-    G_io_apdu_buffer[0] = 0x69;
-    G_io_apdu_buffer[1] = 0x85;
-    // Send back the response, do not restart the event loop
-    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, 2);
-    // Display back the original UX
-    ui_idle();
-    return 0; // do not redraw the widget
-}
+#define MAX_FLOW_STEPS 10
+ux_flow_step_t const * flow_steps[MAX_FLOW_STEPS];
 
-#if defined(TARGET_NANOS)
-
-unsigned int ui_approval_nanos_button(unsigned int button_mask,
-                                      unsigned int button_mask_counter) {
-    switch (button_mask) {
-    case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-        io_seproxyhal_touch_tx_cancel(NULL);
-        break;
-
-    case BUTTON_EVT_RELEASED | BUTTON_RIGHT: {
-        io_seproxyhal_touch_tx_ok(NULL);
-        break;
+UX_STEP_NOCB(
+    ux_summary_step,
+    bb,
+    {
+        .line1 = "Confirm",
+        .line2 = txTypeName,
     }
+);
+UX_STEP_NOCB_INIT(
+    ux_details_step,
+    bn_paging,
+    {
+        size_t step_index = G_ux.flow_stack[stack_slot].index;
+        if (transaction_summary_display_item(step_index)) {
+            THROW(0x6984);
+        }
+    },
+    {
+        .title = G_transaction_summary_title,
+        .text = G_transaction_summary_text,
     }
-    return 0;
-}
+);
+UX_STEP_VALID(
+    ux_approve_step,
+    pb,
+    sendResponse(set_result_sign_message(), true),
+    {
+        &C_icon_validate_14,
+        "Approve",
+    });
+UX_STEP_VALID(
+    ux_reject_step,
+    pb,
+    sendResponse(0, false),
+    {
+        &C_icon_crossmark,
+        "Reject",
+    });
 
-#endif // #if defined(TARGET_NANOS)
+const char * const ui_approval_details[][2] = {
+    {detailName[0], fullAddress},
+    {detailName[1], extraInfo[0]},
+    {detailName[2], extraInfo[1]},
+    {detailName[3], extraInfo[2]},
+    {detailName[4], extraInfo[3]},
+    {detailName[5], extraInfo[4]},
+    {detailName[6], extraInfo[5]},
+    {detailName[7], extraInfo[6]},
+    {detailName[8], extraInfo[7]},
+    {detailName[9], extraInfo[8]},
+    {detailName[10], extraInfo[9]},
+};
+
+void ui_idle(void) {
+  // reserve a display stack slot if none yet
+  if(G_ux.stack_count == 0) {
+    ux_stack_push();
+  }
+  ux_flow_init(0, ux_idle_flow, NULL);
+}
 
 unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
     switch (channel & ~(IO_FLAGS)) {
@@ -500,23 +363,6 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
         THROW(INVALID_PARAMETER);
     }
     return 0;
-}
-
-uint32_t set_result_get_publicKey() {
-    uint32_t tx = 0;
-    uint32_t addressLength = sizeof(tmpCtx.publicKeyContext.address);
-
-    //address
-    G_io_apdu_buffer[tx++] = addressLength;
-    memmove(G_io_apdu_buffer + tx, tmpCtx.publicKeyContext.address, addressLength);
-    tx += addressLength;
-
-    //publicKey
-    G_io_apdu_buffer[tx++] = 32;
-    memmove(G_io_apdu_buffer + tx, tmpCtx.publicKeyContext.nemPublicKey, 32);
-    tx += 32;
-
-    return tx;
 }
 
 void handleGetPublicKey(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
@@ -592,19 +438,8 @@ void handleGetPublicKey(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
     memmove((void *)fullAddress, tmpCtx.publicKeyContext.address, 40);
 
     // prepare for a UI based reply//
-#if defined(TARGET_NANOS)
-#if 0        
-    snprintf(fullAddress, sizeof(fullAddress), " 0x%.*s ", 40,
-             tmpCtx.publicKeyContext.address);
-#endif                 
-    ux_step = 0;
-    ux_step_count = 2;
-    maxInterval = MAX_UX_CALLBACK_INTERVAL + 1 + 1;
-    UX_DISPLAY(ui_address_nanos, ui_address_prepro);
-#endif // #if TARGET
-
+    ux_flow_init(0, ux_display_public_flow, NULL);
     *flags |= IO_ASYNCH_REPLY;
-    //end: Go show address on ledger
 }
 
 
@@ -738,18 +573,17 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
         THROW(0x6700);
     }
 
-#if defined(TARGET_NANOS)
-    ux_step = 0;
-    // "confirm", amount, address, msgPayload, [txtype], fees
-    //ux_step_count = 5;
-    /*
-    if (txContent.txtype) {
-        ux_step_count++;
-    }*/
-    maxInterval = MAX_UX_CALLBACK_INTERVAL + 1;
-    UX_DISPLAY(ui_approval_nanos, ui_approval_prepro);
-#endif // #if TARGET
+    size_t num_flow_steps = 0;
+    flow_steps[num_flow_steps++] = &ux_summary_step;
+    for (size_t i = 0; i < ux_step_count - 1; i++) {
+        flow_steps[num_flow_steps++] = &ux_details_step;
+    }
 
+    flow_steps[num_flow_steps++] = &ux_approve_step;
+    flow_steps[num_flow_steps++] = &ux_reject_step;
+    flow_steps[num_flow_steps++] = FLOW_END_STEP;
+
+    ux_flow_init(0, flow_steps, NULL);
     *flags |= IO_ASYNCH_REPLY;
 }
 
@@ -940,22 +774,7 @@ unsigned char io_event(unsigned char channel) {
         break;
 
     case SEPROXYHAL_TAG_TICKER_EVENT:
-        UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {
-            if (UX_ALLOWED) {
-#if 0
-                if (skipWarning && (ux_step == 0)) {
-                    ux_step++;
-                }
-#endif
-
-                if (ux_step_count) {
-                    // prepare next screen
-                    ux_step = (ux_step + 1) % ux_step_count;
-                    // redisplay screen
-                    UX_REDISPLAY();
-                }
-            }
-        });
+        UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {});
         break;
     }
 

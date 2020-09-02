@@ -66,6 +66,8 @@ DEFINES   += U2F_PROXY_MAGIC=\"NEM\"
 WEBUSB_URL     	= www.ledgerwallet.com
 DEFINES       	+= HAVE_WEBUSB WEBUSB_URL_SIZE_B=$(shell echo -n $(WEBUSB_URL) | wc -c) WEBUSB_URL=$(shell echo -n $(WEBUSB_URL) | sed -e "s/./\\\'\0\\\',/g")
 
+DEFINES   += HAVE_UX_FLOW
+
 ##############
 #  Compiler  #
 ##############
@@ -87,7 +89,7 @@ include $(BOLOS_SDK)/Makefile.glyphs
 
 ### computed variables
 APP_SOURCE_PATH  += src  
-SDK_SOURCE_PATH  += lib_stusb lib_stusb_impl lib_u2f
+SDK_SOURCE_PATH  += lib_stusb lib_stusb_impl lib_u2f lib_ux
 
 
 load: all

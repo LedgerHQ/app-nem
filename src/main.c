@@ -17,6 +17,7 @@
 
 #include "os.h"
 #include "cx.h"
+#include "ux.h"
 #include "os_io_seproxyhal.h"
 #include "base32.h"
 #include "nemHelpers.h"
@@ -66,7 +67,6 @@ unsigned int raw_tx_len;
 
 typedef struct txContent_t {
     uint16_t txType;
-    char mosaicName[16];
 } txContent_t;
 
 typedef struct publicKeyContext_t {
@@ -75,16 +75,13 @@ typedef struct publicKeyContext_t {
     uint8_t algo;    
     uint8_t nemPublicKey[32];
     char address[40];
-    uint8_t pathLength;
-    uint32_t bip32Path[MAX_BIP32_PATH];
 } publicKeyContext_t;
 
 typedef struct transactionContext_t {  
     uint8_t pathLength;
     uint8_t networkId;
     uint8_t algo;
-    uint8_t nemPublicKey[32];
-    uint32_t bip32Path[MAX_BIP32_PATH];    
+    uint32_t bip32Path[MAX_BIP32_PATH];
     uint32_t rawTxLength;
 } transactionContext_t;
 
@@ -172,7 +169,6 @@ UX_FLOW(ux_display_public_flow,
     &ux_display_public_flow_7_step
 );
 
-ux_state_t ux;
 unsigned int ux_step_count;
 
 UX_STEP_NOCB(
@@ -316,20 +312,6 @@ UX_STEP_VALID(
         &C_icon_crossmark,
         "Reject",
     });
-
-const char * const ui_approval_details[][2] = {
-    {detailName[0], fullAddress},
-    {detailName[1], extraInfo[0]},
-    {detailName[2], extraInfo[1]},
-    {detailName[3], extraInfo[2]},
-    {detailName[4], extraInfo[3]},
-    {detailName[5], extraInfo[4]},
-    {detailName[6], extraInfo[5]},
-    {detailName[7], extraInfo[6]},
-    {detailName[8], extraInfo[7]},
-    {detailName[9], extraInfo[8]},
-    {detailName[10], extraInfo[9]},
-};
 
 void ui_idle(void) {
   // reserve a display stack slot if none yet

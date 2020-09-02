@@ -39,9 +39,6 @@ uint8_t set_result_get_publicKey(void);
 #define INS_SIGN 0x04
 #define INS_GET_APP_CONFIGURATION 0x06
 #define P1_CONFIRM 0x01
-#define P1_NON_CONFIRM 0x00
-#define P2_NO_CHAINCODE 0x00
-#define P2_CHAINCODE 0x01
 #define P1_FIRST 0x00
 #define P1_MORE 0x80
 #define P1_LAST 0x90
@@ -348,31 +345,24 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
 }
 
 void handleGetPublicKey(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
-                        uint16_t dataLength, volatile unsigned int *flags,
-                        volatile unsigned int *tx) {
+                        uint16_t dataLength, unsigned int *flags,
+                        size_t *tx) {
     UNUSED(dataLength);
     uint8_t privateKeyData[32];
     uint32_t bip32Path[MAX_BIP32_PATH];
     uint32_t i;
     uint8_t bip32PathLength = *(dataBuffer++);
     cx_ecfp_private_key_t privateKey;
-    uint8_t p2Chain = p2 & 0x3F;
 
-    //set default need confirm
-    p1 = P1_CONFIRM;
-
-    //bip32PathLength shold be 5
+    // bip32PathLength should be 5
     if (bip32PathLength != MAX_BIP32_PATH) {
         THROW(0x6a80);
     }
 
-    if ((p1 != P1_CONFIRM) && (p1 != P1_NON_CONFIRM)) {
+    if (p1 != P1_CONFIRM) {
         THROW(0x6B00);
     }
-    if ((p2Chain != P2_CHAINCODE) && (p2Chain != P2_NO_CHAINCODE)) {
-        THROW(0x6B00);
-    }
-   
+
     for (i = 0; i < bip32PathLength; i++) {
         bip32Path[i] = (dataBuffer[0] << 24) | (dataBuffer[1] << 16) |
                        (dataBuffer[2] << 8) | (dataBuffer[3]);
@@ -386,7 +376,6 @@ void handleGetPublicKey(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
         tmpCtx.publicKeyContext.algo = CX_SHA3;
     }
     
-    //tmpCtx.publicKeyContext.getChaincode = (p2Chain == P2_CHAINCODE);   
     os_perso_derive_node_bip32(CX_CURVE_256K1, bip32Path, bip32PathLength, privateKeyData, NULL);
 
     if (tmpCtx.publicKeyContext.algo == CX_SHA3) {
@@ -425,20 +414,20 @@ void handleGetPublicKey(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
 }
 
 
-void display_tx(uint8_t *raw_tx, uint16_t dataLength, 
+void display_tx(uint8_t *tx_data, uint16_t dataLength,
                 volatile unsigned int *flags, volatile unsigned int *tx ) {
     UNUSED(tx);
     uint32_t i;
 
-    tmpCtx.transactionContext.pathLength = raw_tx[0];
+    tmpCtx.transactionContext.pathLength = tx_data[0];
     if (tmpCtx.transactionContext.pathLength != MAX_BIP32_PATH) {
         THROW(0x6a80);
     }
 
     for (i = 0; i < tmpCtx.transactionContext.pathLength; i++) {
         tmpCtx.transactionContext.bip32Path[i] =
-            (raw_tx[1 + i*4] << 24) | (raw_tx[2 + i*4] << 16) |
-            (raw_tx[3 + i*4] << 8) | (raw_tx[4 + i*4]);
+            (tx_data[1 + i*4] << 24) | (tx_data[2 + i*4] << 16) |
+            (tx_data[3 + i*4] << 8) | (tx_data[4 + i*4]);
     }
 
     tmpCtx.transactionContext.networkId = readNetworkIdFromBip32path(tmpCtx.transactionContext.bip32Path);
@@ -453,10 +442,10 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
     
     //NEM_MAINNET || NEM_TESTNET
     //txType
-    uint32_t txType = get_uint32_le(&raw_tx[21]);
+    uint32_t txType = get_uint32_le(&tx_data[21]);
     txContent.txType = (uint16_t)txType;
 
-    // uint32_t txVersion = get_uint32_le(&raw_tx[21+4]);
+    // uint32_t txVersion = get_uint32_le(&tx_data[21+4]);
 
     //Distance index: use for calculating the inner index of multisig tx
     uint8_t disIndex; 
@@ -466,7 +455,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
         case NEMV1_TRANSFER: //Transfer 
             disIndex = 21; 
             SPRINTF(txTypeName, "%s", "Transfer TX");
-            err = parse_transfer_tx (raw_tx + disIndex,
+            err = parse_transfer_tx (tx_data + disIndex,
                 tmpCtx.transactionContext.rawTxLength,
                 &ux_step_count, 
                 detailName,
@@ -478,7 +467,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
         case NEMV1_MULTISIG_MODIFICATION:
             disIndex = 21;
             SPRINTF(txTypeName, "%s", "Convert to Multisig");
-            err = parse_aggregate_modification_tx (raw_tx + disIndex,
+            err = parse_aggregate_modification_tx (tx_data + disIndex,
                 tmpCtx.transactionContext.rawTxLength,
                 &ux_step_count, 
                 detailName,
@@ -491,7 +480,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
         case NEMV1_MULTISIG_SIGNATURE:
             SPRINTF(txTypeName, "%s", "Mulisig signature");
             disIndex = 21;
-            err = parse_multisig_signature_tx (raw_tx + disIndex,
+            err = parse_multisig_signature_tx (tx_data + disIndex,
                 tmpCtx.transactionContext.rawTxLength,
                 &ux_step_count, 
                 detailName,
@@ -502,7 +491,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
         case NEMV1_MULTISIG_TRANSACTION:
             SPRINTF(txTypeName, "%s", "Mulisig TX");
             disIndex = 21+4+4+4+4+32+8+4+4;
-            err = parse_multisig_tx (raw_tx + disIndex,
+            err = parse_multisig_tx (tx_data + disIndex,
                 tmpCtx.transactionContext.rawTxLength - (4+4+4+4+32+8+4+4),
                 &ux_step_count, 
                 detailName,
@@ -514,7 +503,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
         case NEMV1_PROVISION_NAMESPACE:
             disIndex = 21;
             SPRINTF(txTypeName, "%s", "Namespace TX");
-            err = parse_provision_namespace_tx (raw_tx + disIndex,
+            err = parse_provision_namespace_tx (tx_data + disIndex,
                 tmpCtx.transactionContext.rawTxLength,
                 &ux_step_count, 
                 detailName,
@@ -526,7 +515,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
         case NEMV1_MOSAIC_DEFINITION:
             disIndex = 21;
             SPRINTF(txTypeName, "%s", "Create Mosaic");
-            err = parse_mosaic_definition_tx (raw_tx + disIndex,
+            err = parse_mosaic_definition_tx (tx_data + disIndex,
                 tmpCtx.transactionContext.rawTxLength,
                 &ux_step_count, 
                 detailName,
@@ -538,7 +527,7 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
         case NEMV1_MOSAIC_SUPPLY:
             disIndex = 21;
             SPRINTF(txTypeName, "%s", "Mosaic Supply");
-            err = parse_mosaic_supply_tx (raw_tx + disIndex,
+            err = parse_mosaic_supply_tx (tx_data + disIndex,
                 tmpCtx.transactionContext.rawTxLength,
                 &ux_step_count, 
                 detailName,
@@ -569,11 +558,18 @@ void display_tx(uint8_t *raw_tx, uint16_t dataLength,
     *flags |= IO_ASYNCH_REPLY;
 }
 
-void handleSign(volatile unsigned int *flags, volatile unsigned int *tx) {
+void handleGetAppConfiguration(uint8_t p1,
+                               uint8_t p2,
+                               const uint8_t *data,
+                               size_t length,
+                               unsigned int *flags,
+                               size_t *tx);
+
+void handleSign(uint8_t p1, uint8_t p2, const uint8_t *data, size_t length, unsigned int *flags, size_t *tx) {
     // check the third byte (0x02) for the instruction subtype.
-    if ((G_io_apdu_buffer[OFFSET_P1] == P1_FIRST) || (G_io_apdu_buffer[OFFSET_P1] == P1_LAST)) {
-        clean_raw_tx(raw_tx);
-        hashTainted = 1;
+    if (p1 == P1_FIRST || p1 == P1_LAST) {
+      clean_raw_tx(raw_tx);
+      hashTainted = 1;
     }
 
     // if this is the first transaction part, reset the hash and all the other temporary variables.
@@ -585,21 +581,16 @@ void handleSign(volatile unsigned int *flags, volatile unsigned int *tx) {
 
     // move the contents of the buffer into raw_tx, and update raw_tx_ix to the end of the buffer, 
     // to be ready for the next part of the tx.
-    unsigned int len = get_apdu_buffer_length();
-    unsigned char * in = G_io_apdu_buffer + OFFSET_CDATA;
     unsigned char * out = raw_tx + raw_tx_ix;
-    if (raw_tx_ix + len > MAX_TX_RAW_LENGTH) {
+    if (raw_tx_ix + length > MAX_TX_RAW_LENGTH) {
         hashTainted = 1;
         THROW(0x6D08);
     }
-    memmove(out, in, len);
-    raw_tx_ix += len;
-
-    // set the buffer to end with a zero.
-    G_io_apdu_buffer[OFFSET_CDATA + len] = '\0';
+    memmove(out, data, length);
+    raw_tx_ix += length;
 
     // if this is the last part of the transaction, parse the transaction into human readable text, and display it.
-    if ((G_io_apdu_buffer[OFFSET_P1] == P1_MORE) || (G_io_apdu_buffer[OFFSET_P1] == P1_LAST))  {
+    if (p1 == P1_MORE || p1 == P1_LAST) {
         raw_tx_len = raw_tx_ix;
         raw_tx_ix = 0;
 
@@ -611,27 +602,73 @@ void handleSign(volatile unsigned int *flags, volatile unsigned int *tx) {
     }
 }
 
-void handleGetAppConfiguration(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
-                               uint16_t dataLength,
-                               volatile unsigned int *flags,
-                               volatile unsigned int *tx) {
-    UNUSED(p1);
-    UNUSED(p2);
-    UNUSED(workBuffer);
-    UNUSED(dataLength);
-    UNUSED(flags);
-    G_io_apdu_buffer[0] = 0x00;
-    G_io_apdu_buffer[1] = LEDGER_MAJOR_VERSION;
-    G_io_apdu_buffer[2] = LEDGER_MINOR_VERSION;
-    G_io_apdu_buffer[3] = LEDGER_PATCH_VERSION;
-    *tx = 4;
-    THROW(0x9000);
+void handleGetAppConfiguration(uint8_t p1,
+                               uint8_t p2,
+                               const uint8_t *data,
+                               size_t length,
+                               unsigned int *flags,
+                               size_t *tx) {
+  UNUSED(p1);
+  UNUSED(p2);
+  UNUSED(data);
+  UNUSED(length);
+  UNUSED(flags);
+  G_io_apdu_buffer[0] = 0x00;
+  G_io_apdu_buffer[1] = LEDGER_MAJOR_VERSION;
+  G_io_apdu_buffer[2] = LEDGER_MINOR_VERSION;
+  G_io_apdu_buffer[3] = LEDGER_PATCH_VERSION;
+  *tx = 4;
+  THROW(0x9000);
+}
+
+int handle_apdu(unsigned int *flags, size_t rx, size_t *tx) {
+  // if the buffer doesn't start with the magic byte, return an error.
+  if (G_io_apdu_buffer[OFFSET_CLA] != CLA) {
+    hashTainted = 1;
+    THROW(0x6E00);
+  }
+  if (rx < OFFSET_CDATA || (rx != G_io_apdu_buffer[OFFSET_LC] + OFFSET_CDATA)) {
+    hashTainted = 1;
+    THROW(0x6E00);
+  }
+
+  // check the second byte (0x01) for the instruction.
+  switch (G_io_apdu_buffer[OFFSET_INS]) {
+
+  case INS_GET_PUBLIC_KEY:
+    handleGetPublicKey(G_io_apdu_buffer[OFFSET_P1],
+                       G_io_apdu_buffer[OFFSET_P2],
+                       G_io_apdu_buffer + OFFSET_CDATA,
+                       G_io_apdu_buffer[OFFSET_LC], flags, tx);
+    break;
+
+    //Sign a transaction
+  case INS_SIGN:
+    handleSign(G_io_apdu_buffer[OFFSET_P1],
+               G_io_apdu_buffer[OFFSET_P2],
+               G_io_apdu_buffer + OFFSET_CDATA,
+               G_io_apdu_buffer[OFFSET_LC],
+               flags,
+               tx);
+    break;
+
+  case INS_GET_APP_CONFIGURATION:
+    handleGetAppConfiguration(G_io_apdu_buffer[OFFSET_P1],
+                              G_io_apdu_buffer[OFFSET_P2],
+                              G_io_apdu_buffer + OFFSET_CDATA,
+                              G_io_apdu_buffer[OFFSET_LC],
+                              flags,
+                              tx);
+    break;
+
+  default:THROW(0x6D00);
+  }
+  return 0;
 }
 
 void nem_main(void) {
-    volatile unsigned int rx = 0;
-    volatile unsigned int tx = 0;
-    volatile unsigned int flags = 0;
+    size_t rx = 0, tx = 0;
+    unsigned int flags = 0;
 
     // DESIGN NOTE: the bootloader ignores the way APDU are fetched. The only
     // goal is to retrieve APDU.
@@ -657,38 +694,7 @@ void nem_main(void) {
                     THROW(0x6982);
                 }
 
-                // if the buffer doesn't start with the magic byte, return an error.
-                if (G_io_apdu_buffer[OFFSET_CLA] != CLA) {
-                    hashTainted = 1;
-                    THROW(0x6E00);
-                }
-
-                // check the second byte (0x01) for the instruction.
-				switch (G_io_apdu_buffer[OFFSET_INS]) {
-                
-                case INS_GET_PUBLIC_KEY: 
-                handleGetPublicKey(G_io_apdu_buffer[OFFSET_P1],
-                                G_io_apdu_buffer[OFFSET_P2],
-                                G_io_apdu_buffer + OFFSET_CDATA,
-                                G_io_apdu_buffer[OFFSET_LC], &flags, &tx);
-                break;
-
-                //Sign a transaction
-                case INS_SIGN: 
-                handleSign(&flags, &tx);
-                break;
-
-                case INS_GET_APP_CONFIGURATION:
-                handleGetAppConfiguration(
-                    G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2],
-                    G_io_apdu_buffer + OFFSET_CDATA,
-                    G_io_apdu_buffer[OFFSET_LC], &flags, &tx);
-                break;
-
-                default:
-                    THROW(0x6D00);
-                    break;
-                }
+                handle_apdu(&flags, rx, &tx);
             }
             CATCH_OTHER(e) {
                 switch (e & 0xF000) {

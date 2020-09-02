@@ -17,6 +17,7 @@
 #ifndef TESTING
 #include "os.h"
 #include "cx.h"
+#include <string.h>
 #else
 #include <string.h>
 #include "lcx_hash.h"

@@ -1,8 +1,7 @@
 /*******************************************************************************
-*   Ledger Nimiq App
+*   NEM Wallet
 *   (c) 2018 Ledger
-*
-*  adapted from https://stash.forgerock.org/projects/OPENAM/repos/forgerock-authenticator-ios/browse/ForgeRock-Authenticator/base32.c
+*   (c) 2020 FDS
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -22,7 +21,6 @@
 int base32_encode(const uint8_t *data, int length, char *result, int bufSize) {
     int count = 0;
     int quantum = 8;
-
     if (length < 0 || length > (1 << 28)) {
         return -1;
     }
@@ -47,7 +45,6 @@ int base32_encode(const uint8_t *data, int length, char *result, int bufSize) {
 
             int index = 0x1F & (buffer >> (bitsLeft - 5));
             bitsLeft -= 5;
-            //result[count++] = "0123456789ABCDEFGHJKLMNPQRSTUVXY"[index];
             result[count++] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"[index];
 
             // Track the characters which make up a single quantum of 8 characters

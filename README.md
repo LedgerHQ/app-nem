@@ -1,4 +1,4 @@
-# ledger-app-nem
+# nem-ledger-app
 NEM wallet application for Nano S.
 
 See the [Ledger's documentation](https://ledger.readthedocs.io/en/latest/) to get started.

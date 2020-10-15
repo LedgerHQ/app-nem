@@ -399,6 +399,21 @@ void parse_multisig_transaction(parse_context_t *context, common_txn_header_t *c
                 case NEM_TXN_MULTISIG_AGGREGATE_MODIFICATION:
                     parse_aggregate_modification_transaction(context, inner_header);
                     break;
+                case NEM_TXN_MULTISIG_SIGNATURE:
+                    parse_multisig_signature_transaction(context, inner_header);
+                    break;
+                case NEM_TXN_MULTISIG:
+                    parse_multisig_transaction(context, inner_header);
+                    break;
+                case NEM_TXN_PROVISION_NAMESPACE:
+                    parse_provision_namespace_transaction(context, inner_header);
+                    break;
+                case NEM_TXN_MOSAIC_DEFINITION:
+                    parse_mosaic_definition_creation_transaction(context, inner_header);
+                    break;
+                case NEM_TXN_MOSAIC_SUPPLY_CHANGE:
+                    parse_mosaic_supply_change_transaction(context, inner_header);
+                    break;
                 default:
                     // Mask real cause behind generic error (INCORRECT_DATA)
                     THROW(0x6A80);

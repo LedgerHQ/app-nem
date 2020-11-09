@@ -177,8 +177,6 @@ uint16_t sprintf_mosaic(char *dst, uint16_t maxLen, uint8_t *mosaic, uint16_t da
     //mosaic = mosaic name + amount (uint64)
     uint16_t mosaicNameLen = dataLength - 8;
     uint16_t len = sprintf_number(dst, maxLen, read_uint64(mosaic + mosaicNameLen));
-    strcat(dst, " ");
-    sprintf_ascii(dst+len+1, maxLen-len-1, mosaic, mosaicNameLen);
     return len+mosaicNameLen;
 }
 

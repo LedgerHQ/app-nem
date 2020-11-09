@@ -103,6 +103,8 @@ void resolve_fieldname(field_t *field, char* dst) {
 
     if (field->dataType == STI_STR) {
         switch (field->id) {
+            CASE_FIELDNAME(NEM_MOSAIC_UNKNOWN_TYPE, "Unknown Mosaic")
+            CASE_FIELDNAME(NEM_STR_TRANSFER_MOSAIC, "Namespace")
             CASE_FIELDNAME(NEM_STR_NAMESPACE, "Namespace")
             CASE_FIELDNAME(NEM_STR_PARENT_NAMESPACE, "Parent Name")
             CASE_FIELDNAME(NEM_STR_ROOT_NAMESPACE, "Create new root")

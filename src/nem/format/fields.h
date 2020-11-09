@@ -79,6 +79,7 @@
 #define NEM_STR_PROPERTY 0x9A
 #define NEM_STR_LEVY_MOSAIC 0x9B
 #define NEM_STR_LEVY_ADDRESS 0x9C
+#define NEM_STR_TRANSFER_MOSAIC 0x9D
 
 // Hash defines
 #define NEM_HASH256 0xB0
@@ -87,6 +88,7 @@
 #define NEM_MOSAIC_AMOUNT 0xD0
 #define NEM_MOSAIC_UNITS 0xD1
 #define NEM_MOSAIC_SUPPLY_DELTA 0xD2
+#define NEM_MOSAIC_UNKNOWN_TYPE 0xD3
 
 typedef struct {
     uint8_t id;

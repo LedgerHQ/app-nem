@@ -166,6 +166,7 @@ void parse_transfer_transaction(parse_context_t *context, common_txn_header_t *c
     transfer_txn_header_t *txn = (transfer_txn_header_t *) read_data(context, sizeof(transfer_txn_header_t)); // Read data and security check
     char str[32];
     uint8_t *ptr;
+    uint8_t* startPtr;
     // Show Recipient address
     add_new_field(context, NEM_STR_RECIPIENT_ADDRESS, STI_ADDRESS, NEM_ADDRESS_LENGTH, (uint8_t*) &txn->recipient.address);
     if (common_header->version == 1) { // NEM tranfer tx version 1
@@ -203,8 +204,8 @@ void parse_transfer_transaction(parse_context_t *context, common_txn_header_t *c
                 // mosaicId structure length pointer
                 move_pos(context, sizeof(uint32_t)); // Move position and security check
                 // namespaceID length pointer
-                ptr = read_data(context, sizeof(uint32_t)); // Read data and security check
-                uint32_t nsIdLen = read_uint32(ptr);
+                startPtr = read_data(context, sizeof(uint32_t)); // Read data and security check
+                uint32_t nsIdLen = read_uint32(startPtr);
                 // namespaceID pointer
                 ptr = read_data(context, nsIdLen); // Read data and security check
                 sprintf_ascii(str, 32, ptr, nsIdLen);
@@ -215,15 +216,19 @@ void parse_transfer_transaction(parse_context_t *context, common_txn_header_t *c
                 // mosaic name length pointer
                 ptr = read_data(context, sizeof(uint32_t)); // Read data and security check
                 uint32_t mosaicNameLen = read_uint32(ptr);
-                // mosaic name and quantity
-                ptr = read_data(context, mosaicNameLen + sizeof(uint64_t)); // Read data and security check
+                // mosaic name
+                ptr = read_data(context, mosaicNameLen); // Read data and security check
                 sprintf_ascii(str, 32, ptr, mosaicNameLen);
                 if (is_nem == 1 && strcmp(str, "xem") == 0) {
                     // xem quantity
-                    add_new_field(context, NEM_MOSAIC_AMOUNT, STI_NEM, sizeof(uint64_t), (uint8_t *)(ptr + mosaicNameLen));
+                    add_new_field(context, NEM_MOSAIC_AMOUNT, STI_NEM, sizeof(uint64_t), read_data(context, sizeof(uint64_t))); // Read data and security check
                 } else {
-                    // mosaic name and quantity
-                    add_new_field(context, NEM_MOSAIC_UNITS, STI_MOSAIC_CURRENCY, mosaicNameLen + sizeof(uint64_t), ptr);
+                    // Unknow mosaic notification
+                    add_new_field(context, NEM_MOSAIC_UNKNOWN_TYPE, STI_STR, 0, NULL);
+                    // Show mosaic information: namespace:mosaic name, data=len namespaceId, namespaceId, len mosaic name, mosaic name
+                    add_new_field(context, NEM_STR_TRANSFER_MOSAIC, STI_STR, nsIdLen + mosaicNameLen + 2 * sizeof(uint32_t), (uint8_t *) startPtr);
+                    // Mosaic quantity
+                    add_new_field(context, NEM_MOSAIC_UNITS, STI_MOSAIC_CURRENCY, sizeof(uint64_t), read_data(context, sizeof(uint64_t))); // Read data and security check
                 }
             }
         }

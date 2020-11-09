@@ -149,17 +149,19 @@ void msg_formatter(field_t* field, char *dst) {
 }
 
 void string_formatter(field_t* field, char *dst) {
-    if (field->id == NEM_STR_ROOT_NAMESPACE) {
+    if (field->id == NEM_MOSAIC_UNKNOWN_TYPE) {
+        SNPRINTF(dst, "%s", "Divisibility and levy cannot be shown");
+    } else if (field->id == NEM_STR_ROOT_NAMESPACE) {
         SNPRINTF(dst, "%s", "namespace");
-    } else if (field->id == NEM_STR_LEVY_MOSAIC) {
+    } else if (field->id == NEM_STR_LEVY_MOSAIC || field->id == NEM_STR_TRANSFER_MOSAIC) {
         // Show levy mosaic: namespace:mosaic name
-        // data=len namespace id, nemspaceid, len mosaic name, mosiac name
+        // data=len namespace id, namespaceId, len mosaic name, mosaic name
 
         //read len of namespace id
         uint32_t nsid_len = read_uint32(field->data);
         //read namespace id
         sprintf_ascii(dst, MAX_FIELD_LEN, field->data + sizeof(uint32_t), nsid_len);
-        strcat(dst,":");
+        strcat(dst,": ");
         //read len of mosaic name
         uint32_t ms_len = read_uint32(field->data + nsid_len + sizeof(uint32_t));
         //read mosaic name

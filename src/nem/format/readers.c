@@ -32,6 +32,9 @@ uint16_t sprintf_number(char *dst, uint16_t len, uint64_t value) {
     uint64_t base = 1;
     while (base <= value) {
         base *= 10;
+        if (base < 10) {
+            THROW(EXCEPTION_OVERFLOW);
+        }
         numDigits++;
     }
     if (numDigits > len - 1) {

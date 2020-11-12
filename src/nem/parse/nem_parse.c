@@ -117,7 +117,7 @@ typedef struct common_txn_header_t {
 
 // Security check
 bool has_data(parse_context_t *context, uint32_t numBytes) {
-    if (numBytes > context->length) {
+    if (numBytes > context->length || numBytes <= 0) {
         return false;
     }
 

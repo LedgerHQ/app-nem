@@ -24,6 +24,6 @@
 // Simple macro for building more readable switch statements
 #define CASE_FIELDVALUE(v,src) case v: SNPRINTF(dst, "%s", src); return;
 
-void format_field(field_t* field, char* dst);
+void format_field(const field_t* field, char* dst);
 
 #endif //LEDGER_APP_NEM_FORMAT_H

@@ -15,6 +15,7 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 ********************************************************************************/
+#include <stdio.h>
 #include <string.h>
 #include <inttypes.h>
 #include "format.h"
@@ -24,14 +25,14 @@
 #include "common.h"
 #include "base32.h"
 
-typedef void (*field_formatter_t)(field_t* field, char* dst);
+typedef void (*field_formatter_t)(const field_t *field, char* dst);
 
-void uint8_formatter(field_t* field, char *dst) {
+static void uint8_formatter(const field_t *field, char *dst) {
     uint8_t value = read_uint8(field->data);
     SNPRINTF(dst, "%d", value);
 }
 
-void uint32_formatter(field_t* field, char *dst) {
+static void uint32_formatter(const field_t *field, char *dst) {
     uint32_t value = read_uint32(field->data);
     if (field->id == NEM_UINT32_MOSAIC_COUNT) {
         SNPRINTF(dst, "Found %d txs", value);
@@ -77,16 +78,16 @@ void uint32_formatter(field_t* field, char *dst) {
     }
 }
 
-void uint16_formatter(field_t* field, char *dst) {
+static void uint16_formatter(const field_t *field, char *dst) {
     uint16_t value = read_uint16(field->data);
     SNPRINTF(dst, "%x", value);
 }
 
-void hash_formatter(field_t* field, char *dst) {
-    sprintf_hex(dst, MAX_FIELD_LEN, field->data, field->length, 0);
+static void hash_formatter(const field_t *field, char *dst) {
+    snprintf_hex(dst, MAX_FIELD_LEN, field->data, field->length, 0);
 }
 
-void uint64_formatter(field_t* field, char *dst) {
+static void uint64_formatter(const field_t *field, char *dst) {
     if (field->id == NEM_UINT64_DURATION) {
         uint64_t duration = read_uint64(field->data);
         if (duration == 0) {
@@ -98,33 +99,32 @@ void uint64_formatter(field_t* field, char *dst) {
             SNPRINTF(dst, "%d%s%d%s%d%s", day, "d ", hour, "h ", min, "m");
         }
     } else {
-        sprintf_hex(dst, MAX_FIELD_LEN, field->data, field->length, 1);
+        snprintf_hex(dst, MAX_FIELD_LEN, field->data, field->length, 1);
     }
 }
 
-void address_formatter(field_t* field, char *dst) {
-    sprintf_ascii(dst, MAX_FIELD_LEN,field->data, field->length);
+static void address_formatter(const field_t *field, char *dst) {
+    snprintf_ascii(dst, 0, MAX_FIELD_LEN,field->data, field->length);
 }
 
-void mosaic_formatter(field_t* field, char *dst) {
-    if (field->id == NEM_MOSAIC_SUPPLY_DELTA) {
-        //data = supply type + delta
-        sprintf_number(dst, MAX_FIELD_LEN, read_uint64(field->data + sizeof(uint32_t)));
+static void mosaic_formatter(const field_t *field, char *dst) {
+    if (field->id == NEM_MOSAIC_CREATE_SUPPLY_DELTA || field->id == NEM_MOSAIC_DELETE_SUPPLY_DELTA) {
+        snprintf_number(dst, MAX_FIELD_LEN, read_uint64(field->data));
     } else {
         //data = mosaic name + amount
-        sprintf_mosaic(dst, MAX_FIELD_LEN, field->data, field->length);
+        snprintf_number(dst, MAX_FIELD_LEN, read_uint64(field->data + field->length - 8));
     }
 }
 
-void nem_formatter(field_t* field, char *dst) {
+static void nem_formatter(const field_t *field, char *dst) {
     if (field->id == NEM_UINT64_LEVY_FEE) {
-        sprintf_token(dst, MAX_FIELD_LEN, read_uint64(field->data), 6, "micro");
+        snprintf_token(dst, MAX_FIELD_LEN, read_uint64(field->data), 6, "micro");
     } else {
-        sprintf_token(dst, MAX_FIELD_LEN, read_uint64(field->data), 6, "xem");
+        snprintf_token(dst, MAX_FIELD_LEN, read_uint64(field->data), 6, "xem");
     }
 }
 
-void msg_formatter(field_t* field, char *dst) {
+static void msg_formatter(const field_t *field, char *dst) {
     if (field->length == 0) {
         if (field->id == NEM_STR_ENC_MESSAGE) {
             SNPRINTF(dst, "%s", "<encrypted msg>");
@@ -134,21 +134,21 @@ void msg_formatter(field_t* field, char *dst) {
     } else {
         if (field->data[0] == 0xFE) { // hex message
             if (field->length - 1 >= MAX_FIELD_LEN) {
-                sprintf_hex2ascii(dst, MAX_FIELD_LEN, &field->data[1], MAX_FIELD_LEN - 1);
+                snprintf_hex2ascii(dst, MAX_FIELD_LEN, &field->data[1], MAX_FIELD_LEN - 1);
             } else {
-                sprintf_hex2ascii(dst, MAX_FIELD_LEN, &field->data[1], field->length - 1);
+                snprintf_hex2ascii(dst, MAX_FIELD_LEN, &field->data[1], field->length - 1);
             }
         } else {
             if (field->length >= MAX_FIELD_LEN) {
-                sprintf_ascii(dst, MAX_FIELD_LEN, &field->data[0], MAX_FIELD_LEN - 1);
+                snprintf_ascii(dst, 0, MAX_FIELD_LEN, &field->data[0], MAX_FIELD_LEN - 1);
             } else {
-                sprintf_ascii(dst, MAX_FIELD_LEN, &field->data[0], field->length);
+                snprintf_ascii(dst, 0, MAX_FIELD_LEN, &field->data[0], field->length);
             }
         }
     }
 }
 
-void string_formatter(field_t* field, char *dst) {
+static void string_formatter(const field_t *field, char *dst) {
     if (field->id == NEM_MOSAIC_UNKNOWN_TYPE) {
         SNPRINTF(dst, "%s", "Divisibility and levy cannot be shown");
     } else if (field->id == NEM_STR_ROOT_NAMESPACE) {
@@ -160,7 +160,7 @@ void string_formatter(field_t* field, char *dst) {
         //read len of namespace id
         uint32_t nsid_len = read_uint32(field->data);
         //read namespace id
-        sprintf_ascii(dst, MAX_FIELD_LEN, field->data + sizeof(uint32_t), nsid_len);
+        snprintf_ascii(dst, 0, MAX_FIELD_LEN, field->data + sizeof(uint32_t), nsid_len);
         strcat(dst,": ");
         //read len of mosaic name
         uint32_t ms_len = read_uint32(field->data + nsid_len + sizeof(uint32_t));
@@ -168,27 +168,27 @@ void string_formatter(field_t* field, char *dst) {
         snprintf_ascii(dst, strlen(dst), MAX_FIELD_LEN, field->data + nsid_len + 2*sizeof(uint32_t) , ms_len);
     } else {
         if (field->length > MAX_FIELD_LEN) {
-            sprintf_ascii(dst, MAX_FIELD_LEN, field->data, MAX_FIELD_LEN - 1);
+            snprintf_ascii(dst, 0, MAX_FIELD_LEN, field->data, MAX_FIELD_LEN - 1);
         } else {
-            sprintf_ascii(dst, MAX_FIELD_LEN, field->data, field->length);
+            snprintf_ascii(dst, 0, MAX_FIELD_LEN, field->data, field->length);
         }
     }
 }
 
-void property_formatter(field_t* field, char *dst) {
+static void property_formatter(const field_t *field, char *dst) {
     // field->data = len name, name, len value, value (ignore field->length)
     // Length of the property name
     uint32_t nameLen = read_uint32(field->data);
     // Length of the property name
     uint32_t valueLen = read_uint32(field->data + sizeof(uint32_t) + nameLen);
     if (valueLen > MAX_FIELD_LEN) {
-        sprintf_ascii(dst, MAX_FIELD_LEN, field->data + nameLen + 2 * sizeof(uint32_t), MAX_FIELD_LEN - 1);
+        snprintf_ascii(dst, 0, MAX_FIELD_LEN, field->data + nameLen + 2 * sizeof(uint32_t), MAX_FIELD_LEN - 1);
     } else {
-        sprintf_ascii(dst, MAX_FIELD_LEN, field->data + nameLen + 2 * sizeof(uint32_t), valueLen);
+        snprintf_ascii(dst, 0, MAX_FIELD_LEN, field->data + nameLen + 2 * sizeof(uint32_t), valueLen);
     }
 }
 
-field_formatter_t get_formatter(field_t* field) {
+static field_formatter_t get_formatter(const field_t *field) {
     switch (field->dataType) {
         case STI_UINT8:
             return uint8_formatter;
@@ -217,16 +217,14 @@ field_formatter_t get_formatter(field_t* field) {
     }
 }
 
-void format_field(field_t* field, char* dst) {
+void format_field(const field_t *field, char* dst) {
     memset(dst, 0, MAX_FIELD_LEN);
-
     field_formatter_t formatter = get_formatter(field);
     if (formatter != NULL) {
         formatter(field, dst);
     } else {
         SNPRINTF(dst, "%s", "[Not implemented]");
     }
-
     // Replace a zero-length string with a space because of rendering issues
     if (dst[0] == 0x00) {
         dst[0] = ' ';

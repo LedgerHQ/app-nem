@@ -35,6 +35,6 @@ typedef struct parse_context_t {
     uint32_t offset;
 } parse_context_t;
 
-void parse_txn_context(parse_context_t *parseContext);
+int parse_txn_context(parse_context_t *parseContext);
 
 #endif //LEDGER_APP_NEM_NEMPARSE_H

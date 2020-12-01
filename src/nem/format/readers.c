@@ -15,21 +15,13 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 ********************************************************************************/
-#include <os_io_seproxyhal.h>
 #include <string.h>
+#include <stdio.h>
 #include "readers.h"
+#include "nem_parse.h"
 
-char int_to_number_char(uint64_t value) {
-    if (value > 9) {
-        return '?';
-    }
-
-    return (char) ('0' + value);
-}
-
-uint16_t sprintf_number(char *dst, uint16_t len, uint64_t value) {
+int snprintf_number(char *dst, uint32_t len, uint64_t value) {
     char *p = dst;
-
     // First, compute the address of the last digit to be written.
     uint64_t shifter = value;
     do {
@@ -38,20 +30,20 @@ uint16_t sprintf_number(char *dst, uint16_t len, uint64_t value) {
     } while (shifter);
 
     if (p > dst + len - 1) {
-        THROW(EXCEPTION_OVERFLOW);
+        return E_NOT_ENOUGH_DATA;
     }
-    uint16_t n = p - dst;
+    int n = p - dst;
 
     // Now write string representation, right to left.
     *p-- = 0;
     do {
-        *p-- = int_to_number_char(value % 10);
+        *p-- = '0' + (value % 10);
         value /= 10;
     } while (value);
     return n;
 }
 
-uint16_t sprintf_token(char* dst, uint16_t len, uint64_t amount, uint8_t divisibility, char* token) {
+int snprintf_token(char* dst, uint32_t len, uint64_t amount, uint8_t divisibility, char* token) {
     char buffer[MAX_FIELD_LEN];
     uint64_t dVal = amount;
     int i, j;
@@ -74,7 +66,7 @@ uint16_t sprintf_token(char* dst, uint16_t len, uint64_t amount, uint8_t divisib
             }
         }
         if (i >= MAX_FIELD_LEN) {
-            THROW(0x6700);
+            return E_NOT_ENOUGH_DATA;
         }
     }
     // reverse order
@@ -82,8 +74,7 @@ uint16_t sprintf_token(char* dst, uint16_t len, uint64_t amount, uint8_t divisib
         dst[j] = buffer[i];
     }
     // strip trailing 0s
-    if (MAX_DIVISIBILITY != 0)
-    {
+    if (MAX_DIVISIBILITY != 0) {
         for (j -= 1; j > 0; j--) {
             if (dst[j] != '0') break;
         }
@@ -94,34 +85,39 @@ uint16_t sprintf_token(char* dst, uint16_t len, uint64_t amount, uint8_t divisib
 
     if (token) {
         // qualify amount
-        dst[j++] = ' ';
-        strcpy(dst + j, token);
-        dst[j+strlen(token)] = '\0';
-        return j+strlen(token);
+        if (j + strlen(token) + 1 < len) {
+            dst[j++] = ' ';
+            strcpy(dst + j, token);
+            dst[j+strlen(token)] = '\0';
+            return j+strlen(token);
+        } else {
+            dst[j] = '\0';
+            return j;
+        }
     } else {
         dst[j] = '\0';
         return j;
     }
 }
 
-uint16_t sprintf_hex(char *dst, uint16_t maxLen, uint8_t *src, uint16_t dataLength, uint8_t reverse) {
-    if (2 * dataLength > maxLen - 1) {
-        THROW(EXCEPTION_OVERFLOW);
+int snprintf_hex(char *dst, uint32_t maxLen, const uint8_t *src, uint32_t dataLength, uint8_t reverse) {
+    if (2 * dataLength > maxLen - 1 || maxLen < 1 || dataLength < 1) {
+        return E_NOT_ENOUGH_DATA;
     }
-    for (uint16_t i = 0; i < dataLength; i++) {
-        SPRINTF(dst + 2 * i, "%02X", reverse==1?src[dataLength-1-i]:src[i]);
+    for (uint32_t i = 0; i < dataLength; i++) {
+        snprintf(dst + 2 * i, maxLen - 2 * i, "%02X", reverse==1?src[dataLength-1-i]:src[i]);
     }
     dst[2*dataLength] = '\0';
     return 2*dataLength;
 }
 
-uint16_t snprintf_ascii_ex(char *dst, uint16_t pos, uint16_t maxLen, uint8_t *src, uint16_t dataLength) {
-    if (dataLength + pos > maxLen - 1) {
-        THROW(EXCEPTION_OVERFLOW);
+int snprintf_ascii(char *dst, uint32_t pos, uint32_t maxLen, const uint8_t *src, uint32_t dataLength) {
+    if (dataLength + pos > maxLen - 1 || maxLen < 1 || dataLength < 1) {
+        return E_NOT_ENOUGH_DATA;
     }
     char *tmpCh = (char *) src;
-    uint16_t k = 0, l = 0;
-    for (uint8_t j=0; j < dataLength; j++){
+    uint32_t k = 0, l = 0;
+    for (uint32_t j=0; j < dataLength; j++){
         if (tmpCh[j] < 32 || tmpCh[j] > 126) {
             k++;
             if (k==1) {
@@ -137,27 +133,7 @@ uint16_t snprintf_ascii_ex(char *dst, uint16_t pos, uint16_t maxLen, uint8_t *sr
         }
     }
     dst[pos + l] = '\0';
-    return l + pos;
-}
-
-uint16_t sprintf_ascii(char *dst, uint16_t maxLen, uint8_t *src, uint16_t dataLength) {
-    return snprintf_ascii_ex(dst, 0, maxLen, src, dataLength);
-}
-
-uint16_t snprintf_ascii(char *dst, uint16_t pos, uint16_t maxLen, uint8_t *src, uint16_t dataLength) {
-    if (dataLength + pos > maxLen - 1) {
-        THROW(EXCEPTION_OVERFLOW);
-    }
-    char *tmpCh = (char *) src;
-    for (uint16_t j=0; j < dataLength; j++) {
-        if (tmpCh[j] < 32 || tmpCh[j] > 126) {
-            dst[pos+j] = '?';
-        } else {
-            dst[pos+j] = tmpCh[j];
-        }
-    }
-    dst[dataLength + pos] = '\0';
-    return dataLength + pos;
+    return l;
 }
 
 /** Convert 1 hex byte to 2 characters */
@@ -165,11 +141,11 @@ char hex2ascii(uint8_t input){
     return input > 9 ? (char)(input + 87) : (char)(input + 48);
 }
 
-uint16_t sprintf_hex2ascii(char *dst, uint16_t maxLen, uint8_t *src, uint16_t dataLength) {
-    if (2 * dataLength > maxLen - 1) {
-        THROW(EXCEPTION_OVERFLOW);
+int snprintf_hex2ascii(char *dst, uint32_t maxLen, const uint8_t *src, uint32_t dataLength) {
+    if (2 * dataLength > maxLen - 1 || maxLen < 1 || dataLength < 1) {
+        return E_NOT_ENOUGH_DATA;
     }
-    for (uint16_t j=0; j < dataLength; j++) {
+    for (uint32_t j=0; j < dataLength; j++) {
         dst[2*j] = hex2ascii((src[j] & 0xf0) >> 4);
         dst[2*j+1] = hex2ascii(src[j] & 0x0f);
     }
@@ -177,15 +153,7 @@ uint16_t sprintf_hex2ascii(char *dst, uint16_t maxLen, uint8_t *src, uint16_t da
     return 2*dataLength;
 }
 
-
-uint16_t sprintf_mosaic(char *dst, uint16_t maxLen, uint8_t *mosaic, uint16_t dataLength) {
-    //mosaic = mosaic name + amount (uint64)
-    uint16_t mosaicNameLen = dataLength - 8;
-    uint16_t len = sprintf_number(dst, maxLen, read_uint64(mosaic + mosaicNameLen));
-    return len+mosaicNameLen;
-}
-
-uint64_t read_uint64(uint8_t *src) {
+uint64_t read_uint64(const uint8_t *src) {
     uint64_t value ;
     value = src[7] ;
     value = (value << 8 ) + src[6] ;
@@ -198,14 +166,14 @@ uint64_t read_uint64(uint8_t *src) {
     return value ;
 }
 
-uint8_t read_uint8(uint8_t *src) {
+uint8_t read_uint8(const uint8_t *src) {
     return (uint8_t) *((uint8_t *)src);
 }
 
-uint16_t read_uint16(uint8_t *src) {
+uint16_t read_uint16(const uint8_t *src) {
     return (uint16_t) *((uint16_t *)src);
 }
 
-uint32_t read_uint32(uint8_t *src) {
+uint32_t read_uint32(const uint8_t *src) {
     return (src[3] << 24) | (src[2] << 16) | (src[1] << 8) | src[0];
 }

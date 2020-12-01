@@ -96,8 +96,8 @@ void execute_async(action_t actionToLoad, char* message) {
     loadingState = STATE_WAITING;
     pending_action = actionToLoad;
 
-    os_memset(loadingMessage, 0, sizeof(loadingMessage));
-    os_memmove(loadingMessage, message, MIN(sizeof(loadingMessage) - 1, strlen(message)));
+    memset(loadingMessage, 0, sizeof(loadingMessage));
+    memcpy(loadingMessage, message, MIN(sizeof(loadingMessage) - 1, strlen(message)));
 
     UX_DISPLAY(loading_ui, loading_ui_button_prepro)
 }

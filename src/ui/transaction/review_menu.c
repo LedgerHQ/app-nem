@@ -33,7 +33,7 @@ result_action_t approval_menu_callback;
 
 const ux_flow_step_t* ux_review_flow[MAX_FIELD_COUNT + 3];
 
-void update_content(int stackSlot);
+static void update_content(int stackSlot);
 
 UX_STEP_NOCB_INIT(
         ux_review_flow_step,
@@ -62,23 +62,25 @@ UX_STEP_VALID(
             "Reject",
         });
 
-void update_title(field_t *field) {
+static void update_title(const field_t *field) {
     memset(fieldName, 0, MAX_FIELDNAME_LEN);
     resolve_fieldname(field, fieldName);
 }
 
 
-void update_value(field_t *field) {
+static void update_value(const field_t *field) {
     memset(fieldValue, 0, MAX_FIELD_LEN);
     format_field(field, fieldValue);
 }
 
-void update_content(int stackSlot) {
+static void update_content(int stackSlot) {
     int stepIndex = G_ux.flow_stack[stackSlot].index;
-    field_t *field = &transaction->fields[stepIndex];
+    const field_t *field = &transaction->fields[stepIndex];
     update_title(field);
     update_value(field);
-    // PRINTF("\nPage %d - Title: %s - Value: %s\n", stepIndex, fieldName, fieldValue);
+#ifdef HAVE_PRINTF
+    PRINTF("\nPage %d - Title: %s - Value: %s\n", stepIndex, fieldName, fieldValue);
+#endif
 }
 
 void display_review_menu(result_t *transactionParam, result_action_t callback) {

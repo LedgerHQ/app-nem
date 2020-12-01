@@ -14,12 +14,13 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 ********************************************************************************/
+#include <stdio.h>
 #include "fields.h"
 #include "common.h"
 #include "limitations.h"
 #include "readers.h"
 
-void resolve_fieldname(field_t *field, char* dst) {
+void resolve_fieldname(const field_t *field, char* dst) {
     if (field->dataType == STI_UINT32) {
         switch (field->id) {
             CASE_FIELDNAME(NEM_UINT32_TRANSACTION_TYPE, "Transaction Type")
@@ -61,7 +62,7 @@ void resolve_fieldname(field_t *field, char* dst) {
             case NEM_STR_PROPERTY:
             {
                 // field->data = len name, name, len value, value (ignore field->length)
-                sprintf_ascii(dst, MAX_FIELDNAME_LEN, field->data + sizeof(uint32_t), read_uint32(field->data));
+                snprintf_ascii(dst, 0, MAX_FIELDNAME_LEN, field->data + sizeof(uint32_t), read_uint32(field->data));
                 return ;
             }
         }
@@ -71,16 +72,8 @@ void resolve_fieldname(field_t *field, char* dst) {
         switch (field->id) {
             CASE_FIELDNAME(NEM_MOSAIC_AMOUNT, "Amount")
             CASE_FIELDNAME(NEM_MOSAIC_UNITS, "Micro Units")
-            case NEM_MOSAIC_SUPPLY_DELTA:
-            {
-                uint32_t supplyType = read_uint32(field->data);
-                if (supplyType == 1) {
-                    snprintf(dst, MAX_FIELDNAME_LEN, "Create Supply");
-                } else if (supplyType == 2) {
-                    snprintf(dst, MAX_FIELDNAME_LEN, "Delete Supply");
-                }
-                return ;
-            }
+            CASE_FIELDNAME(NEM_MOSAIC_DELETE_SUPPLY_DELTA, "Delete Supply")
+            CASE_FIELDNAME(NEM_MOSAIC_CREATE_SUPPLY_DELTA, "Create Supply")
         }
     }
 

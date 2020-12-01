@@ -19,21 +19,25 @@
 #define LEDGER_APP_NEM_READERS_H
 
 #include <stdint.h>
-#include "parse/nem_parse.h"
+#include "limitations.h"
 
-uint16_t sprintf_hex(char *dst, uint16_t maxLen, uint8_t *src, uint16_t dataLength, uint8_t reverse);
-uint16_t sprintf_ascii(char *dst, uint16_t maxLen, uint8_t *src, uint16_t dataLength);
-uint16_t sprintf_number(char *dst, uint16_t maxLen, uint64_t value);
-uint16_t sprintf_mosaic(char *dst, uint16_t maxLen, uint8_t *mosaic, uint16_t dataLength);
-uint16_t sprintf_token(char* dst, uint16_t len, uint64_t amount, uint8_t divisibility, char* token);
-uint16_t sprintf_hex2ascii(char *dst, uint16_t maxLen, uint8_t *src, uint16_t dataLength);
+enum _parser_error {
+    E_SUCCESS = 0,
+    E_NOT_ENOUGH_DATA = -1,
+    E_INVALID_DATA = -2,
+    E_TOO_MANY_FIELDS = -3,
+};
 
-uint16_t snprintf_ascii(char *dst, uint16_t pos, uint16_t maxLen, uint8_t *src, uint16_t dataLength);
+int snprintf_hex(char *dst, uint32_t maxLen, const uint8_t *src, uint32_t dataLength, uint8_t reverse);
+int snprintf_number(char *dst, uint32_t maxLen, uint64_t value);
+int snprintf_token(char* dst, uint32_t len, uint64_t amount, uint8_t divisibility, char* token);
+int snprintf_hex2ascii(char *dst, uint32_t maxLen, const uint8_t *src, uint32_t dataLength);
+int snprintf_ascii(char *dst, uint32_t pos, uint32_t maxLen, const uint8_t *src, uint32_t dataLength);
 
-uint64_t read_uint64(uint8_t *src);
-uint16_t read_uint16(uint8_t *src);
-uint32_t read_uint32(uint8_t *src);
-uint8_t read_uint8(uint8_t *src);
-int8_t read_int8(uint8_t *src);
+uint64_t read_uint64(const uint8_t *src);
+uint16_t read_uint16(const uint8_t *src);
+uint32_t read_uint32(const uint8_t *src);
+uint8_t read_uint8(const uint8_t *src);
+int8_t read_int8(const uint8_t *src);
 
 #endif //LEDGER_APP_NEM_READERS_H

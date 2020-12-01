@@ -40,61 +40,6 @@ uint8_t get_algo(uint8_t network_type) {
     }
 }
 
-void nem_print_amount(uint64_t amount, uint8_t divisibility, char *asset, char *out) {
-    char buffer[AMOUNT_MAX_SIZE];
-    uint64_t dVal = amount;
-    int i, j;
-    uint8_t MAX_DIVISIBILITY = (divisibility == 0) ? 0 : 6;
-
-    // If the amount can't be represented safely in JavaScript, signal an error
-    //if (MAX_SAFE_INTEGER < amount) THROW(0x6a80);
-
-    memset(buffer, 0, AMOUNT_MAX_SIZE);
-    for (i = 0; dVal > 0 || i < MAX_DIVISIBILITY + 1; i++) {
-        if (dVal > 0) {
-            buffer[i] = (dVal % 10) + '0';
-            dVal /= 10;
-        } else {
-            buffer[i] = '0';
-        }
-        if (i == divisibility - 1) { // divisibility
-            i += 1;
-            buffer[i] = '.';
-            if (dVal == 0) {
-                i += 1;
-                buffer[i] = '0';
-            }
-        }
-        if (i >= AMOUNT_MAX_SIZE) {
-            THROW(0x6700);
-        }
-    }
-    // reverse order
-    for (i -= 1, j = 0; i >= 0 && j < AMOUNT_MAX_SIZE-1; i--, j++) {
-        out[j] = buffer[i];
-    }
-    // strip trailing 0s
-    if (MAX_DIVISIBILITY != 0)
-    {
-        for (j -= 1; j > 0; j--) {
-            if (out[j] != '0') break;
-        }
-        j += 1;
-    }
-
-    // strip trailing .
-    if (out[j-1] == '.') j -= 1;
-
-    if (asset) {
-        // qualify amount
-        out[j++] = ' ';
-        strcpy(out + j, asset);
-        out[j+strlen(asset)] = '\0';
-    } else {
-        out[j] = '\0';
-    }
-}
-
 void sha_calculation(uint8_t algorithm, uint8_t *in, uint8_t inlen, uint8_t *out, uint8_t outlen) {
     cx_sha3_t hash;
     if (algorithm == CX_KECCAK) {
@@ -127,9 +72,9 @@ void nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t inNet
     //step1: add network prefix char
     rawAddress[0] = inNetworkId;   //152:,,,,,
     //step2: add ripemd160 hash
-    os_memmove(rawAddress + 1, buffer2, sizeof(buffer2));
+    memcpy(rawAddress + 1, buffer2, sizeof(buffer2));
     sha_calculation(inAlgo, rawAddress, 21, buffer1, sizeof(buffer1));
     //step3: add checksum
-    os_memmove(rawAddress + 21, buffer1, 4);
+    memcpy(rawAddress + 21, buffer1, 4);
     base32_encode((const uint8_t *) rawAddress, 25, (char *) outAddress, outLen);
 }

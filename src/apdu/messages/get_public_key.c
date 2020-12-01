@@ -34,7 +34,7 @@ uint32_t set_result_get_publickey() {
 
     //publicKey
     G_io_apdu_buffer[tx++] = NEM_PUBLIC_KEY_LENGTH;
-    os_memmove(G_io_apdu_buffer + tx, nem_publickey, NEM_PUBLIC_KEY_LENGTH);
+    memcpy(G_io_apdu_buffer + tx, nem_publickey, NEM_PUBLIC_KEY_LENGTH);
     tx += NEM_PUBLIC_KEY_LENGTH;
     return tx;
 }

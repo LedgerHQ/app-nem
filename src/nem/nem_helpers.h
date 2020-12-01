@@ -17,9 +17,11 @@
 #ifndef LEDGER_APP_NEM_NEMHELPERS_H
 #define LEDGER_APP_NEM_NEMHELPERS_H
 
+#ifndef FUZZ
 #include <os.h>
 #include <cx.h>
 #include <os_io_seproxyhal.h>
+#endif
 #include <stdbool.h>
 
 #define NEM_TXN_TRANSFER 0x0101
@@ -43,9 +45,13 @@
 #define MIJIN_MAINNET 96 //0x60
 #define MIJIN_TESTNET 144 //0x90
 
+#define STR_NEM "nem"
+#define STR_XEM "xem"
+
 uint8_t get_network_type(const uint32_t bip32Path[]);
 uint8_t get_algo(uint8_t network_type);
-void nem_print_amount(uint64_t amount, uint8_t divisibility, char *asset, char *out);
+#ifndef FUZZ
 void nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo, uint8_t *outPublicKey, char *outAddress, uint8_t outLen);
+#endif
 
 #endif //LEDGER_APP_NEM_NEMHELPERS_H

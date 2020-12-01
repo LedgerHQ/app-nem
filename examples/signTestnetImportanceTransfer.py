@@ -19,17 +19,17 @@
 import argparse
 from base import send_sign_package
 
+TESTNET=152
 parser = argparse.ArgumentParser()
 parser.add_argument('--path', help="BIP32 path to retrieve.")
 parser.add_argument('--ed25519', help="Derive on ed25519 curve", action='store_true')
 parser.add_argument("--apdu", help="Display APDU log", action='store_true')
 args = parser.parse_args()
 
-TESTNET = 152
-TEST_TX =  "02100000010000989c5fd007200000003e6e6cbac488b8a44bdf5abf27b9e1cc2a6f20d09d550a66b9b36f525ca222eef049020000000000ac6dd0072400000020000000d2c70f814fa87b13da000ca42e52085fa233ce0aae718aaefe16c5652d1a6932280000005443453752474f444a354d4c4d354d43564e43495253575445484d4c594545465459355442585142"
+TEST_TX =  "01080000010000989b5cd007200000003e6e6cbac488b8a44bdf5abf27b9e1cc2a6f20d09d550a66b9b36f525ca222eea086010000000000ab6ad00701000000020000006da3760713019e26b186243ab6ecba9f70784c59923d689ab54d4b2bf0e20f5d"
 
 print("-= NEM Ledger =-")
-print("Sign a multisig transaction")
+print("Sign a testnet importance transaction")
 print("Please confirm on your Ledger Nano S")
 
 send_sign_package(TESTNET, TEST_TX)

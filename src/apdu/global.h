@@ -18,9 +18,7 @@
 #ifndef LEDGER_APP_NEM_GLOBAL_H
 #define LEDGER_APP_NEM_GLOBAL_H
 
-#include <os.h>
-#include <cx.h>
-#include <stdbool.h>
+#include <stdint.h>
 #include "constants.h"
 #include "limitations.h"
 

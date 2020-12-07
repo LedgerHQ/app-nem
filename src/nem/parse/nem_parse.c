@@ -17,6 +17,7 @@
 
 #include "nem_parse.h"
 #include "apdu/global.h"
+#include "nem/format/printers.h"
 #include "nem/format/readers.h"
 
 #pragma pack(push, 1)
@@ -219,11 +220,10 @@ static int parse_transfer_transaction(parse_context_t *context, common_txn_heade
                 uint32_t mosaicIdLen;
                 BAIL_IF(_read_uint32(context, &mosaicIdLen));
                 BAIL_IF_ERR(!has_data(context, mosaicIdLen), E_INVALID_DATA);
-                BAIL_IF_ERR(mosaicIdLen > mosaicLen, E_INVALID_DATA);
+                BAIL_IF_ERR(mosaicLen - sizeof(uint32_t) - mosaicIdLen - sizeof(uint64_t) != 0, E_INVALID_DATA);
                 // namespaceID length pointer
                 uint32_t nsIdLen;
                 BAIL_IF(_read_uint32_ptr(context, &nsIdLen, (uint8_t **) &startPtr));
-                BAIL_IF_ERR(nsIdLen >= mosaicIdLen, E_INVALID_DATA);
                 // namespaceID pointer
                 ptr = read_data(context, nsIdLen); // Read data and security check
                 BAIL_IF_ERR(ptr == NULL, E_NOT_ENOUGH_DATA);
@@ -235,7 +235,7 @@ static int parse_transfer_transaction(parse_context_t *context, common_txn_heade
                 // mosaic name length
                 uint32_t mosaicNameLen;
                 BAIL_IF(_read_uint32(context, &mosaicNameLen))
-                BAIL_IF_ERR(mosaicNameLen >= mosaicIdLen, E_INVALID_DATA);
+                BAIL_IF_ERR(mosaicIdLen - sizeof(uint32_t) - nsIdLen - sizeof(uint32_t) - mosaicNameLen != 0, E_INVALID_DATA);
                 // mosaic name
                 ptr = read_data(context, mosaicNameLen); // Read data and security check
                 BAIL_IF_ERR(ptr == NULL, E_NOT_ENOUGH_DATA);
@@ -246,7 +246,7 @@ static int parse_transfer_transaction(parse_context_t *context, common_txn_heade
                 } else {
                     // Unknow mosaic notification
                     BAIL_IF(add_new_field(context, NEM_MOSAIC_UNKNOWN_TYPE, STI_STR, 0, (const uint8_t *) &is_nem));
-                    // Show mosaic information: namespace:mosaic name, data=len namespaceId, namespaceId, len mosaic name, mosaic name
+                    // Show mosaic information: namespace: mosaic name, data=len namespaceId, namespaceId, len mosaic name, mosaic name
                     BAIL_IF(add_new_field(context, NEM_STR_TRANSFER_MOSAIC, STI_STR, mosaicIdLen, (const uint8_t *) startPtr));
                     // Mosaic quantity
                     BAIL_IF(add_new_field(context, NEM_MOSAIC_UNITS, STI_MOSAIC_CURRENCY, sizeof(uint64_t), read_data(context, sizeof(uint64_t)))); // Read data and security check
@@ -417,7 +417,7 @@ static int parse_mosaic_definition_creation_transaction(parse_context_t *context
         BAIL_IF_ERR(mnLen > levy->msIdLen, E_INVALID_DATA);
         //mosaic name
         BAIL_IF_ERR(move_pos(context, mnLen) == NULL, E_NOT_ENOUGH_DATA);
-        // Show levy mosaic: namespace:mosaic name, data=len nemspaceid, nemspaceid, len mosaic name, mosiac name
+        // Show levy mosaic: namespace: mosaic name, data = len namespaceid, namespaceid, len mosaic name, mosaic name
         BAIL_IF(add_new_field(context, NEM_STR_LEVY_MOSAIC, STI_STR, levy->msIdLen, (const uint8_t *) ptr));
         // Show levy address
         BAIL_IF(add_new_field(context, NEM_STR_LEVY_ADDRESS, STI_ADDRESS, NEM_ADDRESS_LENGTH, (const uint8_t *) &levy->lsAddress.address));

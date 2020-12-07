@@ -15,29 +15,22 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 ********************************************************************************/
-#include "readers.h"
+#ifndef LEDGER_APP_NEM_PRINTERS_H
+#define LEDGER_APP_NEM_PRINTERS_H
 
-uint8_t read_uint8(const uint8_t *src) {
-    return (uint8_t) *((uint8_t *)src);
-}
+#include "limitations.h"
 
-uint16_t read_uint16(const uint8_t *src) {
-    return (uint16_t) *((uint16_t *)src);
-}
+enum _parser_error {
+    E_SUCCESS = 0,
+    E_NOT_ENOUGH_DATA = -1,
+    E_INVALID_DATA = -2,
+    E_TOO_MANY_FIELDS = -3,
+};
 
-uint32_t read_uint32(const uint8_t *src) {
-    return (src[3] << 24) | (src[2] << 16) | (src[1] << 8) | src[0];
-}
+int snprintf_hex(char *dst, uint32_t maxLen, const uint8_t *src, uint32_t dataLength, uint8_t reverse);
+int snprintf_number(char *dst, uint32_t maxLen, uint64_t value);
+int snprintf_token(char* dst, uint32_t len, uint64_t amount, uint8_t divisibility, char* token);
+int snprintf_hex2ascii(char *dst, uint32_t maxLen, const uint8_t *src, uint32_t dataLength);
+int snprintf_ascii(char *dst, uint32_t pos, uint32_t maxLen, const uint8_t *src, uint32_t dataLength);
 
-uint64_t read_uint64(const uint8_t *src) {
-    uint64_t value ;
-    value = src[7] ;
-    value = (value << 8 ) + src[6] ;
-    value = (value << 8 ) + src[5] ;
-    value = (value << 8 ) + src[4] ;
-    value = (value << 8 ) + src[3] ;
-    value = (value << 8 ) + src[2] ;
-    value = (value << 8 ) + src[1] ;
-    value = (value << 8 ) + src[0] ;
-    return value ;
-}
+#endif //LEDGER_APP_NEM_PRINTERS_H

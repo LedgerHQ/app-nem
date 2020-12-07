@@ -19,6 +19,7 @@
 #include "common.h"
 #include "limitations.h"
 #include "readers.h"
+#include "printers.h"
 
 void resolve_fieldname(const field_t *field, char* dst) {
     if (field->dataType == STI_UINT32) {

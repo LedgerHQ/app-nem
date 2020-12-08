@@ -354,46 +354,43 @@ static int parse_mosaic_definition_creation_transaction(parse_context_t *context
     //Length of mosaic id structure
     uint32_t midsLen;
     BAIL_IF(_read_uint32(context, &midsLen));
-    BAIL_IF_ERR(midsLen >= mdsLen, E_INVALID_DATA);
     //Length of namespace id string
     uint32_t nsIdLen;
     BAIL_IF(_read_uint32(context, &nsIdLen));
-    BAIL_IF_ERR(nsIdLen >= midsLen, E_INVALID_DATA);
     // Show namespace id string
     BAIL_IF(add_new_field(context, NEM_STR_PARENT_NAMESPACE, STI_STR, nsIdLen, read_data(context, nsIdLen))); // Read data and security check
     // Length of mosaic name string
     uint32_t mosaicNameLen;
     BAIL_IF(_read_uint32(context, &mosaicNameLen));
-    BAIL_IF_ERR(mosaicNameLen >= midsLen, E_INVALID_DATA);
+    BAIL_IF_ERR(midsLen - sizeof(uint32_t) - nsIdLen - sizeof(uint32_t) - mosaicNameLen != 0, E_INVALID_DATA);
     // Show mosaic name string
     BAIL_IF(add_new_field(context, NEM_STR_MOSAIC, STI_STR, mosaicNameLen, read_data(context, mosaicNameLen))); // Read data and security check
     //Length of description string
     uint32_t desLen;
     BAIL_IF(_read_uint32(context, &desLen));
-    BAIL_IF_ERR(desLen >= mdsLen, E_INVALID_DATA);
     // Show description string
     BAIL_IF(add_new_field(context, NEM_STR_DESCRIPTION, STI_STR, desLen, read_data(context, desLen))); // Read data and security check
     uint32_t propertyNum;
     BAIL_IF(_read_uint32(context, &propertyNum));
+    uint32_t propertyLen = 0;
     for (uint32_t i = 0; i < propertyNum; i++) {
         // Length of the property structure
         uint32_t proStructLen;
         BAIL_IF(_read_uint32(context, &proStructLen));
         BAIL_IF_ERR(!has_data(context, proStructLen), E_INVALID_DATA);
-        BAIL_IF_ERR(proStructLen >= mdsLen, E_INVALID_DATA);
         // Length of the property name
         uint32_t proNameLen;
         BAIL_IF(_read_uint32_ptr(context, &proNameLen, (uint8_t **) &ptr));
-        BAIL_IF_ERR(proNameLen >= proStructLen, E_INVALID_DATA);
         // Show property name string
         BAIL_IF_ERR(move_pos(context, proNameLen) == NULL, E_NOT_ENOUGH_DATA);
         uint32_t proValLen;
         BAIL_IF(_read_uint32(context, &proValLen));
-        BAIL_IF_ERR(proValLen >= proStructLen, E_INVALID_DATA);
+        BAIL_IF_ERR(proStructLen - sizeof(uint32_t) - proNameLen - sizeof(uint32_t) - proValLen != 0, E_INVALID_DATA);
         // Show property value string
         BAIL_IF_ERR(move_pos(context, proValLen) == NULL, E_NOT_ENOUGH_DATA);
         // data = len name, name, len value, value (ignore length)
         BAIL_IF(add_new_field(context, NEM_STR_PROPERTY, STI_PROPERTY, proStructLen, ptr));
+        propertyLen = propertyLen + sizeof(uint32_t) + proStructLen;
     }
     // Levy structure length
     uint32_t levyLen;
@@ -409,12 +406,12 @@ static int parse_mosaic_definition_creation_transaction(parse_context_t *context
         BAIL_IF_ERR(ptr == NULL, E_NOT_ENOUGH_DATA);
         //Length of namespace id string
         uint32_t nsidLen = read_uint32(ptr);
-        BAIL_IF_ERR(nsidLen > levy->msIdLen, E_INVALID_DATA);
         //namespaceid
         BAIL_IF_ERR(move_pos(context, nsidLen) == NULL, E_NOT_ENOUGH_DATA);
         uint32_t mnLen;
         BAIL_IF(_read_uint32(context, &mnLen));
-        BAIL_IF_ERR(mnLen > levy->msIdLen, E_INVALID_DATA);
+        BAIL_IF_ERR(levy->msIdLen - sizeof(uint32_t) - nsidLen - sizeof(uint32_t) - mnLen != 0, E_INVALID_DATA);
+        BAIL_IF_ERR(levyLen - sizeof(levy_structure_t) - levy->msIdLen - sizeof(uint64_t) != 0, E_INVALID_DATA);
         //mosaic name
         BAIL_IF_ERR(move_pos(context, mnLen) == NULL, E_NOT_ENOUGH_DATA);
         // Show levy mosaic: namespace: mosaic name, data = len namespaceid, namespaceid, len mosaic name, mosaic name
@@ -426,6 +423,10 @@ static int parse_mosaic_definition_creation_transaction(parse_context_t *context
         // Show levy fee
         BAIL_IF(add_new_field(context, NEM_UINT64_LEVY_FEE, STI_NEM, sizeof(uint64_t), read_data(context, sizeof(uint64_t)))); // Read data and security check
     }
+    // Check length of nested objects in mosaic definitions
+    BAIL_IF_ERR(mdsLen - sizeof(publickey_t) - sizeof(uint32_t) - midsLen - sizeof(uint32_t) - desLen - sizeof(uint32_t) - propertyLen
+                 - sizeof(uint32_t) - levyLen != 0, E_INVALID_DATA);
+    // Check mosaic definition sink address
     mosaic_definition_sink_t *sink = (mosaic_definition_sink_t*) read_data(context, sizeof(mosaic_definition_sink_t)); // Read data and security check
     BAIL_IF_ERR(sink == NULL, E_NOT_ENOUGH_DATA);
     BAIL_IF_ERR(sink->mdAddress.length > NEM_ADDRESS_LENGTH, E_INVALID_DATA);
@@ -445,13 +446,12 @@ static int parse_mosaic_supply_change_transaction(parse_context_t *context, comm
     //Length of namespace id string: 4
     uint32_t nsidLen;
     BAIL_IF(_read_uint32(context, &nsidLen));
-    BAIL_IF_ERR(nsidLen >= msidLen, E_INVALID_DATA);
     // Show namespace id string
     BAIL_IF(add_new_field(context, NEM_STR_NAMESPACE, STI_STR, nsidLen, read_data(context, nsidLen))); // Read data and security check
     //Length of mosaic name string
     uint32_t msnLen;
     BAIL_IF(_read_uint32(context, &msnLen));
-    BAIL_IF_ERR(msnLen >= msidLen, E_INVALID_DATA);
+    BAIL_IF_ERR(msidLen - sizeof(uint32_t) - nsidLen - sizeof(uint32_t) - msnLen != 0, E_INVALID_DATA);
     // Show mosaic name string
     BAIL_IF(add_new_field(context, NEM_STR_MOSAIC, STI_STR, msnLen, read_data(context, msnLen))); // Read data and security check
     // supply type and delta change

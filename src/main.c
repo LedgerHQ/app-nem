@@ -122,39 +122,6 @@ void io_seproxyhal_display(const bagl_element_t *element) {
     io_seproxyhal_display_default((bagl_element_t *)element);
 }
 
-void handle_SEPROXYHAL_TAG_FINGER_EVENT() {
-    UX_FINGER_EVENT(G_io_seproxyhal_spi_buffer);
-}
-
-void handle_SEPROXYHAL_TAG_BUTTON_PUSH_EVENT() {
-    UX_BUTTON_PUSH_EVENT(G_io_seproxyhal_spi_buffer);
-}
-
-void handle_SEPROXYHAL_TAG_STATUS_EVENT() {
-    if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID &&
-        !(U4BE(G_io_seproxyhal_spi_buffer, 3) &
-          SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED)) {
-        THROW(EXCEPTION_IO_RESET);
-    }
-}
-
-void handle_default() {
-    UX_DEFAULT_EVENT();
-}
-
-void handle_SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT() {
-    UX_DISPLAYED_EVENT({});
-}
-
-void handle_SEPROXYHAL_TAG_TICKER_EVENT() {
-    UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {
-        if (UX_ALLOWED) {
-            // redisplay screen
-            UX_REDISPLAY();
-        }
-    });
-}
-
 unsigned char io_event(unsigned char channel) {
     UNUSED(channel);
 
@@ -164,26 +131,32 @@ unsigned char io_event(unsigned char channel) {
     // can't have more than one tag in the reply, not supported yet.
     switch (G_io_seproxyhal_spi_buffer[0]) {
     case SEPROXYHAL_TAG_FINGER_EVENT:
-        handle_SEPROXYHAL_TAG_FINGER_EVENT();
+        UX_FINGER_EVENT(G_io_seproxyhal_spi_buffer);
         break;
 
     case SEPROXYHAL_TAG_BUTTON_PUSH_EVENT:
-        handle_SEPROXYHAL_TAG_BUTTON_PUSH_EVENT();
+        UX_BUTTON_PUSH_EVENT(G_io_seproxyhal_spi_buffer);
         break;
 
     case SEPROXYHAL_TAG_STATUS_EVENT:
-        handle_SEPROXYHAL_TAG_STATUS_EVENT();
-    // no break is intentional
-    default:
-        handle_default();
-        break;
+        if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID &&
+            !(U4BE(G_io_seproxyhal_spi_buffer, 3) &
+              SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED)) {
+            THROW(EXCEPTION_IO_RESET);
+        }
+        /* fall through */
 
     case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
-        handle_SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT();
+        UX_DISPLAYED_EVENT({});
         break;
 
     case SEPROXYHAL_TAG_TICKER_EVENT:
-        handle_SEPROXYHAL_TAG_TICKER_EVENT();
+        // handle_SEPROXYHAL_TAG_TICKER_EVENT();
+        UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {});
+        break;
+
+    default:
+        UX_DEFAULT_EVENT();
         break;
     }
 

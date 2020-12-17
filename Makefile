@@ -34,10 +34,10 @@ DEFINES   += APPVERSION=\"$(APPVERSION)\"
 
 DEFINES += $(DEFINES_LIB)
 
-ifeq ($(TARGET_NAME),TARGET_BLUE)
-ICONNAME=app_NEM.gif
+ifeq ($(TARGET_NAME),TARGET_NANOX)
+ICONNAME=icons/nanox_app_nem.gif
 else
-ICONNAME=icon_NEM.gif
+ICONNAME=icons/nanos_app_nem.gif
 endif
 
 

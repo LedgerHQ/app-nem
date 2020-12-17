@@ -1,9 +1,25 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+# *******************************************************************************
+# *   NEM Wallet
+# *   (c) 2020 FDS
+# *
+# *  Licensed under the Apache License, Version 2.0 (the "License");
+# *  you may not use this file except in compliance with the License.
+# *  You may obtain a copy of the License at
+# *
+# *      http://www.apache.org/licenses/LICENSE-2.0
+# *
+# *  Unless required by applicable law or agreed to in writing, software
+# *  distributed under the License is distributed on an "AS IS" BASIS,
+# *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# *  See the License for the specific language governing permissions and
+# *  limitations under the License.
+# ********************************************************************************
 
-from ledgerblue.comm import getDongle
-from ledgerblue.commException import CommException
 import argparse
-from base import parse_bip32_path
+from base import get_publickey
+
+MAINNET=104
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--path', help="BIP32 path to retrieve.")
@@ -11,18 +27,8 @@ parser.add_argument('--ed25519', help="Derive on ed25519 curve", action='store_t
 parser.add_argument("--apdu", help="Display APDU log", action='store_true')
 args = parser.parse_args()
 
-if args.path == None:
-  args.path = "44'/43'/104'/0'/0'"
-
-donglePath = parse_bip32_path(args.path)
 print("-= NEM Ledger =-")
 print("Request Public Key for mainnet network")
-print "Please confirm on your Ledger Nano S"
-apdu = "e0" + "02" + "01" + "80"
-apdu = apdu.decode('hex') + chr(len(donglePath) + 1) + chr(len(donglePath) / 4) + donglePath
-dongle = getDongle(args.apdu)
-result = dongle.exchange(bytes(apdu))
-pub = str(result).encode("hex")
-print "address:\t", result[1:41]
-print "publicKey:\t", pub[84:84+64]
-print "bip32Path:\t", args.path
+print("Please confirm on your Ledger Nano S")
+
+get_publickey(MAINNET)

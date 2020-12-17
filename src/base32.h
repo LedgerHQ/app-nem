@@ -1,8 +1,7 @@
 /*******************************************************************************
- *   Ledger Nimiq App
+ *   NEM Wallet
  *   (c) 2018 Ledger
- *
- *  adapted from https://stash.forgerock.org/projects/OPENAM/repos/forgerock-authenticator-ios/browse/ForgeRock-Authenticator/base32.h
+ *   (c) 2020 FDS
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,14 +15,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ********************************************************************************/
-
 #ifndef _BASE32_H_
 #define _BASE32_H_
 
-#include <stddef.h>
 #include <stdint.h>
-
 
 int base32_encode(const uint8_t *data, int length, char *result, int bufSize);
 
-#endif
+#endif //_BASE32_H_

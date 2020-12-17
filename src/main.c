@@ -112,8 +112,8 @@ void nem_main(void) {
             }
             FINALLY {
             }
+            END_TRY;
         }
-        END_TRY
     }
 }
 
@@ -212,17 +212,19 @@ __attribute__((section(".boot"))) int main(void) {
 
                 nem_main();
             }
-                CATCH(EXCEPTION_IO_RESET) {
-                    // reset IO and UX
-                    continue;
-                }
-                CATCH_ALL {
-                    break;
-                }
+            CATCH(EXCEPTION_IO_RESET) {
+                // reset IO and UX
+                CLOSE_TRY;
+                continue;
+            }
+            CATCH_ALL {
+                CLOSE_TRY;
+                break;
+            }
             FINALLY {
             }
         }
-        END_TRY
+        END_TRY;
     }
     app_exit();
 

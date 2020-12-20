@@ -112,8 +112,8 @@ void nem_main(void) {
             }
             FINALLY {
             }
-            END_TRY;
         }
+        END_TRY;
     }
 }
 
@@ -151,8 +151,12 @@ unsigned char io_event(unsigned char channel) {
         break;
 
     case SEPROXYHAL_TAG_TICKER_EVENT:
-        // handle_SEPROXYHAL_TAG_TICKER_EVENT();
-        UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {});
+        UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {
+            if (UX_ALLOWED) {
+                // redisplay screen
+                UX_REDISPLAY();
+            }
+        });
         break;
 
     default:

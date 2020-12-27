@@ -18,6 +18,7 @@
 #ifndef LEDGER_APP_NEM_PRINTERS_H
 #define LEDGER_APP_NEM_PRINTERS_H
 
+#include <stdint.h>
 #include "limitations.h"
 
 enum _parser_error {

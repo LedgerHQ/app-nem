@@ -33,6 +33,7 @@ bipp32_path = (
 
 APDU_GET_ACCOUNT = "E0020180"
 APDU_SIGN_TX = "E0040080"
+APDU_GET_REMOTE_ACCOUNT = "E0050180"
 APDU_GET_APP_CONFIGURATION = "E0060000ff"
 
 dongle = getDongle(True)
@@ -83,6 +84,9 @@ def send_sign_package(network_type, data_hex=None):
 
 def get_publickey(network_type):
     return send_package(APDU_GET_ACCOUNT, network_type)
+
+def get_remote_account(network_type):
+    return send_package(APDU_GET_REMOTE_ACCOUNT, network_type)
 
 def sign_transfer_tx(network_type):
     TXN =  "0101000001000098B005690A200000009F96DF7E7A639B4034B8BEE5B88AB1D640DB66EB5A47AFE018E320CB130C183DA086010000000000C013690A2800000054424535365A374D4C515A34533735354A5A4C34365652594D374F443337534C5047465A504F354F404B4C00000000000D00000001000000050000007474657374"
@@ -176,6 +180,7 @@ def sign_multisig_signature_transaction(network_type):
 
 get_version()
 get_publickey(TESTNET)
+# get_remote_account(TESTNET)
 sign_transfer_tx(TESTNET)
 # sign_transfer_hex_message_tx(TESTNET)
 # sign_transfer_encrypted_message_tx(TESTNET)

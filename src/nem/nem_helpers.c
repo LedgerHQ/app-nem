@@ -78,3 +78,15 @@ void nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t inNet
     memcpy(rawAddress + 21, buffer1, 4);
     base32_encode((const uint8_t *) rawAddress, 25, (char *) outAddress, outLen);
 }
+
+void nem_get_remote_private_key(const char *privateKey, unsigned int priKeyLen, const char* key, unsigned int keyLen, uint8_t askOnEncrypt, uint8_t askOnDecrypt, uint8_t *out, unsigned int outLen)
+{
+    int result;
+    uint8_t data[260];
+    memset(data, 0, sizeof(data));
+    strncpy((char *)data, key, keyLen);
+    strncat((char *)data, askOnEncrypt ? "E1" : "E0", 2);
+    strncat((char *)data, askOnDecrypt ? "D1" : "D0", 2);
+    result = cx_hmac_sha512(privateKey, priKeyLen, data, strlen((char *)data), data, sizeof(data));
+    strncpy((char *) out, data, outLen);
+}

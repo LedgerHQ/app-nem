@@ -15,28 +15,11 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 ********************************************************************************/
-#ifndef LEDGER_APP_NEM_CONSTANTS_H
-#define LEDGER_APP_NEM_CONSTANTS_H
+#ifndef LEDGER_APP_NEM_REMOTEUI_H
+#define LEDGER_APP_NEM_REMOTEUI_H
 
-#define CLA 0xE0
-#define INS_GET_PUBLIC_KEY 0x02
-#define INS_SIGN 0x04
-#define INS_GET_REMOTE_ACCOUNT 0x05
-#define INS_GET_APP_CONFIGURATION 0x06
-#define P1_CONFIRM 0x01
-#define P1_NON_CONFIRM 0x00
-#define P2_NO_CHAINCODE 0x00
-#define P2_CHAINCODE 0x01
-#define P1_MASK_ORDER 0x01u
-#define P1_MASK_MORE 0x80u
-#define P2_SECP256K1 0x40u
-#define P2_ED25519 0x80u
+#include "common.h"
 
-#define OFFSET_CLA 0
-#define OFFSET_INS 1
-#define OFFSET_P1 2
-#define OFFSET_P2 3
-#define OFFSET_LC 4
-#define OFFSET_CDATA 5
+void display_remote_account_confirmation_ui(action_t onApprove, action_t onReject);
 
-#endif //LEDGER_APP_NEM_CONSTANTS_H
+#endif //LEDGER_APP_NEM_REMOTEUI_H

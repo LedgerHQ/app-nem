@@ -22,7 +22,8 @@
 #include "fields.h"
 #include "readers.h"
 #include "printers.h"
-#include "nem/nem_helpers.h"
+#include "nem_helpers.h"
+#include "global.h"
 #include "common.h"
 #include "base32.h"
 
@@ -105,7 +106,12 @@ static void uint64_formatter(const field_t *field, char *dst) {
 }
 
 static void address_formatter(const field_t *field, char *dst) {
-    snprintf_ascii(dst, 0, MAX_FIELD_LEN,field->data, field->length);
+    if (field->id == NEM_PUBLICKEY_IT_REMOTE ||
+        field->id == NEM_PUBLICKEY_AM_COSIGNATORY) {
+        nem_public_key_to_address(field->data, transactionContext.network_type, transactionContext.algo , dst, MAX_FIELD_LEN);
+    } else {
+        snprintf_ascii(dst, 0, MAX_FIELD_LEN,field->data, field->length);
+    }
 }
 
 static void mosaic_formatter(const field_t *field, char *dst) {

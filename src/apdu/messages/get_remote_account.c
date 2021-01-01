@@ -62,7 +62,6 @@ void handle_remote_private_key(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
     uint8_t bip32PathLength = *(dataBuffer++);
     cx_ecfp_private_key_t privateKey;
     uint8_t algo;
-    uint8_t encrypt = 0;
     uint8_t askOnEncrypt = 0;
     uint8_t askOnDecrypt = 0;
     uint8_t p2Chain = p2 & 0x3F;

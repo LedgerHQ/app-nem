@@ -264,7 +264,7 @@ static int parse_importance_transfer_transaction(parse_context_t *context, commo
     //  Show importance transfer mode
     BAIL_IF(add_new_field(context, NEM_UINT32_IT_MODE, STI_UINT32, sizeof(uint8_t), (const uint8_t *) &txn->iMode));
     // Show public key of remote account
-    BAIL_IF(add_new_field(context, NEM_PUBLICKEY_IT_REMOTE, STI_HASH256, NEM_PUBLIC_KEY_LENGTH, (const uint8_t *) &txn->iPublicKey.publicKey));
+    BAIL_IF(add_new_field(context, NEM_PUBLICKEY_IT_REMOTE, STI_ADDRESS, NEM_PUBLIC_KEY_LENGTH, (const uint8_t *) &txn->iPublicKey.publicKey));
     // Show fee
     BAIL_IF(add_new_field(context, NEM_UINT64_TXN_FEE, STI_NEM, sizeof(uint64_t), (const uint8_t *) &common_header->fee));
     return E_SUCCESS;
@@ -283,7 +283,7 @@ static int parse_aggregate_modification_transaction(parse_context_t *context, co
         //  Show modification type
         BAIL_IF(add_new_field(context, NEM_UINT32_AM_MODICATION_TYPE, STI_UINT32, sizeof(uint32_t), (const uint8_t *) &txn->amType));
         // Show public key of cosignatory
-        BAIL_IF(add_new_field(context, NEM_PUBLICKEY_AM_COSIGNATORY, STI_HASH256, NEM_PUBLIC_KEY_LENGTH, (const uint8_t *) &txn->amPublicKey.publicKey));
+        BAIL_IF(add_new_field(context, NEM_PUBLICKEY_AM_COSIGNATORY, STI_ADDRESS, NEM_PUBLIC_KEY_LENGTH, (const uint8_t *) &txn->amPublicKey.publicKey));
     }
     if (common_header->version == 2) {
         const uint8_t *pcmLen;

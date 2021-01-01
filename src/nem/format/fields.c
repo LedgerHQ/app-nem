@@ -55,6 +55,8 @@ void resolve_fieldname(const field_t *field, char* dst) {
             CASE_FIELDNAME(NEM_STR_MULTISIG_ADDRESS, "Multisig Address")
             CASE_FIELDNAME(NEM_STR_SINK_ADDRESS, "Sink Address")
             CASE_FIELDNAME(NEM_STR_LEVY_ADDRESS, "Levy Address")
+            CASE_FIELDNAME(NEM_PUBLICKEY_IT_REMOTE, "Rmt. Address")
+            CASE_FIELDNAME(NEM_PUBLICKEY_AM_COSIGNATORY, "CosignatoryAddr")
         }
     }
 

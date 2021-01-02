@@ -108,6 +108,8 @@ typedef struct common_txn_header_t {
 #define BAIL_IF(x) {int err = x; if (err) return err;}
 #define BAIL_IF_ERR(x, err) {if (x) return err;}
 
+int parse_multisig_transaction(parse_context_t *context, common_txn_header_t *common_header, uint8_t is_inner_tx);
+
 // Security check
 static bool has_data(parse_context_t *context, uint32_t numBytes) {
     if (context->offset + numBytes < context->offset) {
@@ -313,8 +315,8 @@ static int parse_multisig_signature_transaction(parse_context_t *context, common
     BAIL_IF(add_new_field(context, NEM_HASH256, STI_HASH256, txn->hashLen, (const uint8_t *) &txn->hash));
     // Show multisig address
     BAIL_IF(add_new_field(context, NEM_STR_MULTISIG_ADDRESS, STI_ADDRESS, NEM_ADDRESS_LENGTH, (const uint8_t *) &txn->msAddress.address));
-    // Show fee
-    BAIL_IF(add_new_field(context, NEM_UINT64_TXN_FEE, STI_NEM, sizeof(uint64_t), (const uint8_t *) &common_header->fee));
+    // Show multisig signature inner transaction
+    BAIL_IF(parse_multisig_transaction(context, common_header, 0));
     return E_SUCCESS;
 }
 
@@ -469,21 +471,21 @@ static int parse_mosaic_supply_change_transaction(parse_context_t *context, comm
     return E_SUCCESS;
 }
 
-static int parse_multisig_transaction(parse_context_t *context, common_txn_header_t *common_header) {
+int parse_multisig_transaction(parse_context_t *context, common_txn_header_t *common_header, uint8_t is_inner_tx) {
     // Length of inner transaction object.
     // This can be a transfer, an importance transfer or an aggregate modification transaction
     uint32_t innerTxnLength;
     BAIL_IF(_read_uint32(context, &innerTxnLength)); // Read uint32 and security check
     BAIL_IF_ERR(!has_data(context, innerTxnLength), E_NOT_ENOUGH_DATA);
-    BAIL_IF(add_new_field(context, NEM_UINT64_MULTISIG_FEE, STI_NEM, sizeof(uint32_t), (const uint8_t *) &common_header->fee));
+    BAIL_IF(add_new_field(context, NEM_UINT64_MULTISIG_FEE, STI_NEM, sizeof(uint64_t), (const uint8_t *) &common_header->fee));
     uint32_t innerOffset = 0;
     while (innerOffset < innerTxnLength) {
         uint32_t previousOffset = context->offset;
         // get header first
         common_txn_header_t *inner_header = (common_txn_header_t*) read_data(context, sizeof(common_txn_header_t)); // Read data and security check
         BAIL_IF_ERR(inner_header == NULL, E_NOT_ENOUGH_DATA);
-        // Show inner transaction type
-        BAIL_IF(add_new_field(context, NEM_UINT32_INNER_TRANSACTION_TYPE, STI_UINT32, sizeof(uint32_t), (const uint8_t *) &inner_header->transactionType));
+        // Show inner transaction / detail transaction type
+        BAIL_IF(add_new_field(context, is_inner_tx ? NEM_UINT32_INNER_TRANSACTION_TYPE : NEM_UINT32_DETAIL_TRANSACTION_TYPE, STI_UINT32, sizeof(uint32_t), (const uint8_t *) &inner_header->transactionType));
         switch (inner_header->transactionType) {
             case NEM_TXN_TRANSFER:
                 BAIL_IF(parse_transfer_transaction(context, inner_header));
@@ -495,8 +497,10 @@ static int parse_multisig_transaction(parse_context_t *context, common_txn_heade
                 BAIL_IF(parse_aggregate_modification_transaction(context, inner_header));
                 break;
             case NEM_TXN_MULTISIG_SIGNATURE:
-                BAIL_IF(parse_multisig_signature_transaction(context, inner_header));
-                break;
+                if (context->transactionType != NEM_TXN_MULTISIG_SIGNATURE) {
+                    BAIL_IF(parse_multisig_signature_transaction(context, inner_header));
+                    break;
+                } else return E_INVALID_DATA;
             case NEM_TXN_PROVISION_NAMESPACE:
                 BAIL_IF(parse_provision_namespace_transaction(context, inner_header));
                 break;
@@ -533,7 +537,7 @@ static int parse_txn_detail(parse_context_t *context, common_txn_header_t *commo
             err = parse_multisig_signature_transaction(context, common_header);
             break;
         case NEM_TXN_MULTISIG:
-            err = parse_multisig_transaction(context, common_header);
+            err = parse_multisig_transaction(context, common_header, 1);
             break;
         case NEM_TXN_PROVISION_NAMESPACE:
             err = parse_provision_namespace_transaction(context, common_header);
@@ -551,10 +555,21 @@ static int parse_txn_detail(parse_context_t *context, common_txn_header_t *commo
     return err;
 }
 
+static void set_sign_data_length(parse_context_t *context) {
+    if (context->transactionType == NEM_TXN_MULTISIG_SIGNATURE) {
+        // Sign data from generation hash to transaction hash
+        transactionContext.rawTxLength = sizeof(multsig_signature_header_t) + sizeof(common_txn_header_t);
+    } else {
+        // Sign all data in the transaction
+        transactionContext.rawTxLength = context->length;
+    }
+}
+
 static common_txn_header_t *parse_common_header(parse_context_t *context) {
     // get gen_hash and transaction_type
     common_txn_header_t *common_header = (common_txn_header_t *) read_data(context, sizeof(common_txn_header_t)); // Read data and security check
     BAIL_IF_ERR(common_header == NULL, NULL);
+    context->transactionType = common_header->transactionType;
     context->version = common_header->version;
     return common_header;
 }
@@ -562,5 +577,6 @@ static common_txn_header_t *parse_common_header(parse_context_t *context) {
 int parse_txn_context(parse_context_t *context) {
     common_txn_header_t* txn = parse_common_header(context);
     BAIL_IF_ERR(txn == NULL, E_NOT_ENOUGH_DATA);
+    set_sign_data_length(context);
     return parse_txn_detail(context, txn);
 }

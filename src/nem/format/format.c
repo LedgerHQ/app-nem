@@ -37,8 +37,10 @@ static void uint8_formatter(const field_t *field, char *dst) {
 static void uint32_formatter(const field_t *field, char *dst) {
     uint32_t value = read_uint32(field->data);
     if (field->id == NEM_UINT32_MOSAIC_COUNT) {
-        SNPRINTF(dst, "Found %d txs", value);
-    } else if (field->id == NEM_UINT32_TRANSACTION_TYPE || field->id == NEM_UINT32_INNER_TRANSACTION_TYPE) {
+        SNPRINTF(dst, "Found %d", value);
+    } else if (field->id == NEM_UINT32_TRANSACTION_TYPE ||
+               field->id == NEM_UINT32_INNER_TRANSACTION_TYPE ||
+               field->id == NEM_UINT32_DETAIL_TRANSACTION_TYPE) {
         switch (value) {
             CASE_FIELDVALUE(NEM_TXN_TRANSFER, "Transfer TX")
             CASE_FIELDVALUE(NEM_TXN_IMPORTANCE_TRANSFER, "Importance Transfer TX")

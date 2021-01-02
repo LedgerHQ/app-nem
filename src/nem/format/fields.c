@@ -26,6 +26,7 @@ void resolve_fieldname(const field_t *field, char* dst) {
         switch (field->id) {
             CASE_FIELDNAME(NEM_UINT32_TRANSACTION_TYPE, "Transaction Type")
             CASE_FIELDNAME(NEM_UINT32_INNER_TRANSACTION_TYPE, "Inner TX Type")
+            CASE_FIELDNAME(NEM_UINT32_DETAIL_TRANSACTION_TYPE, "Detail TX Type")
             CASE_FIELDNAME(NEM_UINT32_MOSAIC_COUNT, "Mosaics")
             CASE_FIELDNAME(NEM_UINT32_IT_MODE, "Importance Mode")
             CASE_FIELDNAME(NEM_UINT32_AM_COSIGNATORY_NUM, "Cosignatory Num")

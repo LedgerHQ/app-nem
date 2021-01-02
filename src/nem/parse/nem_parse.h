@@ -28,7 +28,7 @@ typedef struct result_t {
 
 typedef struct parse_context_t {
     uint8_t version;
-    uint16_t transactionType;
+    uint32_t transactionType;
     uint8_t *data;
     result_t result;
     uint32_t length;

@@ -62,10 +62,10 @@ void handle_remote_private_key(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
     uint8_t bip32PathLength = *(dataBuffer++);
     cx_ecfp_private_key_t privateKey;
     uint8_t algo;
+    uint8_t encrypt = 1;
     uint8_t askOnEncrypt = 0;
     uint8_t askOnDecrypt = 0;
     uint8_t p2Chain = p2 & 0x3F;
-    char key[32] = "Export delegated harvesting key?";
     UNUSED(p2Chain);
     if ((bip32PathLength < 1) || (bip32PathLength > MAX_BIP32_PATH)) {
         THROW(0x6a80);
@@ -99,7 +99,9 @@ void handle_remote_private_key(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
                 THROW(0x6a80);
             }
             io_seproxyhal_io_heartbeat();
-            nem_get_remote_private_key(privateKey.d, 32, key, strlen(key), askOnEncrypt, askOnDecrypt, nem_remote_private_key, 32);
+            nem_get_remote_private_key(privateKey.d, 32, (const uint8_t *) ACC_KEY, 32, (const uint8_t *) ACC_VALUE, 64,
+                                        encrypt, askOnEncrypt, askOnDecrypt,
+                                        nem_remote_private_key, 32);
             explicit_bzero(privateKeyData, sizeof(privateKeyData));
             explicit_bzero(&privateKey, sizeof(privateKey));
             io_seproxyhal_io_heartbeat();

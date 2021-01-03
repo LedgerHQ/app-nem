@@ -49,11 +49,19 @@
 #define STR_NEM "nem"
 #define STR_XEM "xem"
 
+#define ACC_KEY     "Export delegated harvesting key?"
+#define ACC_VALUE  "0000000000000000000000000000000000000000000000000000000000000000"
+
 uint8_t get_network_type(const uint32_t bip32Path[]);
 uint8_t get_algo(uint8_t network_type);
 #ifndef FUZZ
-void nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo, uint8_t *outPublicKey, char *outAddress, uint8_t outLen);
-void nem_get_remote_private_key(const uint8_t *privateKey, unsigned int priKeyLen, const char* key, unsigned int keyLen, uint8_t askOnEncrypt, uint8_t askOnDecrypt, uint8_t *out, unsigned int outLen);
+void nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo,
+                                uint8_t *outPublicKey, char *outAddress, uint8_t outLen);
+void nem_get_remote_private_key(const uint8_t *privateKey, unsigned int priKeyLen,
+                                const uint8_t *key, unsigned int keyLen,
+                                const uint8_t *value, unsigned int valueLen,
+                                uint8_t encrypt, uint8_t askOnEncrypt, uint8_t askOnDecrypt,
+                                uint8_t *out, unsigned int outLen);
 void nem_public_key_to_address(const uint8_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo, char *outAddress, uint8_t outLen);
 #endif
 

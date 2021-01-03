@@ -18,6 +18,13 @@
 #include "base32.h"
 #include "nem_helpers.h"
 
+#if defined(IOCUSTOMCRYPT)
+#include "aes.h"
+typedef struct AES_ctx AES_CTX;
+#else
+typedef cx_aes_key_t AES_CTX;
+#endif
+
 uint8_t get_network_type(const uint32_t bip32Path[]) {
     switch(bip32Path[2]) {
         case 0x80000068:
@@ -80,16 +87,51 @@ void nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t inNet
     base32_encode((const uint8_t *) rawAddress, 25, (char *) outAddress, outLen);
 }
 
-void nem_get_remote_private_key(const uint8_t *privateKey, unsigned int priKeyLen, const char* key, unsigned int keyLen, uint8_t askOnEncrypt, uint8_t askOnDecrypt, uint8_t *out, unsigned int outLen)
+void nem_get_remote_private_key(const uint8_t *privateKey, unsigned int priKeyLen,
+                                const uint8_t *key, unsigned int keyLen,
+                                const uint8_t *value, unsigned int valueLen,
+                                uint8_t encrypt, uint8_t askOnEncrypt, uint8_t askOnDecrypt,
+                                uint8_t *out, unsigned int outLen)
 {
-    int result;
     uint8_t data[260];
     memset(data, 0, sizeof(data));
-    strncpy((char *)data, key, keyLen);
+    strncpy((char *)data, (const char *)key, keyLen);
     strncat((char *)data, askOnEncrypt ? "E1" : "E0", 2);
     strncat((char *)data, askOnDecrypt ? "D1" : "D0", 2);
-    result = cx_hmac_sha512(privateKey, priKeyLen, data, strlen((char *)data), data, sizeof(data));
+    cx_hmac_sha512(privateKey, priKeyLen, data, strlen((char *)data), data, sizeof(data));
+    AES_CTX ctx;
+    const uint8_t *aes = data;
+    uint8_t *iv = data + 32;
+#if defined(IOCUSTOMCRYPT)
+    strncpy((char *) out, (const char *) value, outLen);
+    AES_init_ctx_iv(&ctx, aes, iv);
+#else
     strncpy((char *) out, (const char *) data, outLen);
+    cx_aes_init_key(aes, 32, &ctx);
+#endif
+    BEGIN_TRY {
+        TRY {
+            if (encrypt) {
+#if defined(IOCUSTOMCRYPT)
+                AES_CBC_encrypt_buffer(&ctx, out, outLen);
+#else
+                cx_aes_iv(&ctx, CX_LAST | CX_ENCRYPT | CX_CHAIN_CBC | CX_PAD_NONE , iv, 16, value, 64, out, outLen);
+#endif
+            } else {
+#if defined(IOCUSTOMCRYPT)
+                AES_CBC_decrypt_buffer(&ctx, out, outLen);
+#else
+                cx_aes_iv(&ctx, CX_LAST | CX_DECRYPT | CX_CHAIN_CBC | CX_PAD_NONE, iv, 16, value, 64, out, outLen);
+#endif
+            }
+        }
+        CATCH_OTHER(e) {
+            //THROW(e);
+        }
+        FINALLY {
+        }
+    }
+    END_TRY;
 }
 
 void nem_public_key_to_address(const uint8_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo, char *outAddress, uint8_t outLen) {

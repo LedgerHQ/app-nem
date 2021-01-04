@@ -211,8 +211,10 @@ static int parse_transfer_transaction(parse_context_t *context, common_txn_heade
             // Show xem amount
             BAIL_IF(add_new_field(context, NEM_UINT64_TXN_FEE, STI_NEM, sizeof(uint64_t), (const uint8_t *) &txn->amount));
         } else {
-            // Show sent other mosaic num
-            BAIL_IF(add_new_field(context, NEM_UINT32_MOSAIC_COUNT, STI_UINT32, sizeof(uint32_t), (const uint8_t *) pnumMosaic));
+            if (numMosaic > 1) {
+                // Show sent other mosaic num
+                BAIL_IF(add_new_field(context, NEM_UINT32_MOSAIC_COUNT, STI_UINT32, sizeof(uint32_t), (const uint8_t *) pnumMosaic));
+            }
             for (uint32_t i = 0; i < numMosaic; i++) {
                 // mosaic structure length pointer
                 uint32_t mosaicLen;
@@ -246,6 +248,9 @@ static int parse_transfer_transaction(parse_context_t *context, common_txn_heade
                     // xem quantity
                     BAIL_IF(add_new_field(context, NEM_MOSAIC_AMOUNT, STI_NEM, sizeof(uint64_t), read_data(context, sizeof(uint64_t)))); // Read data and security check
                 } else {
+                    if (numMosaic == 1) {
+                        BAIL_IF(add_new_field(context, NEM_UINT32_MOSAIC_COUNT, STI_UINT32, sizeof(uint32_t), (const uint8_t *) pnumMosaic));
+                    }
                     // Unknow mosaic notification
                     BAIL_IF(add_new_field(context, NEM_MOSAIC_UNKNOWN_TYPE, STI_STR, 0, (const uint8_t *) &is_nem));
                     // Show mosaic information: namespace: mosaic name, data=len namespaceId, namespaceId, len mosaic name, mosaic name

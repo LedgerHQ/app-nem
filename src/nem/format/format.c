@@ -23,7 +23,7 @@
 #include "readers.h"
 #include "printers.h"
 #include "nem_helpers.h"
-#include "global.h"
+#include "apdu/global.h"
 #include "common.h"
 #include "base32.h"
 
@@ -110,7 +110,9 @@ static void uint64_formatter(const field_t *field, char *dst) {
 static void address_formatter(const field_t *field, char *dst) {
     if (field->id == NEM_PUBLICKEY_IT_REMOTE ||
         field->id == NEM_PUBLICKEY_AM_COSIGNATORY) {
+    #ifndef FUZZ
         nem_public_key_to_address(field->data, transactionContext.network_type, transactionContext.algo , dst, MAX_FIELD_LEN);
+    #endif
     } else {
         snprintf_ascii(dst, 0, MAX_FIELD_LEN,field->data, field->length);
     }

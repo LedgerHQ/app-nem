@@ -1,5 +1,6 @@
 #ifndef _CUSTOM_AES_
 #define _CUSTOM_AES_
+#ifndef FUZZ
 #if defined(IOCUSTOMCRYPT)
 
 #include "os.h"
@@ -54,3 +55,4 @@ void AES_CBC_decrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length);
 
 #endif
 #endif //_CUSTOM_AES_
+#endif // FUZZ

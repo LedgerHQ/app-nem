@@ -18,6 +18,7 @@
 #include "base32.h"
 #include "nem_helpers.h"
 
+#ifndef FUZZ
 #if defined(IOCUSTOMCRYPT)
 #include "aes.h"
 typedef struct AES_ctx AES_CTX;
@@ -149,3 +150,4 @@ void nem_public_key_to_address(const uint8_t *inPublicKey, uint8_t inNetworkId, 
     memcpy(rawAddress + 21, buffer1, 4);
     base32_encode((const uint8_t *) rawAddress, 25, (char *) outAddress, outLen);
 }
+#endif

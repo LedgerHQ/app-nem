@@ -21,7 +21,7 @@ endif
 include $(BOLOS_SDK)/Makefile.defines
 
 #  43	0x8000002b	XEM	NEM
-APPNAME = NEM
+APPNAME = 'NEM (XEM)'
 APP_LOAD_PARAMS =--appFlags 0x240 --path "44'/43'" --curve secp256k1 --curve ed25519 $(COMMON_LOAD_PARAMS)
 
 APPVERSION_M=0

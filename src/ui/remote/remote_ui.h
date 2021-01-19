@@ -1,5 +1,6 @@
 /*******************************************************************************
 *    NEM Wallet
+*    (c) 2020 Ledger
 *    (c) 2020 FDS
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,27 +15,11 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 ********************************************************************************/
-#ifndef LEDGER_APP_NEM_NEMPARSE_H
-#define LEDGER_APP_NEM_NEMPARSE_H
+#ifndef LEDGER_APP_NEM_REMOTEUI_H
+#define LEDGER_APP_NEM_REMOTEUI_H
 
-#include "limitations.h"
-#include "nem/format/fields.h"
-#include "nem/nem_helpers.h"
+#include "common.h"
 
-typedef struct result_t {
-    uint8_t numFields;
-    field_t fields[MAX_FIELD_COUNT];
-} result_t;
+void display_remote_account_confirmation_ui(action_t onApprove, action_t onReject);
 
-typedef struct parse_context_t {
-    uint8_t version;
-    uint32_t transactionType;
-    uint8_t *data;
-    result_t result;
-    uint32_t length;
-    uint32_t offset;
-} parse_context_t;
-
-int parse_txn_context(parse_context_t *parseContext);
-
-#endif //LEDGER_APP_NEM_NEMPARSE_H
+#endif //LEDGER_APP_NEM_REMOTEUI_H

@@ -21,6 +21,7 @@
 #include "global.h"
 #include "messages/get_public_key.h"
 #include "messages/sign_transaction.h"
+#include "messages/get_remote_account.h"
 #include "messages/get_app_configuration.h"
 
 unsigned char lastINS = 0;
@@ -55,6 +56,13 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx) {
                                G_io_apdu_buffer[OFFSET_P2],
                                G_io_apdu_buffer + OFFSET_CDATA,
                                G_io_apdu_buffer[OFFSET_LC], flags);
+                    break;
+
+                case INS_GET_REMOTE_ACCOUNT:
+                    handle_remote_private_key(G_io_apdu_buffer[OFFSET_P1],
+                                            G_io_apdu_buffer[OFFSET_P2],
+                                            G_io_apdu_buffer + OFFSET_CDATA,
+                                            G_io_apdu_buffer[OFFSET_LC], flags, tx);
                     break;
 
                 case INS_GET_APP_CONFIGURATION:

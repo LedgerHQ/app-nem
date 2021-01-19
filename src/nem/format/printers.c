@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "printers.h"
-#include "nem_parse.h"
+#include "parse/nem_parse.h"
 
 int snprintf_number(char *dst, uint32_t len, uint64_t value) {
     char *p = dst;
@@ -70,7 +70,7 @@ int snprintf_token(char* dst, uint32_t len, uint64_t amount, uint8_t divisibilit
         }
     }
     // reverse order
-    for (i -= 1, j = 0; i >= 0 && j < len-1; i--, j++) {
+    for (i -= 1, j = 0; i >= 0 && j < (int)len-1; i--, j++) {
         dst[j] = buffer[i];
     }
     // strip trailing 0s

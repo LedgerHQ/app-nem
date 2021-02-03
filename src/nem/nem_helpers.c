@@ -27,15 +27,11 @@ typedef cx_aes_key_t AES_CTX;
 #endif
 
 uint8_t get_network_type(const uint32_t bip32Path[]) {
-    switch(bip32Path[2]) {
-        case 0x80000068:
+    switch(bip32Path[1]) {
+        case 0x8000002B:
             return MAINNET; //N
-        case 0x80000098:
+        case 0x80000001:
             return TESTNET; //T
-        case 0x80000060:
-            return MIJIN_MAINNET; //M
-        case 0x80000090:
-            return MIJIN_TESTNET; //S
         default:
             THROW(0x6a80);
     }

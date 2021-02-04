@@ -22,11 +22,11 @@ include $(BOLOS_SDK)/Makefile.defines
 
 #  43	0x8000002b	XEM	NEM
 APPNAME = 'NEM'
-APP_LOAD_PARAMS =--appFlags 0x240 --path "44'/43'" --curve secp256k1 --curve ed25519 $(COMMON_LOAD_PARAMS)
+APP_LOAD_PARAMS =--appFlags 0x240 --path "44'/43'" --path "44'/1'" --curve secp256k1 --curve ed25519 $(COMMON_LOAD_PARAMS)
 
 APPVERSION_M=0
 APPVERSION_N=0
-APPVERSION_P=6
+APPVERSION_P=8
 APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
 
 DEFINES   += UNUSED\(x\)=\(void\)x

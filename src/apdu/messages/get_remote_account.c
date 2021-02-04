@@ -61,7 +61,6 @@ void handle_remote_private_key(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
     uint32_t i;
     uint8_t bip32PathLength = *(dataBuffer++);
     cx_ecfp_private_key_t privateKey;
-    uint8_t algo;
     uint8_t encrypt = 1;
     uint8_t askOnEncrypt = 0;
     uint8_t askOnDecrypt = 0;
@@ -79,25 +78,11 @@ void handle_remote_private_key(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
                        (dataBuffer[2] << 8) | (dataBuffer[3]);
         dataBuffer += 4;
     }
-    uint8_t network_type = get_network_type(bip32Path);
-    algo = get_algo(network_type);
     io_seproxyhal_io_heartbeat();
     BEGIN_TRY {
         TRY {
-            os_perso_derive_node_bip32(CX_CURVE_256K1, bip32Path, bip32PathLength, privateKeyData, NULL);
-            if (algo == CX_SHA3) {
-                cx_ecfp_init_private_key(CX_CURVE_Ed25519, privateKeyData, NEM_PRIVATE_KEY_LENGTH, &privateKey);
-            } else if (algo == CX_KECCAK) {
-                //reverse privateKey
-                uint8_t privateKeyDataR[NEM_PRIVATE_KEY_LENGTH];
-                for (uint8_t j = 0; j < NEM_PRIVATE_KEY_LENGTH; j++) {
-                    privateKeyDataR[j] = privateKeyData[NEM_PRIVATE_KEY_LENGTH - 1 - j];
-                }
-                cx_ecfp_init_private_key(CX_CURVE_Ed25519, privateKeyDataR, NEM_PRIVATE_KEY_LENGTH, &privateKey);
-                explicit_bzero(privateKeyDataR, sizeof(privateKeyDataR));
-            } else {
-                THROW(0x6a80);
-            }
+            os_perso_derive_node_bip32_seed_key(HDW_ED25519_SLIP10, CX_CURVE_Ed25519, bip32Path, bip32PathLength, privateKeyData, NULL, (unsigned char*) "ed25519-keccak seed", 19);
+            cx_ecfp_init_private_key(CX_CURVE_Ed25519, privateKeyData, NEM_PRIVATE_KEY_LENGTH, &privateKey);
             io_seproxyhal_io_heartbeat();
             nem_get_remote_private_key(privateKey.d, 32, (const uint8_t *) ACC_KEY, 32, (const uint8_t *) ACC_VALUE, 64,
                                         encrypt, askOnEncrypt, askOnDecrypt,

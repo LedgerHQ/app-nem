@@ -69,7 +69,7 @@ void sign_transaction() {
             reset_transaction_context();
         }
     }
-    END_TRY
+    END_TRY;
 
     G_io_apdu_buffer[tx++] = 0x90;
     G_io_apdu_buffer[tx++] = 0x00;

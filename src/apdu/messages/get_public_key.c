@@ -108,7 +108,7 @@ void handle_public_key(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
             explicit_bzero(&privateKey, sizeof(privateKey));
         }
     }
-    END_TRY
+    END_TRY;
 
     if (p1 == P1_NON_CONFIRM) {
         *tx = set_result_get_publickey();

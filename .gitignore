@@ -7,4 +7,4 @@ src/glyphs.h
 .vscode
 *.pyc
 __pycache__
-tests/build/
+tests/unit-tests/build/

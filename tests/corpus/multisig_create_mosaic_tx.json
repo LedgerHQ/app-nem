@@ -1,0 +1,52 @@
+{
+    "common_txn_header": {
+        "transactionType": "MULTISIG",
+        "version": 1,
+        "networkType": 152,
+        "timestamp": 174657296,
+        "public_key": "9f96df7e7a639b4034b8bee5b88ab1d640db66eb5a47afe018e320cb130c183d",
+        "fee": 150000,
+        "deadline": 174660896
+    },
+    "fields": {
+        "transactions": [
+            {
+                "common_txn_header": {
+                    "transactionType": "MOSAIC_DEFINITION",
+                    "version": 1,
+                    "networkType": 152,
+                    "timestamp": 174657296,
+                    "public_key": "180158d9feed1711fbfc7718ed144275311dcfd10a4480035d1856cdac7242ab",
+                    "fee": 150000,
+                    "deadline": 174660896
+                },
+                "fields": {
+                    "mdcPublicKey": "180158d9feed1711fbfc7718ed144275311dcfd10a4480035d1856cdac7242ab",
+                    "namespace": "test_nem",
+                    "mosaicName": "mosaic_name",
+                    "description": "mosaic description",
+                    "properties": [
+                        {
+                            "propertyName": "divisibility",
+                            "propertyVal": "2"
+                        },
+                        {
+                            "propertyName": "initialSupply",
+                            "propertyVal": "12"
+                        },
+                        {
+                            "propertyName": "supplyMutable",
+                            "propertyVal": "true"
+                        },
+                        {
+                            "propertyName": "transferable",
+                            "propertyVal": "true"
+                        }
+                    ],
+                    "mdAddress": "TBMOSAICOD4F54EE5CDMR23CCBGOAM2XSJBR5OLC",
+                    "mdfee": 10000000
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,35 @@
+{
+    "common_txn_header": {
+        "transactionType": "MULTISIG_SIGNATURE",
+        "version": 1,
+        "networkType": 152,
+        "timestamp": 180611130,
+        "public_key": "9f96df7e7a639b4034b8bee5b88ab1d640db66eb5a47afe018e320cb130c183d",
+        "fee": 150000,
+        "deadline": 180614730
+    },
+    "fields": {
+        "hashObjLen": 36,
+        "hash": "9298e6a7255f269d88ba5d096341b3c56c3e65a511b72a947097c0cfab95d4b1",
+        "msAddress": "TA6DD3TAAW7DIOFJKWHNJJZQLTSRWAQ67YKWYQBG",
+        "transactions": [
+            {
+                "common_txn_header": {
+                    "transactionType": "TRANSFER",
+                    "version": 1,
+                    "networkType": 152,
+                    "timestamp": 180608061,
+                    "public_key": "722286c8fc1579ca04512bc6a3a076e3959227b2ad2874ed9707d67cd1cf17f2",
+                    "fee": 100000,
+                    "deadline": 180611661
+                },
+                "fields": {
+                    "recipient": "TB7IB6DSJKWBVQEK7PD7TWO66ECW5LY6SISM2CJJ",
+                    "amount": 400000,
+                    "payloadType": 1,
+                    "payload": "74657374206d657373616765"
+                }
+            }
+        ]
+    }
+}

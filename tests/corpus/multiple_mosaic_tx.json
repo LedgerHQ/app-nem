@@ -1,0 +1,29 @@
+{
+    "common_txn_header": {
+        "transactionType": "TRANSFER",
+        "version": 2,
+        "networkType": 152,
+        "timestamp": 174370696,
+        "public_key": "9f96df7e7a639b4034b8bee5b88ab1d640db66eb5a47afe018e320cb130c183d",
+        "fee": 150000,
+        "deadline": 174374296
+    },
+    "fields": {
+        "recipient": "TB7IB6DSJKWBVQEK7PD7TWO66ECW5LY6SISM2CJJ",
+        "amount": 1000000,
+        "payloadType": 1,
+        "payload": "54657374206d657373616765",
+        "mosaicList": [
+            {
+                "namespace": "nem",
+                "mosaicName": "xem",
+                "quantity": 1000000
+            },
+            {
+                "namespace": "testnet",
+                "mosaicName": "token",
+                "quantity": 1
+            }
+        ]
+    }
+}

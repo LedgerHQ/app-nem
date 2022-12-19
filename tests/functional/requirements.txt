@@ -1,0 +1,2 @@
+ragger[tests,speculos]>=1.1.0
+bip_utils

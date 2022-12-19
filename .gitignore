@@ -9,3 +9,5 @@ src/glyphs.h
 __pycache__
 tests/unit-tests/build/
 tests/unit-tests/temp_txn.raw
+tests/elfs/
+tests/functional/snapshots-tmp/

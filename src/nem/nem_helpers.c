@@ -61,7 +61,7 @@ void ripemd(const uint8_t *in, uint8_t inlen, uint8_t *out, uint8_t outlen) {
     cx_hash(&hash.header, CX_LAST, in, inlen, out, outlen);
 }
 
-void nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo, uint8_t *outPublicKey, char *outAddress, uint8_t outLen) {
+void nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo, uint8_t *outPublicKey, char *outAddress, uint32_t outLen) {
     uint8_t buffer1[32];
     uint8_t buffer2[20];
     uint8_t rawAddress[32];
@@ -131,7 +131,7 @@ void nem_get_remote_private_key(const uint8_t *privateKey, unsigned int priKeyLe
     END_TRY;
 }
 
-void nem_public_key_to_address(const uint8_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo, char *outAddress, uint8_t outLen) {
+void nem_public_key_to_address(const uint8_t *inPublicKey, uint8_t inNetworkId, unsigned int inAlgo, char *outAddress, uint32_t outLen) {
     uint8_t buffer1[32];
     uint8_t buffer2[20];
     uint8_t rawAddress[32];

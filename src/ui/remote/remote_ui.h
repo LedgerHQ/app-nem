@@ -21,5 +21,6 @@
 #include "common.h"
 
 void display_remote_account_confirmation_ui(action_t onApprove, action_t onReject);
+void display_remote_account_done(bool validated);
 
 #endif //LEDGER_APP_NEM_REMOTEUI_H

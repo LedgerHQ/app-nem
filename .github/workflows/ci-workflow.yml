@@ -43,6 +43,7 @@ jobs:
             model: nanox
           - SDK: "$NANOSP_SDK"
             model: nanosp
+          # add stax
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder-lite:latest
@@ -93,6 +94,7 @@ jobs:
           - model: nanos
           - model: nanox
           - model: nanosp
+          # add stax
     runs-on: ubuntu-latest
     steps:
       - name: Clone

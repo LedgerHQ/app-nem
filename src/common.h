@@ -19,6 +19,8 @@
 #define LEDGER_APP_NEM_COMMON_H
 
 #include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 typedef void (*action_t)();
 

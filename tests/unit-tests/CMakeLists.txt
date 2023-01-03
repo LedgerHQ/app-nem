@@ -18,4 +18,3 @@ add_executable(test_transaction_parser
 target_compile_options(test_transaction_parser PRIVATE -Wall -Wextra -pedantic -Werror)
 add_compile_definitions(test_transaction_parser PRIVATE FUZZ)
 target_include_directories(test_transaction_parser PRIVATE . ${SRC_DIR} ${SRC_DIR}/nem)
-target_link_libraries(test_transaction_parser PRIVATE cmocka)

@@ -87,6 +87,12 @@ jobs:
     name: Functional tests with Ragger (compatible with Speculos & physical devices)
     needs:
       - nano_build
+    strategy:
+      matrix:
+        include:
+          - model: nanos
+          - model: nanox
+          - model: nanosp
     runs-on: ubuntu-latest
     steps:
       - name: Clone
@@ -103,7 +109,5 @@ jobs:
           sudo apt-get update && sudo apt-get install -y qemu-user-static
           pip install --extra-index-url https://test.pypi.org/simple/ -r tests/functional/requirements.txt
 
-      - name: Run test
-        env:
-          CTEST_OUTPUT_ON_FAILURE: 1
-        run: pytest --tb=short -v tests/functional
+      - name: Run tests
+        run: pytest tests/functional/ -v --device ${{ matrix.model }}

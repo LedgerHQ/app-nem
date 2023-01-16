@@ -7,4 +7,7 @@ src/glyphs.h
 .vscode
 *.pyc
 __pycache__
-tests/build/
+tests/unit-tests/build/
+tests/unit-tests/temp_txn.raw
+tests/elfs/
+tests/functional/snapshots-tmp/

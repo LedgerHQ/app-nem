@@ -1,0 +1,37 @@
+{
+    "common_txn_header": {
+        "transactionType": "MULTISIG",
+        "version": 1,
+        "networkType": 152,
+        "timestamp": 174658196,
+        "public_key": "9f96df7e7a639b4034b8bee5b88ab1d640db66eb5a47afe018e320cb130c183d",
+        "fee": 150000,
+        "deadline": 174661796
+    },
+    "fields": {
+        "transactions": [
+            {
+                "common_txn_header": {
+                    "transactionType": "MULTISIG_AGGREGATE_MODIFICATION",
+                    "version": 2,
+                    "networkType": 152,
+                    "timestamp": 174658196,
+                    "public_key": "180158d9feed1711fbfc7718ed144275311dcfd10a4480035d1856cdac7242ab",
+                    "fee": 500000,
+                    "deadline": 174661796
+                },
+                "fields": {
+                    "cmList": [
+                        {
+                            "cmsLen": 40,
+                            "amType": 1,
+                            "amPublicKey": "a581459b8f16974e59b110fca581ee1ffd140a8c42b9ecdffc316d722f0cda35"
+                        }
+                    ],
+                    "cmLen": 4,
+                    "minCm": 4294967295
+                }
+            }
+        ]
+    }
+}

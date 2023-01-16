@@ -1,0 +1,32 @@
+{
+    "common_txn_header": {
+        "transactionType": "MULTISIG",
+        "version": 1,
+        "networkType": 152,
+        "timestamp": 179202136,
+        "public_key": "9f96df7e7a639b4034b8bee5b88ab1d640db66eb5a47afe018e320cb130c183d",
+        "fee": 150000,
+        "deadline": 179205736
+    },
+    "fields": {
+        "transactions": [
+            {
+                "common_txn_header": {
+                    "transactionType": "TRANSFER",
+                    "version": 1,
+                    "networkType": 152,
+                    "timestamp": 179202136,
+                    "public_key": "180158d9feed1711fbfc7718ed144275311dcfd10a4480035d1856cdac7242ab",
+                    "fee": 200000,
+                    "deadline": 179205736
+                },
+                "fields": {
+                    "recipient": "TB7IB6DSJKWBVQEK7PD7TWO66ECW5LY6SISM2CJJ",
+                    "amount": 10000000,
+                    "payloadType": 1,
+                    "payload": "53656e642061207472616e73666572207472616e73616374696f6e2066726f6d2061206d756c7469736967206163636f756e74207573696e67204c6564676572"
+                }
+            }
+        ]
+    }
+}

@@ -132,10 +132,12 @@ void nem_main(void) {
     }
 }
 
+#ifdef HAVE_BAGL
 // override point, but nothing more to do
 void io_seproxyhal_display(const bagl_element_t *element) {
-    io_seproxyhal_display_default((bagl_element_t *)element);
+    io_seproxyhal_display_default(element);
 }
+#endif // HAVE_BAGL
 
 unsigned char io_event(unsigned char channel) {
     UNUSED(channel);
@@ -145,12 +147,10 @@ unsigned char io_event(unsigned char channel) {
 
     // can't have more than one tag in the reply, not supported yet.
     switch (G_io_seproxyhal_spi_buffer[0]) {
-    case SEPROXYHAL_TAG_FINGER_EVENT:
-        UX_FINGER_EVENT(G_io_seproxyhal_spi_buffer);
-        break;
-
     case SEPROXYHAL_TAG_BUTTON_PUSH_EVENT:
+#ifdef HAVE_BAGL
         UX_BUTTON_PUSH_EVENT(G_io_seproxyhal_spi_buffer);
+#endif // HAVE_BAGL
         break;
 
     case SEPROXYHAL_TAG_STATUS_EVENT:
@@ -162,8 +162,19 @@ unsigned char io_event(unsigned char channel) {
         /* fall through */
 
     case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
-        UX_DISPLAYED_EVENT({});
+#ifdef HAVE_BAGL
+            UX_DISPLAYED_EVENT({});
+#endif // HAVE_BAGL
+#ifdef HAVE_NBGL
+            UX_DEFAULT_EVENT();
+#endif // HAVE_NBGL
         break;
+
+#ifdef HAVE_NBGL
+    case SEPROXYHAL_TAG_FINGER_EVENT:
+        UX_FINGER_EVENT(G_io_seproxyhal_spi_buffer);
+        break;
+#endif // HAVE_NBGL
 
     case SEPROXYHAL_TAG_TICKER_EVENT:
         UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {
@@ -226,7 +237,7 @@ __attribute__((section(".boot"))) int main(void) {
 
 #ifdef HAVE_BLE
                 BLE_power(0, NULL);
-                BLE_power(1, "Nano X");
+                BLE_power(1, NULL);
 #endif // HAVE_BLE
 
                 nem_main();

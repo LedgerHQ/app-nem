@@ -22,12 +22,14 @@
 #include "idle_menu.h"
 #include "nem_helpers.h"
 #include "glyphs.h"
-
-extern char fieldValue[MAX_FIELD_LEN];
+#ifdef HAVE_NBGL
+#include "nbgl_use_case.h"
+#endif
 
 extern action_t approval_action;
 extern action_t rejection_action;
 
+#ifdef HAVE_BAGL
 UX_STEP_NOCB(
         ux_display_remote_account_flow_1_step,
         bnnn_paging,
@@ -60,9 +62,44 @@ UX_FLOW(ux_display_remote_account_flow,
        &ux_display_remote_account_flow_3_step
 );
 
+#else // HAVE_BAGL
+
+// called when long press button on 3rd page is long-touched or when reject footer is touched
+static void review_choice(bool confirm) {
+    if (confirm) {
+        approval_action();
+    } else {
+        rejection_action();
+    }
+}
+#endif // HAVE_BAGL
+
 void display_remote_account_confirmation_ui(action_t onApprove, action_t onReject) {
     approval_action = onApprove;
     rejection_action = onReject;
 
+#ifdef HAVE_BAGL
     ux_flow_init(0, ux_display_remote_account_flow, NULL);
+#else // HAVE_BAGL
+    nbgl_useCaseChoice(&C_stax_app_nem_64px,
+                       "Export delegated\nharvesting key?",
+                       NULL,
+                       "Approve",
+                       "Reject",
+                       review_choice);
+#endif // HAVE_BAGL
+}
+
+void display_remote_account_done(bool validated) {
+#ifdef HAVE_BAGL
+    UNUSED(validated);
+    // Display back the original UX
+    display_idle_menu();
+#else // HAVE_BAGL
+    if (validated) {
+        nbgl_useCaseStatus("KEY\nEXPORTED", true, display_idle_menu);
+    } else {
+        nbgl_useCaseStatus("Request rejected", false, display_idle_menu);
+    }
+#endif // HAVE_BAGL
 }

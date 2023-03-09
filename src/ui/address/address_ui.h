@@ -21,5 +21,6 @@
 #include "common.h"
 
 void display_address_confirmation_ui(char* address, action_t onApprove, action_t onReject);
+void display_address_confirmation_done(bool validated);
 
 #endif //LEDGER_APP_NEM_ADDRESSUI_H

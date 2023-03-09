@@ -21,6 +21,7 @@
 #include "constants.h"
 #include "nem/nem_helpers.h"
 #include "ui/main/idle_menu.h"
+#include "ui/transaction/review_menu.h"
 #include "transaction/transaction.h"
 
 #define PREFIX_LENGTH   4
@@ -77,8 +78,8 @@ void sign_transaction() {
 
     // Send back the response, do not restart the event loop
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-    // Display back the original UX
-    display_idle_menu();
+
+    display_review_done(true);
 }
 
 void reject_transaction() {
@@ -96,7 +97,8 @@ void reject_transaction() {
 
     // Reset transaction context and display back the original UX
     reset_transaction_context();
-    display_idle_menu();
+
+    display_review_done(false);
 }
 
 bool isFirst(uint8_t p1) {

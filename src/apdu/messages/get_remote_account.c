@@ -39,8 +39,8 @@ void on_privatekey_confirmed() {
     G_io_apdu_buffer[tx++] = 0x00;
     // Send back the response, do not restart the event loop
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-    // Display back the original UX
-    display_idle_menu();
+
+    display_remote_account_done(true);
 }
 
 void on_privatekey_rejected() {
@@ -48,8 +48,8 @@ void on_privatekey_rejected() {
     G_io_apdu_buffer[1] = 0x85;
     // Send back the response, do not restart the event loop
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, 2);
-    // Display back the original UX
-    display_idle_menu();
+
+    display_remote_account_done(false);
 }
 
 void handle_remote_private_key(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,

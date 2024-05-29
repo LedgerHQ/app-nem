@@ -62,6 +62,8 @@ uint8_t loadingState;
 action_t pending_action;
 char loadingMessage[18];
 
+
+#ifdef HAVE_BAGL
 const bagl_element_t loading_ui[] = {
         UI_BACKGROUND(),
         UI_SINGLE_TEXT(loadingMessage),
@@ -91,6 +93,7 @@ const bagl_element_t* loading_ui_button_prepro(const bagl_element_t *element) {
         return element;
     }
 }
+#endif // HAVE_BAGL
 
 void execute_async(action_t actionToLoad, char* message) {
     loadingState = STATE_WAITING;
@@ -99,5 +102,9 @@ void execute_async(action_t actionToLoad, char* message) {
     memset(loadingMessage, 0, sizeof(loadingMessage));
     memcpy(loadingMessage, message, MIN(sizeof(loadingMessage) - 1, strlen(message)));
 
+#ifdef HAVE_BAGL
     UX_DISPLAY(loading_ui, loading_ui_button_prepro)
+#else // HAVE_BAGL
+    pending_action();
+#endif // HAVE_BAGL
 }

@@ -1,0 +1,34 @@
+{
+    "common_txn_header": {
+        "transactionType": "MULTISIG_SIGNATURE",
+        "version": 1,
+        "networkType": 152,
+        "timestamp": 180679516,
+        "public_key": "9f96df7e7a639b4034b8bee5b88ab1d640db66eb5a47afe018e320cb130c183d",
+        "fee": 150000,
+        "deadline": 180683116
+    },
+    "fields": {
+        "hashObjLen": 36,
+        "hash": "39d64c1602fa48d49c59a464ef109235472134ea854d1b70284ea32aec6dd17a",
+        "msAddress": "TA6DD3TAAW7DIOFJKWHNJJZQLTSRWAQ67YKWYQBG",
+        "transactions": [
+            {
+                "common_txn_header": {
+                    "transactionType": "PROVISION_NAMESPACE",
+                    "version": 1,
+                    "networkType": 152,
+                    "timestamp": 180678263,
+                    "public_key": "722286c8fc1579ca04512bc6a3a076e3959227b2ad2874ed9707d67cd1cf17f2",
+                    "fee": 150000,
+                    "deadline": 180681863
+                },
+                "fields": {
+                    "rAddress": "TAMESPACEWH4MKFMBCVFERDPOOP4FK7MTDJEYP35",
+                    "rentalFee": 100000000,
+                    "namespace": "ledger_ns"
+                }
+            }
+        ]
+    }
+}

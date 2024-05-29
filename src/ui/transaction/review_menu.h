@@ -24,5 +24,6 @@
 #define OPTION_REJECT 1
 
 void display_review_menu(result_t *transactionParam, result_action_t callback);
+void display_review_done(bool validated);
 
 #endif //LEDGER_APP_NEM_REVIEWMENU_H

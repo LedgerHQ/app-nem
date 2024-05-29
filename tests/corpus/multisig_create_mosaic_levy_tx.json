@@ -1,0 +1,59 @@
+{
+    "common_txn_header": {
+        "transactionType": "MULTISIG",
+        "version": 1,
+        "networkType": 152,
+        "timestamp": 179201716,
+        "public_key": "9f96df7e7a639b4034b8bee5b88ab1d640db66eb5a47afe018e320cb130c183d",
+        "fee": 150000,
+        "deadline": 179205316
+    },
+    "fields": {
+        "transactions": [
+            {
+                "common_txn_header": {
+                    "transactionType": "MOSAIC_DEFINITION",
+                    "version": 1,
+                    "networkType": 152,
+                    "timestamp": 179201716,
+                    "public_key": "180158d9feed1711fbfc7718ed144275311dcfd10a4480035d1856cdac7242ab",
+                    "fee": 150000,
+                    "deadline": 179205316
+                },
+                "fields": {
+                    "mdcPublicKey": "180158d9feed1711fbfc7718ed144275311dcfd10a4480035d1856cdac7242ab",
+                    "namespace": "test_nem",
+                    "mosaicName": "mosaic_create_from_ledger",
+                    "description": "This mosaic is created by a ledger wallet from a multisig account",
+                    "properties": [
+                        {
+                            "propertyName": "divisibility",
+                            "propertyVal": "3"
+                        },
+                        {
+                            "propertyName": "initialSupply",
+                            "propertyVal": "1000"
+                        },
+                        {
+                            "propertyName": "supplyMutable",
+                            "propertyVal": "true"
+                        },
+                        {
+                            "propertyName": "transferable",
+                            "propertyVal": "true"
+                        }
+                    ],
+                    "levy": {
+                        "feeType": 1,
+                        "lsAddress": "TB7IB6DSJKWBVQEK7PD7TWO66ECW5LY6SISM2CJJ",
+                        "namespace": "nem",
+                        "mosaicName": "xem",
+                        "fee": 5
+                    },
+                    "mdAddress": "TBMOSAICOD4F54EE5CDMR23CCBGOAM2XSJBR5OLC",
+                    "mdfee": 10000000
+                }
+            }
+        ]
+    }
+}

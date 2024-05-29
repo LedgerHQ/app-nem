@@ -45,8 +45,8 @@ void on_address_confirmed() {
     G_io_apdu_buffer[tx++] = 0x00;
     // Send back the response, do not restart the event loop
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-    // Display back the original UX
-    display_idle_menu();
+
+    display_address_confirmation_done(true);
 }
 
 void on_address_rejected() {
@@ -54,39 +54,45 @@ void on_address_rejected() {
     G_io_apdu_buffer[1] = 0x85;
     // Send back the response, do not restart the event loop
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, 2);
-    // Display back the original UX
-    display_idle_menu();
+
+    display_address_confirmation_done(false);
 }
 
 void handle_public_key(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
                         uint16_t dataLength, volatile unsigned int *flags,
                         volatile unsigned int *tx) {
-    UNUSED(dataLength);
+    UNUSED(p2);
     uint8_t privateKeyData[NEM_PRIVATE_KEY_LENGTH];
     uint32_t bip32Path[MAX_BIP32_PATH];
-    uint32_t i;
-    uint8_t bip32PathLength = *(dataBuffer++);
+
     cx_ecfp_private_key_t privateKey;
     cx_ecfp_public_key_t publicKey;
-    uint8_t algo;
-    uint8_t p2Chain = p2 & 0x3F;
-    UNUSED(p2Chain);
 
-    if ((bip32PathLength < 1) || (bip32PathLength > MAX_BIP32_PATH)) {
-        THROW(0x6a80);
-    }
     if ((p1 != P1_CONFIRM) && (p1 != P1_NON_CONFIRM)) {
-        THROW(0x6B00);
+        THROW(SW_INVALID_P1P2);
+    }
+
+    if (dataLength < 1) {
+        THROW(SW_WRONG_DATA_LENGTH);
+    }
+    uint8_t bip32PathLength = *(dataBuffer++);
+    if (dataLength < 1 + 4 * bip32PathLength + 1) {
+        THROW(SW_WRONG_DATA_LENGTH);
+    }
+    if ((bip32PathLength < 1) || (bip32PathLength > MAX_BIP32_PATH)) {
+        THROW(SW_INCORRECT_DATA);
     }
 
     //Read and convert path's data
-    for (i = 0; i < bip32PathLength; i++) {
+    for (int i = 0; i < bip32PathLength; i++) {
         bip32Path[i] = (dataBuffer[0] << 24) | (dataBuffer[1] << 16) |
                        (dataBuffer[2] << 8) | (dataBuffer[3]);
         dataBuffer += 4;
     }
+
     uint8_t network_type = *dataBuffer;
-    algo = get_algo(network_type);
+    uint8_t algo = get_algo(network_type);
+
     io_seproxyhal_io_heartbeat();
     BEGIN_TRY {
         TRY {
@@ -112,7 +118,7 @@ void handle_public_key(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
 
     if (p1 == P1_NON_CONFIRM) {
         *tx = set_result_get_publickey();
-        THROW(0x9000);
+        THROW(SW_OK);
     } else {
         display_address_confirmation_ui(
                 nem_address,

@@ -39,8 +39,8 @@ void on_privatekey_confirmed() {
     G_io_apdu_buffer[tx++] = 0x00;
     // Send back the response, do not restart the event loop
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-    // Display back the original UX
-    display_idle_menu();
+
+    display_remote_account_done(true);
 }
 
 void on_privatekey_rejected() {
@@ -48,32 +48,38 @@ void on_privatekey_rejected() {
     G_io_apdu_buffer[1] = 0x85;
     // Send back the response, do not restart the event loop
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, 2);
-    // Display back the original UX
-    display_idle_menu();
+
+    display_remote_account_done(false);
 }
 
 void handle_remote_private_key(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
                             uint16_t dataLength, volatile unsigned int *flags,
                             volatile unsigned int *tx) {
-    UNUSED(dataLength);
+    UNUSED(p2);
     uint8_t privateKeyData[NEM_PRIVATE_KEY_LENGTH];
     uint32_t bip32Path[MAX_BIP32_PATH];
-    uint32_t i;
-    uint8_t bip32PathLength = *(dataBuffer++);
     cx_ecfp_private_key_t privateKey;
     uint8_t encrypt = 1;
     uint8_t askOnEncrypt = 0;
     uint8_t askOnDecrypt = 0;
-    uint8_t p2Chain = p2 & 0x3F;
-    UNUSED(p2Chain);
-    if ((bip32PathLength < 1) || (bip32PathLength > MAX_BIP32_PATH)) {
-        THROW(0x6a80);
-    }
+
     if ((p1 != P1_CONFIRM) && (p1 != P1_NON_CONFIRM)) {
         THROW(0x6B00);
     }
+
+    if (dataLength < 1) {
+        THROW(SW_WRONG_DATA_LENGTH);
+    }
+    uint8_t bip32PathLength = *(dataBuffer++);
+    if (dataLength < 1 + 4 * bip32PathLength) {
+        THROW(SW_WRONG_DATA_LENGTH);
+    }
+    if ((bip32PathLength < 1) || (bip32PathLength > MAX_BIP32_PATH)) {
+        THROW(0x6a80);
+    }
+
     //Read and convert path's data
-    for (i = 0; i < bip32PathLength; i++) {
+    for (int i = 0; i < bip32PathLength; i++) {
         bip32Path[i] = (dataBuffer[0] << 24) | (dataBuffer[1] << 16) |
                        (dataBuffer[2] << 8) | (dataBuffer[3]);
         dataBuffer += 4;

@@ -18,8 +18,10 @@
 #include "sign_transaction.h"
 #include <os.h>
 #include "global.h"
+#include "constants.h"
 #include "nem/nem_helpers.h"
 #include "ui/main/idle_menu.h"
+#include "ui/transaction/review_menu.h"
 #include "transaction/transaction.h"
 
 #define PREFIX_LENGTH   4
@@ -76,8 +78,8 @@ void sign_transaction() {
 
     // Send back the response, do not restart the event loop
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-    // Display back the original UX
-    display_idle_menu();
+
+    display_review_done(true);
 }
 
 void reject_transaction() {
@@ -95,7 +97,8 @@ void reject_transaction() {
 
     // Reset transaction context and display back the original UX
     reset_transaction_context();
-    display_idle_menu();
+
+    display_review_done(false);
 }
 
 bool isFirst(uint8_t p1) {
@@ -112,20 +115,28 @@ void handle_first_packet(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
                        uint8_t dataLength, volatile unsigned int *flags) {
     uint32_t i;
     if (!isFirst(p1)) {
-        THROW(0x6A80);
+        THROW(SW_INCORRECT_DATA);
     }
 
     // Reset old transaction data that might still remain
     reset_transaction_context();
     parseContext.data = transactionContext.rawTx;
 
-    transactionContext.pathLength = workBuffer[0];
-    if ((transactionContext.pathLength < 0x01) ||
-        (transactionContext.pathLength > MAX_BIP32_PATH)) {
-        THROW(0x6a81);
+    if (dataLength < 1) {
+        THROW(SW_WRONG_DATA_LENGTH);
     }
+
+    transactionContext.pathLength = workBuffer[0];
     workBuffer++;
     dataLength--;
+    if (dataLength < 4 * transactionContext.pathLength) {
+        THROW(SW_WRONG_DATA_LENGTH);
+    }
+    if ((transactionContext.pathLength < 0x01) ||
+        (transactionContext.pathLength > MAX_BIP32_PATH)) {
+        THROW(SW_INCORRECT_DATA);
+    }
+
     for (i = 0; i < transactionContext.pathLength; i++) {
         transactionContext.bip32Path[i] =
                 (workBuffer[0] << 24u) | (workBuffer[1] << 16u) |
@@ -145,7 +156,7 @@ void handle_first_packet(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
 void handle_subsequent_packet(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
                             uint8_t dataLength, volatile unsigned int *flags) {
     if (isFirst(p1)) {
-        THROW(0x6A80);
+        THROW(SW_INCORRECT_DATA);
     }
 
     handle_packet_content(p1, p2, workBuffer, dataLength, flags);
@@ -153,11 +164,12 @@ void handle_subsequent_packet(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
 
 void handle_packet_content(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
                          uint8_t dataLength, volatile unsigned int *flags) {
+    UNUSED(p2);
 
     uint16_t totalLength = PREFIX_LENGTH + parseContext.length + dataLength;
     if (totalLength > MAX_RAW_TX) {
         // Abort if the user is trying to sign a too large transaction
-        THROW(0x6700);
+        THROW(SW_WRONG_DATA_LENGTH);
     }
 
     // Append received data to stored transaction data
@@ -167,7 +179,7 @@ void handle_packet_content(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
     if (hasMore(p1)) {
         // Reply to sender with status OK
         signState = WAITING_FOR_MORE;
-        THROW(0x9000);
+        THROW(SW_OK);
     } else {
         // No more data to receive, finish up and present transaction to user
         signState = PENDING_REVIEW;
@@ -178,7 +190,7 @@ void handle_packet_content(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
         // to cause the processing to abort and the transaction context to be reset.
         if (parse_txn_context(&parseContext)) {
             // Mask real cause behind generic error (INCORRECT_DATA)
-            THROW(0x6a80);
+            THROW(SW_INCORRECT_DATA);
         }
 
         review_transaction(&parseContext.result, sign_transaction, reject_transaction);
@@ -197,6 +209,6 @@ void handle_sign(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
             handle_subsequent_packet(p1, p2, workBuffer, dataLength, flags);
             break;
         default:
-            THROW(0x6A80);
+            THROW(SW_INCORRECT_DATA);
     }
 }

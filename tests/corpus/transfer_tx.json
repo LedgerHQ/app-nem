@@ -1,0 +1,17 @@
+{
+    "common_txn_header": {
+        "transactionType": "TRANSFER",
+        "version": 1,
+        "networkType": 152,
+        "timestamp": 174654896,
+        "public_key": "9f96df7e7a639b4034b8bee5b88ab1d640db66eb5a47afe018e320cb130c183d",
+        "fee": 100000,
+        "deadline": 174658496
+    },
+    "fields": {
+        "recipient": "TBE56Z7MLQZ4S755JZL46VRYM7OD37SLPGFZPO5O",
+        "amount": 5000000,
+        "payloadType": 1,
+        "payload": "7474657374"
+    }
+}

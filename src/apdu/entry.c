@@ -15,8 +15,8 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 ********************************************************************************/
-#include "entry.h"
 #include <os.h>
+#include "entry.h"
 #include "constants.h"
 #include "global.h"
 #include "messages/get_public_key.h"
@@ -24,45 +24,55 @@
 #include "messages/get_remote_account.h"
 #include "messages/get_app_configuration.h"
 
-unsigned char lastINS = 0;
+static unsigned char lastINS = 0;
 
-void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx) {
+bool apdu_parser(command_t *cmd, uint8_t *buf, size_t buf_len) {
+    // Check minimum length and Lc field of APDU command
+    if (buf_len < OFFSET_CDATA || buf_len - OFFSET_CDATA != buf[OFFSET_LC]) {
+        return false;
+    }
+
+    cmd->cla = buf[OFFSET_CLA];
+    cmd->ins = buf[OFFSET_INS];
+    cmd->p1 = buf[OFFSET_P1];
+    cmd->p2 = buf[OFFSET_P2];
+    cmd->lc = buf[OFFSET_LC];
+    cmd->data = (buf[OFFSET_LC] > 0) ? buf + OFFSET_CDATA : NULL;
+
+    return true;
+}
+
+void handle_apdu(command_t *cmd, volatile unsigned int *flags, volatile unsigned int *tx) {
     unsigned short sw = 0;
 
     BEGIN_TRY {
         TRY {
-            if (G_io_apdu_buffer[OFFSET_CLA] != CLA) {
-                THROW(0x6E00);
+            if (cmd->cla != CLA) {
+                THROW(SW_CLA_NOT_SUPPORTED);
             }
 
             // Reset transaction context before starting to parse a new APDU message type.
             // This helps protect against "Instruction Change" attacks
-            if (G_io_apdu_buffer[OFFSET_INS] != lastINS) {
+            if (cmd->ins != lastINS) {
                 reset_transaction_context();
             }
 
-            lastINS = G_io_apdu_buffer[OFFSET_INS];
+            lastINS = cmd->ins;
 
-            switch (G_io_apdu_buffer[OFFSET_INS]) {
+            switch (cmd->ins) {
                 case INS_GET_PUBLIC_KEY:
-                    handle_public_key(G_io_apdu_buffer[OFFSET_P1],
-                                       G_io_apdu_buffer[OFFSET_P2],
-                                       G_io_apdu_buffer + OFFSET_CDATA,
-                                       G_io_apdu_buffer[OFFSET_LC], flags, tx);
+                    handle_public_key(cmd->p1, cmd->p2, cmd->data, cmd->lc,
+                                      flags, tx);
                     break;
 
                 case INS_SIGN:
-                    handle_sign(G_io_apdu_buffer[OFFSET_P1],
-                               G_io_apdu_buffer[OFFSET_P2],
-                               G_io_apdu_buffer + OFFSET_CDATA,
-                               G_io_apdu_buffer[OFFSET_LC], flags);
+                    handle_sign(cmd->p1, cmd->p2, cmd->data, cmd->lc,
+                                flags);
                     break;
 
                 case INS_GET_REMOTE_ACCOUNT:
-                    handle_remote_private_key(G_io_apdu_buffer[OFFSET_P1],
-                                            G_io_apdu_buffer[OFFSET_P2],
-                                            G_io_apdu_buffer + OFFSET_CDATA,
-                                            G_io_apdu_buffer[OFFSET_LC], flags, tx);
+                    handle_remote_private_key(cmd->p1, cmd->p2, cmd->data, cmd->lc,
+                                              flags, tx);
                     break;
 
                 case INS_GET_APP_CONFIGURATION:
@@ -70,7 +80,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx) {
                     break;
 
                 default:
-                    THROW(0x6D00);
+                    THROW(SW_INS_NOT_SUPPORTED);
                     break;
             }
         }

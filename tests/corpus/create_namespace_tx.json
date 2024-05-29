@@ -1,0 +1,17 @@
+{
+    "common_txn_header": {
+        "transactionType": "PROVISION_NAMESPACE",
+        "version": 1,
+        "networkType": 152,
+        "timestamp": 174656755,
+        "public_key": "9f96df7e7a639b4034b8bee5b88ab1d640db66eb5a47afe018e320cb130c183d",
+        "fee": 150000,
+        "deadline": 174660355
+    },
+    "fields": {
+        "rAddress": "TAMESPACEWH4MKFMBCVFERDPOOP4FK7MTDJEYP35",
+        "rentalFee": 10000000,
+        "namespace": "test_namespace_name",
+        "parentNamespace": "test_nem"
+    }
+}

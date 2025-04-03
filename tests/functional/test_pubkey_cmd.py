@@ -1,6 +1,7 @@
 from ragger.backend import SpeculosBackend
 from ragger.backend.interface import RaisePolicy
-from ragger.navigator import NavInsID, NavIns
+from ragger.navigator import NavInsID
+from ragger.error import ExceptionRAPDU
 
 from apps.nem import NemClient, ErrorType
 from utils import ROOT_SCREENSHOT_PATH
@@ -25,7 +26,7 @@ def test_get_public_key_non_confirm(backend):
     check_get_public_key_resp(backend, public_key)
 
 
-def test_get_public_key_confirm_accepted(firmware, backend, navigator, test_name):
+def test_get_public_key_confirm_accepted(firmware, backend, navigator, test_name, scenario_navigator):
     client = NemClient(backend)
     with client.send_async_get_public_key_confirm(NEM_PATH):
         if firmware.device.startswith("nano"):
@@ -35,23 +36,14 @@ def test_get_public_key_confirm_accepted(firmware, backend, navigator, test_name
                                                       ROOT_SCREENSHOT_PATH,
                                                       test_name)
         else:
-            instructions = [
-                NavInsID.USE_CASE_REVIEW_TAP,
-                NavIns(NavInsID.TOUCH, (200, 335)),
-                NavInsID.USE_CASE_ADDRESS_CONFIRMATION_EXIT_QR,
-                NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CONFIRM,
-                NavInsID.USE_CASE_STATUS_DISMISS
-            ]
-            navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
-                                           test_name,
-                                           instructions)
+            scenario_navigator.address_review_approve(ROOT_SCREENSHOT_PATH, test_name)
     response = client.get_async_response().data
     public_key, address = client.parse_get_public_key_response(response)
     check_get_public_key_resp(backend, public_key)
 
 
 # In this test we check that the GET_PUBLIC_KEY in confirmation mode replies an error if the user refuses
-def test_get_public_key_confirm_refused(firmware, backend, navigator, test_name):
+def test_get_public_key_confirm_refused(firmware, backend, navigator, test_name, scenario_navigator):
     client = NemClient(backend)
 
     if firmware.device.startswith("nano"):
@@ -66,23 +58,8 @@ def test_get_public_key_confirm_refused(firmware, backend, navigator, test_name)
         assert rapdu.status == ErrorType.SW_USER_REJECTED
         assert len(rapdu.data) == 0
     else:
-        instructions_set = [
-            [
-                NavInsID.USE_CASE_REVIEW_REJECT,
-                NavInsID.USE_CASE_STATUS_DISMISS
-            ],
-            [
-                NavInsID.USE_CASE_REVIEW_TAP,
-                NavInsID.USE_CASE_ADDRESS_CONFIRMATION_CANCEL,
-                NavInsID.USE_CASE_STATUS_DISMISS
-            ]
-        ]
-        for i, instructions in enumerate(instructions_set):
+        try:
             with client.send_async_get_public_key_confirm(NEM_PATH):
-                backend.raise_policy = RaisePolicy.RAISE_NOTHING
-                navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
-                                               test_name + f"/part{i}",
-                                               instructions)
-            rapdu = client.get_async_response()
-            assert rapdu.status == ErrorType.SW_USER_REJECTED
-            assert len(rapdu.data) == 0
+                scenario_navigator.address_review_reject(ROOT_SCREENSHOT_PATH, test_name)
+        except ExceptionRAPDU as e:
+            assert e.status == ErrorType.SW_USER_REJECTED

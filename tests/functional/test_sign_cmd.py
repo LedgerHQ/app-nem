@@ -3,6 +3,7 @@ from json import load
 
 from ragger.backend.interface import RaisePolicy
 from ragger.navigator import NavInsID, NavIns
+from ragger.error import ExceptionRAPDU
 
 from apps.nem import NemClient, ErrorType
 from apps.nem_transaction_builder import encode_txn_context
@@ -18,7 +19,7 @@ def load_transaction_from_file(transaction_filename):
     return encode_txn_context(transaction)
 
 
-def check_transaction(test_name, firmware, backend, navigator, transaction_filename):
+def check_transaction(test_name, firmware, backend, navigator, transaction_filename, scenario_navigator):
     transaction = load_transaction_from_file(transaction_filename)
     nem = NemClient(backend)
     with nem.send_async_sign_message(NEM_PATH, transaction):
@@ -30,22 +31,17 @@ def check_transaction(test_name, firmware, backend, navigator, transaction_filen
                                                       ROOT_SCREENSHOT_PATH,
                                                       test_name)
         else:
-            navigator.navigate_until_text_and_compare(NavInsID.USE_CASE_REVIEW_TAP,
-                                                      [NavInsID.USE_CASE_REVIEW_CONFIRM,
-                                                       NavInsID.USE_CASE_STATUS_DISMISS],
-                                                      "Hold to sign",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+            scenario_navigator.review_approve(ROOT_SCREENSHOT_PATH, test_name)
     # Missing signature verification
 
 
 @pytest.mark.parametrize("transaction_filename", CORPUS_FILES)
-def test_sign_tx_accepted(test_name, firmware, backend, navigator, transaction_filename):
+def test_sign_tx_accepted(test_name, firmware, backend, navigator, transaction_filename, scenario_navigator):
     folder_name = test_name + "/" + transaction_filename.replace(".json", "")
-    check_transaction(folder_name, firmware, backend, navigator, transaction_filename)
+    check_transaction(folder_name, firmware, backend, navigator, transaction_filename, scenario_navigator)
 
 
-def test_sign_tx_refused(test_name, firmware, backend, navigator):
+def test_sign_tx_refused(test_name, firmware, backend, navigator, scenario_navigator):
     transaction = load_transaction_from_file("transfer_tx.json")
     client = NemClient(backend)
 
@@ -61,16 +57,9 @@ def test_sign_tx_refused(test_name, firmware, backend, navigator):
         assert rapdu.status == ErrorType.SW_USER_REJECTED
         assert len(rapdu.data) == 0
     else:
-        for i in range(4):
-            instructions = [NavInsID.USE_CASE_REVIEW_TAP] * i
-            instructions += [NavInsID.USE_CASE_REVIEW_REJECT,
-                             NavInsID.USE_CASE_CHOICE_CONFIRM,
-                             NavInsID.USE_CASE_STATUS_DISMISS]
+        
+        try:
             with client.send_async_sign_message(NEM_PATH, transaction):
-                backend.raise_policy = RaisePolicy.RAISE_NOTHING
-                navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH,
-                                               test_name + f"/part{i}",
-                                               instructions)
-            rapdu = client.get_async_response()
-            assert rapdu.status == ErrorType.SW_USER_REJECTED
-            assert len(rapdu.data) == 0
+                scenario_navigator.review_reject(ROOT_SCREENSHOT_PATH)
+        except ExceptionRAPDU as e:
+            assert e.status == ErrorType.SW_USER_REJECTED

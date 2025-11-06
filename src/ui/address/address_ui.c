@@ -18,6 +18,7 @@
 #include "address_ui.h"
 #include <os_io_seproxyhal.h>
 #include <ux.h>
+#include "bagl_utils.h"
 #include "limitations.h"
 #include "ui/main/idle_menu.h"
 #include "nem/nem_helpers.h"

@@ -19,7 +19,8 @@
 #include <os.h>
 #include <os_io_seproxyhal.h>
 #include <string.h>
-#include "ui/ux.h"
+#include "ux.h"
+#include "bagl_utils.h"
 
 /**
  * This file implements a loading screen that can be displayed while performing

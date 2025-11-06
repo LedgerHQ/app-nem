@@ -19,6 +19,7 @@
 #include "review_menu.h"
 #include <os_io_seproxyhal.h>
 #include <ux.h>
+#include "bagl_utils.h"
 #include "common.h"
 #include "nem/format/readers.h"
 #include "nem/format/fields.h"

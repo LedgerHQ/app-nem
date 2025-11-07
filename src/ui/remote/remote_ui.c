@@ -18,6 +18,7 @@
 #include "remote_ui.h"
 #include <os_io_seproxyhal.h>
 #include <ux.h>
+#include "bagl_utils.h"
 #include "limitations.h"
 #include "idle_menu.h"
 #include "nem_helpers.h"

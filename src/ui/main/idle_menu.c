@@ -18,6 +18,7 @@
 #include "idle_menu.h"
 #include <os_io_seproxyhal.h>
 #include <ux.h>
+#include "bagl_utils.h"
 #include "glyphs.h"
 #ifdef HAVE_NBGL
 #include "nbgl_use_case.h"

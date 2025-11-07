@@ -19,6 +19,7 @@
 #include "os.h"
 #include <os_io_seproxyhal.h>
 #include <ux.h>
+#include "bagl_utils.h"
 #include "apdu/entry.h"
 #include "apdu/global.h"
 #include "ui/main/idle_menu.h"

@@ -19,7 +19,7 @@
 #define LEDGER_APP_NEM_TRANSACTION_H
 
 #include "common.h"
-#include "nem/parse/nem_parse.h"
+#include "nem_parse.h"
 
 typedef void (*result_action_t)(unsigned int result);
 

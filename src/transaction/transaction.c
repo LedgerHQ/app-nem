@@ -16,8 +16,8 @@
  ********************************************************************************/
 
 #include "transaction.h"
-#include "ui/transaction/review_menu.h"
-#include "ui/other/loading.h"
+#include "review_menu.h"
+#include "loading.h"
 
 extern action_t approval_action;
 extern action_t rejection_action;

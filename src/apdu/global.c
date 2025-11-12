@@ -16,7 +16,7 @@
  *  limitations under the License.
  ********************************************************************************/
 #include "global.h"
-#include "messages/sign_transaction.h"
+#include "sign_transaction.h"
 
 transaction_context_t transactionContext;
 sign_state_e signState;

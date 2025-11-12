@@ -18,7 +18,7 @@
 #ifndef LEDGER_APP_NEM_LOADING_H
 #define LEDGER_APP_NEM_LOADING_H
 
-#include "transaction/transaction.h"
+#include "transaction.h"
 
 void execute_async(action_t actionToLoad, char* message);
 

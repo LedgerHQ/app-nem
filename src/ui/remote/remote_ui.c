@@ -16,8 +16,8 @@
  *  limitations under the License.
  ********************************************************************************/
 #include "remote_ui.h"
-#include <os_io_seproxyhal.h>
-#include <ux.h>
+#include "os_io_seproxyhal.h"
+#include "ux.h"
 #include "bagl_utils.h"
 #include "limitations.h"
 #include "idle_menu.h"

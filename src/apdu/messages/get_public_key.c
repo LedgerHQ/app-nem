@@ -15,16 +15,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ********************************************************************************/
+#include "io.h"
 #include "get_public_key.h"
-#include "apdu/global.h"
-#include "nem/nem_helpers.h"
-#include "ui/main/idle_menu.h"
-#include "ui/address/address_ui.h"
+#include "global.h"
+#include "nem_helpers.h"
+#include "idle_menu.h"
+#include "address_ui.h"
+#include "buffer.h"
+
+typedef struct {
+    uint8_t bip32PathLength;
+    uint32_t bip32Path[MAX_BIP32_PATH];
+    uint8_t networkType;
+    uint8_t algo;
+} KeyData_t;
 
 uint8_t nem_publickey[NEM_PUBLIC_KEY_LENGTH];
-char nem_address[NEM_PRETTY_ADDRESS_LENGTH];
+char nem_address[NEM_PRETTY_ADDRESS_LENGTH + 1];
 
-uint32_t set_result_get_publickey() {
+int set_result_get_publickey(void) {
     uint32_t tx = 0;
 
     // address
@@ -36,109 +45,128 @@ uint32_t set_result_get_publickey() {
     G_io_apdu_buffer[tx++] = NEM_PUBLIC_KEY_LENGTH;
     memcpy(G_io_apdu_buffer + tx, nem_publickey, NEM_PUBLIC_KEY_LENGTH);
     tx += NEM_PUBLIC_KEY_LENGTH;
-    return tx;
+    return io_send_response_pointer(G_io_apdu_buffer, tx, SWO_SUCCESS);
 }
 
-void on_address_confirmed() {
-    uint32_t tx = set_result_get_publickey();
-    G_io_apdu_buffer[tx++] = 0x90;
-    G_io_apdu_buffer[tx++] = 0x00;
-    // Send back the response, do not restart the event loop
-    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-
+void on_address_confirmed(void) {
+    if (set_result_get_publickey() < 0) {
+        return;
+    }
     display_address_confirmation_done(true);
 }
 
-void on_address_rejected() {
-    G_io_apdu_buffer[0] = 0x69;
-    G_io_apdu_buffer[1] = 0x85;
-    // Send back the response, do not restart the event loop
-    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, 2);
-
+void on_address_rejected(void) {
+    io_send_sw(SWO_CONDITIONS_NOT_SATISFIED);
     display_address_confirmation_done(false);
 }
 
-void handle_public_key(uint8_t p1,
-                       uint8_t p2,
-                       uint8_t *dataBuffer,
-                       uint16_t dataLength,
-                       volatile unsigned int *flags,
-                       volatile unsigned int *tx) {
-    UNUSED(p2);
-    uint8_t privateKeyData[NEM_PRIVATE_KEY_LENGTH];
-    uint32_t bip32Path[MAX_BIP32_PATH];
-
-    cx_ecfp_private_key_t privateKey;
-    cx_ecfp_public_key_t publicKey;
-
-    if ((p1 != P1_CONFIRM) && (p1 != P1_NON_CONFIRM)) {
-        THROW(SW_INVALID_P1P2);
+/**
+ * Extracts key data used for calculating public key, from APDU parameters, and returns it in
+ * 'keyData'.
+ *
+ */
+static int extract_parameters(const command_t *cmd, KeyData_t *keyData) {
+    uint8_t *dataBuffer = (uint8_t *) cmd->data;
+    // check length of data is correct
+    if (cmd->lc < 1) {
+        return SWO_WRONG_DATA_LENGTH;
     }
 
-    if (dataLength < 1) {
-        THROW(SW_WRONG_DATA_LENGTH);
-    }
-    uint8_t bip32PathLength = *(dataBuffer++);
-    if (dataLength < 1 + 4 * bip32PathLength + 1) {
-        THROW(SW_WRONG_DATA_LENGTH);
-    }
-    if ((bip32PathLength < 1) || (bip32PathLength > MAX_BIP32_PATH)) {
-        THROW(SW_INCORRECT_DATA);
+    // check that p1 is set to either to confirm or not to confirm transaction by user
+    if ((cmd->p1 != P1_CONFIRM) && (cmd->p1 != P1_NON_CONFIRM)) {
+        return SWO_WRONG_P1_P2;
     }
 
     // Read and convert path's data
-    for (int i = 0; i < bip32PathLength; i++) {
-        bip32Path[i] =
-            (dataBuffer[0] << 24) | (dataBuffer[1] << 16) | (dataBuffer[2] << 8) | (dataBuffer[3]);
+    keyData->bip32PathLength = *(dataBuffer++);
+    if (cmd->lc < 1 + 4 * keyData->bip32PathLength + 1) {
+        return SWO_WRONG_DATA_LENGTH;
+    }
+    if ((keyData->bip32PathLength < 1) || (keyData->bip32PathLength > MAX_BIP32_PATH)) {
+        return SWO_INCORRECT_DATA;
+    }
+
+    for (int i = 0; i < keyData->bip32PathLength; i++) {
+        keyData->bip32Path[i] = U4BE(dataBuffer, 0);
         dataBuffer += 4;
     }
 
-    uint8_t network_type = *dataBuffer;
-    uint8_t algo = get_algo(network_type);
+    // prepare output
+    keyData->networkType = *dataBuffer;
+    keyData->algo = get_algo(keyData->networkType);
+    return SWO_SUCCESS;
+}
 
+/**
+ * Calculates and returns a public key which corresponds to bip32 path in 'keyData'
+ *
+ */
+static int get_public_key(KeyData_t *keyData) {
+    uint8_t privateKeyData[NEM_RAW_PRIVATE_KEY_LENGTH];
+    cx_ecfp_private_key_t privateKey;
+    cx_ecfp_public_key_t publicKey;
+    int error = SWO_PARAMETER_ERROR_NO_INFO;
+
+    // ensure a I/O channel is not timing out
     io_seproxyhal_io_heartbeat();
-    BEGIN_TRY {
-        TRY {
-            os_perso_derive_node_bip32_seed_key(HDW_ED25519_SLIP10,
+
+    CX_CHECK(os_derive_bip32_with_seed_no_throw(HDW_ED25519_SLIP10,
                                                 CX_CURVE_Ed25519,
-                                                bip32Path,
-                                                bip32PathLength,
+                                                keyData->bip32Path,
+                                                keyData->bip32PathLength,
                                                 privateKeyData,
                                                 NULL,
                                                 (unsigned char *) "ed25519-keccak seed",
-                                                19);
-            cx_ecfp_init_private_key(CX_CURVE_Ed25519,
-                                     privateKeyData,
-                                     NEM_PRIVATE_KEY_LENGTH,
-                                     &privateKey);
-            io_seproxyhal_io_heartbeat();
-            cx_ecfp_generate_pair2(CX_CURVE_Ed25519, &publicKey, &privateKey, 1, algo);
-            explicit_bzero(&privateKey, sizeof(privateKey));
-            explicit_bzero(privateKeyData, sizeof(privateKeyData));
-            io_seproxyhal_io_heartbeat();
-            nem_public_key_and_address(&publicKey,
-                                       network_type,
-                                       algo,
+                                                19));
+    CX_CHECK(cx_ecfp_init_private_key_no_throw(CX_CURVE_Ed25519,
+                                               privateKeyData,
+                                               NEM_PRIVATE_KEY_LENGTH,
+                                               &privateKey));
+    io_seproxyhal_io_heartbeat();
+    CX_CHECK(cx_ecfp_generate_pair2_no_throw(CX_CURVE_Ed25519,
+                                             &publicKey,
+                                             &privateKey,
+                                             1,
+                                             keyData->algo));
+    io_seproxyhal_io_heartbeat();
+    error = nem_public_key_and_address(&publicKey,
+                                       keyData->networkType,
+                                       keyData->algo,
                                        (uint8_t *) &nem_publickey,
                                        (char *) &nem_address,
-                                       NEM_PRETTY_ADDRESS_LENGTH);
-            io_seproxyhal_io_heartbeat();
-        }
-        CATCH_OTHER(e) {
-            THROW(e);
-        }
-        FINALLY {
-            explicit_bzero(privateKeyData, sizeof(privateKeyData));
-            explicit_bzero(&privateKey, sizeof(privateKey));
-        }
-    }
-    END_TRY;
+                                       sizeof(nem_address));
+    io_seproxyhal_io_heartbeat();
+end:
+    explicit_bzero(privateKeyData, sizeof(privateKeyData));
+    explicit_bzero(&privateKey, sizeof(privateKey));
+    return error;
+}
 
-    if (p1 == P1_NON_CONFIRM) {
-        *tx = set_result_get_publickey();
-        THROW(SW_OK);
+int handle_public_key(const command_t *cmd) {
+    // extract key data used for calculating public key, from APDU parameters
+    KeyData_t keyData = {0};
+    int error = SWO_PARAMETER_ERROR_NO_INFO;
+
+    error = extract_parameters(cmd, &keyData);
+    if (SWO_SUCCESS != error) {
+        return error;
+    }
+
+    error = get_public_key(&keyData);
+    if (SWO_SUCCESS != error) {
+        return error;
+    }
+
+    if (cmd->p1 == P1_NON_CONFIRM) {
+        if (set_result_get_publickey() < 0) {
+            error = SWO_COMMAND_ERROR_NO_INFO;
+        } else {
+            error = SWO_SUCCESS;
+        }
     } else {
         display_address_confirmation_ui(nem_address, on_address_confirmed, on_address_rejected);
-        *flags |= IO_ASYNCH_REPLY;
+        error = 0;
     }
+
+    return error;
 }

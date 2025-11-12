@@ -18,24 +18,24 @@
 #include <stdio.h>
 #include <string.h>
 #include <inttypes.h>
-#include "format.h"
+#include "app_format.h"
 #include "fields.h"
-#include "readers.h"
+#include "os_utils.h"
 #include "printers.h"
 #include "nem_helpers.h"
-#include "apdu/global.h"
+#include "global.h"
 #include "common.h"
 #include "base32.h"
 
 typedef void (*field_formatter_t)(const field_t *field, char *dst);
 
 static void uint8_formatter(const field_t *field, char *dst) {
-    uint8_t value = read_uint8(field->data);
+    uint8_t value = field->data[0];
     SNPRINTF(dst, "%d", value);
 }
 
 static void uint32_formatter(const field_t *field, char *dst) {
-    uint32_t value = read_uint32(field->data);
+    uint32_t value = U4LE(field->data, 0);
     if (field->id == NEM_UINT32_MOSAIC_COUNT) {
         SNPRINTF(dst, "Found %d", value);
     } else if (field->id == NEM_UINT32_TRANSACTION_TYPE ||
@@ -83,7 +83,7 @@ static void uint32_formatter(const field_t *field, char *dst) {
 }
 
 static void uint16_formatter(const field_t *field, char *dst) {
-    uint16_t value = read_uint16(field->data);
+    uint16_t value = U2LE(field->data, 0);
     SNPRINTF(dst, "%x", value);
 }
 
@@ -93,7 +93,7 @@ static void hash_formatter(const field_t *field, char *dst) {
 
 static void uint64_formatter(const field_t *field, char *dst) {
     if (field->id == NEM_UINT64_DURATION) {
-        uint64_t duration = read_uint64(field->data);
+        uint64_t duration = U8LE(field->data, 0);
         if (duration == 0) {
             SNPRINTF(dst, "%s", "Unlimited");
         } else {
@@ -124,18 +124,18 @@ static void address_formatter(const field_t *field, char *dst) {
 static void mosaic_formatter(const field_t *field, char *dst) {
     if (field->id == NEM_MOSAIC_CREATE_SUPPLY_DELTA ||
         field->id == NEM_MOSAIC_DELETE_SUPPLY_DELTA) {
-        snprintf_number(dst, MAX_FIELD_LEN, read_uint64(field->data));
+        snprintf_number(dst, MAX_FIELD_LEN, U8LE(field->data, 0));
     } else {
         // data = mosaic name + amount
-        snprintf_number(dst, MAX_FIELD_LEN, read_uint64(field->data + field->length - 8));
+        snprintf_number(dst, MAX_FIELD_LEN, U8LE(field->data + field->length - 8, 0));
     }
 }
 
 static void nem_formatter(const field_t *field, char *dst) {
     if (field->id == NEM_UINT64_LEVY_FEE) {
-        snprintf_token(dst, MAX_FIELD_LEN, read_uint64(field->data), 6, (char *) "micro");
+        snprintf_token(dst, MAX_FIELD_LEN, U8LE(field->data, 0), 6, (char *) "micro");
     } else {
-        snprintf_token(dst, MAX_FIELD_LEN, read_uint64(field->data), 6, (char *) "XEM");
+        snprintf_token(dst, MAX_FIELD_LEN, U8LE(field->data, 0), 6, (char *) "XEM");
     }
 }
 
@@ -173,12 +173,16 @@ static void string_formatter(const field_t *field, char *dst) {
         // data=len namespace id, namespaceId, len mosaic name, mosaic name
 
         // read len of namespace id
-        uint32_t nsid_len = read_uint32(field->data);
+        uint32_t nsid_len = U4LE(field->data, 0);
         // read namespace id
         snprintf_ascii(dst, 0, MAX_FIELD_LEN, field->data + sizeof(uint32_t), nsid_len);
-        strcat(dst, ": ");
+        // Safely append ": " with bounds checking
+        size_t current_len = strlen(dst);
+        if (current_len + 2 < MAX_FIELD_LEN) {
+            strncat(dst, ": ", MAX_FIELD_LEN - current_len - 1);
+        }
         // read len of mosaic name
-        uint32_t ms_len = read_uint32(field->data + nsid_len + sizeof(uint32_t));
+        uint32_t ms_len = U4LE(field->data + nsid_len + sizeof(uint32_t), 0);
         // read mosaic name
         snprintf_ascii(dst,
                        strlen(dst),
@@ -197,9 +201,9 @@ static void string_formatter(const field_t *field, char *dst) {
 static void property_formatter(const field_t *field, char *dst) {
     // field->data = len name, name, len value, value (ignore field->length)
     // Length of the property name
-    uint32_t nameLen = read_uint32(field->data);
+    uint32_t nameLen = U4LE(field->data, 0);
     // Length of the property name
-    uint32_t valueLen = read_uint32(field->data + sizeof(uint32_t) + nameLen);
+    uint32_t valueLen = U4LE(field->data + sizeof(uint32_t) + nameLen, 0);
     if (valueLen > MAX_FIELD_LEN) {
         snprintf_ascii(dst,
                        0,

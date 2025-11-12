@@ -18,13 +18,8 @@
 #ifndef LEDGER_APP_NEM_GETPUBLICKEY_H
 #define LEDGER_APP_NEM_GETPUBLICKEY_H
 
-#include <stdint.h>
+#include "parser.h"
 
-void handle_public_key(uint8_t p1,
-                       uint8_t p2,
-                       uint8_t *dataBuffer,
-                       uint16_t dataLength,
-                       volatile unsigned int *flags,
-                       volatile unsigned int *tx);
+int handle_public_key(const command_t* cmd);
 
 #endif  // LEDGER_APP_NEM_GETPUBLICKEY_H

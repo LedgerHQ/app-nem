@@ -19,14 +19,11 @@
 #define LEDGER_APP_NEM_SIGNTRANSACTION_H
 
 #include <stdint.h>
-#include "nem/parse/nem_parse.h"
+#include "nem_parse.h"
+#include "parser.h"
 
 extern parse_context_t parseContext;
 
-void handle_sign(uint8_t p1,
-                 uint8_t p2,
-                 uint8_t *workBuffer,
-                 uint8_t dataLength,
-                 volatile unsigned int *flags);
+int handle_sign(const command_t* cmd);
 
 #endif  // LEDGER_APP_NEM_SIGNTRANSACTION_H

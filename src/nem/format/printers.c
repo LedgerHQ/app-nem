@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "printers.h"
-#include "parse/nem_parse.h"
+#include "nem_parse.h"
 
 int snprintf_number(char *dst, uint32_t len, uint64_t value) {
     char *p = dst;
@@ -85,11 +85,12 @@ int snprintf_token(char *dst, uint32_t len, uint64_t amount, uint8_t divisibilit
 
     if (token) {
         // qualify amount
-        if (j + strlen(token) + 1 < len) {
+        size_t token_len = strlen(token);
+        if (j + token_len + 1 < len) {
             dst[j++] = ' ';
-            strcpy(dst + j, token);
-            dst[j + strlen(token)] = '\0';
-            return j + strlen(token);
+            strncpy(dst + j, token, len - j - 1);
+            dst[j + token_len] = '\0';
+            return j + token_len;
         } else {
             dst[j] = '\0';
             return j;

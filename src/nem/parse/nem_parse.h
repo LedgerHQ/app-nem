@@ -18,8 +18,8 @@
 #define LEDGER_APP_NEM_NEMPARSE_H
 
 #include "limitations.h"
-#include "nem/format/fields.h"
-#include "nem/nem_helpers.h"
+#include "fields.h"
+#include "nem_helpers.h"
 
 typedef struct result_t {
     uint8_t numFields;

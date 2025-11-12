@@ -16,9 +16,10 @@
  ********************************************************************************/
 
 #include "nem_parse.h"
-#include "apdu/global.h"
-#include "nem/format/printers.h"
-#include "nem/format/readers.h"
+#include "global.h"
+#include "printers.h"
+#include "os_utils.h"
+#include "os_print.h"
 
 #pragma pack(push, 1)
 
@@ -180,7 +181,7 @@ static const uint8_t *read_data(parse_context_t *context, uint32_t numBytes) {
 static int _read_uint32(parse_context_t *context, uint32_t *result) {
     const uint8_t *p = read_data(context, sizeof(uint32_t));
     BAIL_IF_ERR(p == NULL, E_NOT_ENOUGH_DATA);
-    *result = read_uint32(p);
+    *result = U4LE(p, 0);
     return E_SUCCESS;
 }
 
@@ -188,7 +189,7 @@ static int _read_uint32(parse_context_t *context, uint32_t *result) {
 static int _read_uint32_ptr(parse_context_t *context, uint32_t *result, uint8_t **presult) {
     const uint8_t *p = read_data(context, sizeof(uint32_t));
     BAIL_IF_ERR(p == NULL, E_NOT_ENOUGH_DATA);
-    *result = read_uint32(p);
+    *result = U4LE(p, 0);
     *presult = (uint8_t *) p;
     return E_SUCCESS;
 }
@@ -595,7 +596,7 @@ static int parse_mosaic_definition_creation_transaction(parse_context_t *context
         ptr = read_data(context, sizeof(uint32_t));  // Read data and security check
         BAIL_IF_ERR(ptr == NULL, E_NOT_ENOUGH_DATA);
         // Length of namespace id string
-        uint32_t nsidLen = read_uint32(ptr);
+        uint32_t nsidLen = U4LE(ptr, 0);
         // namespaceid
         BAIL_IF_ERR(move_pos(context, nsidLen) == NULL, E_NOT_ENOUGH_DATA);
         uint32_t mnLen;

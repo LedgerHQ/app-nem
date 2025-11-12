@@ -19,12 +19,8 @@
 #define LEDGER_APP_NEM_GETREMOTEACCOUNT_H
 
 #include <stdint.h>
+#include "parser.h"
 
-void handle_remote_private_key(uint8_t p1,
-                               uint8_t p2,
-                               uint8_t *dataBuffer,
-                               uint16_t dataLength,
-                               volatile unsigned int *flags,
-                               volatile unsigned int *tx);
+int handle_remote_private_key(const command_t* cmd);
 
 #endif  // LEDGER_APP_NEM_GETREMOTEACCOUNT_H

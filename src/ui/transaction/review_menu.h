@@ -18,7 +18,7 @@
 #ifndef LEDGER_APP_NEM_REVIEWMENU_H
 #define LEDGER_APP_NEM_REVIEWMENU_H
 
-#include "transaction/transaction.h"
+#include "transaction.h"
 
 #define OPTION_SIGN   0
 #define OPTION_REJECT 1

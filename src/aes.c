@@ -1,6 +1,6 @@
 #include "aes.h"
 #if defined(IOCUSTOMCRYPT)
-#include "string.h"
+#include <string.h>
 
 /*****************************************************************************/
 /* Defines:                                                                  */

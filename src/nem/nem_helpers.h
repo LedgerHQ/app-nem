@@ -17,12 +17,12 @@
 #ifndef LEDGER_APP_NEM_NEMHELPERS_H
 #define LEDGER_APP_NEM_NEMHELPERS_H
 
-#ifndef FUZZ
-#include <os.h>
-#include <cx.h>
-#include <os_io_seproxyhal.h>
-#endif
 #include <stdbool.h>
+#ifndef FUZZ
+#include "os.h"
+#include "cx.h"
+#include "os_io_seproxyhal.h"
+#endif
 
 #define NEM_TXN_TRANSFER                        0x0101
 #define NEM_TXN_IMPORTANCE_TRANSFER             0x0801
@@ -39,6 +39,7 @@
 #define NEM_PRETTY_ADDRESS_LENGTH   40
 #define NEM_PUBLIC_KEY_LENGTH       32
 #define NEM_PRIVATE_KEY_LENGTH      32
+#define NEM_RAW_PRIVATE_KEY_LENGTH  64
 #define NEM_TRANSACTION_HASH_LENGTH 32
 
 #define TESTNET       152  // 0x98
@@ -52,31 +53,31 @@
 #define ACC_KEY   "Export delegated harvesting key?"
 #define ACC_VALUE "0000000000000000000000000000000000000000000000000000000000000000"
 
-uint8_t get_network_type(const uint32_t bip32Path[]);
+int get_network_type(const uint32_t bip32Path[], uint8_t *network_type);
 uint8_t get_algo(uint8_t network_type);
 #ifndef FUZZ
-void nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey,
-                                uint8_t inNetworkId,
-                                unsigned int inAlgo,
-                                uint8_t *outPublicKey,
-                                char *outAddress,
-                                uint32_t outLen);
-void nem_get_remote_private_key(const uint8_t *privateKey,
-                                unsigned int priKeyLen,
-                                const uint8_t *key,
-                                unsigned int keyLen,
-                                const uint8_t *value,
-                                unsigned int valueLen,
-                                uint8_t encrypt,
-                                uint8_t askOnEncrypt,
-                                uint8_t askOnDecrypt,
-                                uint8_t *out,
-                                unsigned int outLen);
-void nem_public_key_to_address(const uint8_t *inPublicKey,
+int nem_public_key_and_address(cx_ecfp_public_key_t *inPublicKey,
                                uint8_t inNetworkId,
                                unsigned int inAlgo,
+                               uint8_t *outPublicKey,
                                char *outAddress,
                                uint32_t outLen);
+int nem_get_remote_private_key(const uint8_t *privateKey,
+                               unsigned int priKeyLen,
+                               const uint8_t *key,
+                               unsigned int keyLen,
+                               const uint8_t *value,
+                               unsigned int valueLen,
+                               uint8_t encrypt,
+                               uint8_t askOnEncrypt,
+                               uint8_t askOnDecrypt,
+                               uint8_t *out,
+                               unsigned int outLen);
+int nem_public_key_to_address(const uint8_t *inPublicKey,
+                              uint8_t inNetworkId,
+                              unsigned int inAlgo,
+                              char *outAddress,
+                              uint32_t outLen);
 #endif
 
 #endif  // LEDGER_APP_NEM_NEMHELPERS_H

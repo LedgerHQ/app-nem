@@ -18,7 +18,7 @@
 #include "fields.h"
 #include "common.h"
 #include "limitations.h"
-#include "readers.h"
+#include "os_utils.h"
 #include "printers.h"
 
 void resolve_fieldname(const field_t* field, char* dst) {
@@ -67,7 +67,7 @@ void resolve_fieldname(const field_t* field, char* dst) {
                                0,
                                MAX_FIELDNAME_LEN,
                                field->data + sizeof(uint32_t),
-                               read_uint32(field->data));
+                               U4LE(field->data, 0));
                 return;
             }
         }

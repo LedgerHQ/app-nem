@@ -16,18 +16,14 @@
  *  limitations under the License.
  ********************************************************************************/
 #include "idle_menu.h"
-#include <os_io_seproxyhal.h>
-#include <ux.h>
+#include "os_io_seproxyhal.h"
+#include "ux.h"
 #include "bagl_utils.h"
 #include "glyphs.h"
 #ifdef HAVE_NBGL
 #include "nbgl_use_case.h"
 #endif
-
-static void app_quit(void) {
-    // exit app here
-    os_sched_exit(-1);
-}
+#include "main_std_app.h"
 
 #ifdef HAVE_BAGL
 UX_STEP_NOCB(ux_idle_flow_1_step,
@@ -47,7 +43,7 @@ UX_STEP_NOCB(ux_idle_flow_2_step,
 
 UX_STEP_VALID(ux_idle_flow_3_step,
               pb,
-              app_quit(),
+              app_exit(),
               {
                   &C_icon_dashboard_x,
                   "Quit",
@@ -70,24 +66,25 @@ void display_idle_menu() {
 #else  // HAVE_BAGL
 
 // 'About' menu
-static const char* const INFO_TYPES[] = {"Version"};
-static const char* const INFO_CONTENTS[] = {APPVERSION};
+#define SETTING_INFO_NB 3
+static const char *const INFO_TYPES[SETTING_INFO_NB] = {"Version", "Developer", "Copyright"};
+static const char *const INFO_CONTENTS[SETTING_INFO_NB] = {APPVERSION, "Ledger", "Ledger (c) 2025"};
 
-static bool nav_callback(uint8_t page, nbgl_pageContent_t* content) {
-    UNUSED(page);
-    content->type = INFOS_LIST;
-    content->infosList.nbInfos = 1;
-    content->infosList.infoTypes = (const char**) INFO_TYPES;
-    content->infosList.infoContents = (const char**) INFO_CONTENTS;
-    return true;
-}
-
-static void ui_menu_about(void) {
-    nbgl_useCaseSettings(APPNAME, 0, 1, false, display_idle_menu, nav_callback, NULL);
-}
+static const nbgl_contentInfoList_t infoList = {
+    .nbInfos = SETTING_INFO_NB,
+    .infoTypes = INFO_TYPES,
+    .infoContents = INFO_CONTENTS,
+};
 
 void display_idle_menu(void) {
-    nbgl_useCaseHome(APPNAME, &C_stax_app_nem_64px, NULL, false, ui_menu_about, app_quit);
+    nbgl_useCaseHomeAndSettings(APPNAME,
+                                &C_stax_app_nem_64px,
+                                NULL,
+                                INIT_HOME_PAGE,
+                                NULL,
+                                &infoList,
+                                NULL,
+                                app_exit);
 }
 
 #endif  // HAVE_BAGL

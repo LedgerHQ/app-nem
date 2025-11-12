@@ -20,6 +20,6 @@
 
 #include <stdint.h>
 
-void handle_app_configuration(volatile unsigned int *tx);
+int handle_app_configuration(void);
 
 #endif  // LEDGER_APP_NEM_GETAPPCONFIGURATION_H

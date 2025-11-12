@@ -1,20 +1,20 @@
 /*******************************************************************************
-*   NEM Wallet
-*   (c) 2017 Ledger
-*   (c) 2020 FDS
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   NEM Wallet
+ *   (c) 2017 Ledger
+ *   (c) 2020 FDS
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 
 #include "os.h"
 #include <os_io_seproxyhal.h>
@@ -33,26 +33,25 @@ bolos_ux_params_t G_ux_params;
 
 unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
     switch (channel & ~(IO_FLAGS)) {
-    case CHANNEL_KEYBOARD:
-        break;
+        case CHANNEL_KEYBOARD:
+            break;
 
-    // multiplexed io exchange over a SPI channel and TLV encapsulated protocol
-    case CHANNEL_SPI:
-        if (tx_len) {
-            io_seproxyhal_spi_send(G_io_apdu_buffer, tx_len);
+        // multiplexed io exchange over a SPI channel and TLV encapsulated protocol
+        case CHANNEL_SPI:
+            if (tx_len) {
+                io_seproxyhal_spi_send(G_io_apdu_buffer, tx_len);
 
-            if (channel & IO_RESET_AFTER_REPLIED) {
-                reset();
+                if (channel & IO_RESET_AFTER_REPLIED) {
+                    reset();
+                }
+                return 0;  // nothing received from the master so far (it's a tx
+                           // transaction)
+            } else {
+                return io_seproxyhal_spi_recv(G_io_apdu_buffer, sizeof(G_io_apdu_buffer), 0);
             }
-            return 0; // nothing received from the master so far (it's a tx
-                      // transaction)
-        } else {
-            return io_seproxyhal_spi_recv(G_io_apdu_buffer,
-                                          sizeof(G_io_apdu_buffer), 0);
-        }
 
-    default:
-        THROW(INVALID_PARAMETER);
+        default:
+            THROW(INVALID_PARAMETER);
     }
     return 0;
 }
@@ -75,8 +74,8 @@ void nem_main(void) {
         BEGIN_TRY {
             TRY {
                 rx = tx;
-                tx = 0; // ensure no race in catch_other if io_exchange throws
-                        // an error
+                tx = 0;  // ensure no race in catch_other if io_exchange throws
+                         // an error
                 rx = io_exchange(CHANNEL_APDU | flags, rx);
                 flags = 0;
 
@@ -102,24 +101,24 @@ void nem_main(void) {
 
                 handle_apdu(&cmd, &flags, &tx);
             }
-            CATCH(EXCEPTION_IO_RESET){
+            CATCH(EXCEPTION_IO_RESET) {
                 THROW(EXCEPTION_IO_RESET);
             }
             CATCH_OTHER(e) {
                 switch (e & 0xF000u) {
-                case 0x6000:
-                    // Wipe the transaction context and report the exception
-                    sw = e;
-                    reset_transaction_context();
-                    break;
-                case 0x9000:
-                    // All is well
-                    sw = e;
-                    break;
-                default:
-                    // Internal error
-                    sw = 0x6800u | (e & 0x7FFu);
-                    break;
+                    case 0x6000:
+                        // Wipe the transaction context and report the exception
+                        sw = e;
+                        reset_transaction_context();
+                        break;
+                    case 0x9000:
+                        // All is well
+                        sw = e;
+                        break;
+                    default:
+                        // Internal error
+                        sw = 0x6800u | (e & 0x7FFu);
+                        break;
                 }
                 // Unexpected exception => report
                 G_io_apdu_buffer[tx] = sw >> 8u;
@@ -138,7 +137,7 @@ void nem_main(void) {
 void io_seproxyhal_display(const bagl_element_t *element) {
     io_seproxyhal_display_default(element);
 }
-#endif // HAVE_BAGL
+#endif  // HAVE_BAGL
 
 unsigned char io_event(unsigned char channel) {
     UNUSED(channel);
@@ -148,47 +147,47 @@ unsigned char io_event(unsigned char channel) {
 
     // can't have more than one tag in the reply, not supported yet.
     switch (G_io_seproxyhal_spi_buffer[0]) {
-    case SEPROXYHAL_TAG_BUTTON_PUSH_EVENT:
+        case SEPROXYHAL_TAG_BUTTON_PUSH_EVENT:
 #ifdef HAVE_BAGL
-        UX_BUTTON_PUSH_EVENT(G_io_seproxyhal_spi_buffer);
-#endif // HAVE_BAGL
-        break;
+            UX_BUTTON_PUSH_EVENT(G_io_seproxyhal_spi_buffer);
+#endif  // HAVE_BAGL
+            break;
 
-    case SEPROXYHAL_TAG_STATUS_EVENT:
-        if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID &&
-            !(U4BE(G_io_seproxyhal_spi_buffer, 3) &
-              SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED)) {
-            THROW(EXCEPTION_IO_RESET);
-        }
-        /* fall through */
+        case SEPROXYHAL_TAG_STATUS_EVENT:
+            if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID &&
+                !(U4BE(G_io_seproxyhal_spi_buffer, 3) &
+                  SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED)) {
+                THROW(EXCEPTION_IO_RESET);
+            }
+            /* fall through */
 
-    case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
+        case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
 #ifdef HAVE_BAGL
             UX_DISPLAYED_EVENT({});
-#endif // HAVE_BAGL
+#endif  // HAVE_BAGL
 #ifdef HAVE_NBGL
             UX_DEFAULT_EVENT();
-#endif // HAVE_NBGL
-        break;
+#endif  // HAVE_NBGL
+            break;
 
 #ifdef HAVE_NBGL
-    case SEPROXYHAL_TAG_FINGER_EVENT:
-        UX_FINGER_EVENT(G_io_seproxyhal_spi_buffer);
-        break;
-#endif // HAVE_NBGL
+        case SEPROXYHAL_TAG_FINGER_EVENT:
+            UX_FINGER_EVENT(G_io_seproxyhal_spi_buffer);
+            break;
+#endif  // HAVE_NBGL
 
-    case SEPROXYHAL_TAG_TICKER_EVENT:
-        UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {
-            if (UX_ALLOWED) {
-                // redisplay screen
-                UX_REDISPLAY();
-            }
-        });
-        break;
+        case SEPROXYHAL_TAG_TICKER_EVENT:
+            UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {
+                if (UX_ALLOWED) {
+                    // redisplay screen
+                    UX_REDISPLAY();
+                }
+            });
+            break;
 
-    default:
-        UX_DEFAULT_EVENT();
-        break;
+        default:
+            UX_DEFAULT_EVENT();
+            break;
     }
 
     // close the event if not done previously (by a display or whatever)
@@ -229,7 +228,7 @@ __attribute__((section(".boot"))) int main(void) {
 #ifdef HAVE_BLE
                 // grab the current plane mode setting
                 G_io_app.plane_mode = os_setting_get(OS_SETTING_PLANEMODE, NULL, 0);
-#endif // HAVE_BLE
+#endif  // HAVE_BLE
 
                 USB_power(0);
                 USB_power(1);
@@ -239,7 +238,7 @@ __attribute__((section(".boot"))) int main(void) {
 #ifdef HAVE_BLE
                 BLE_power(0, NULL);
                 BLE_power(1, NULL);
-#endif // HAVE_BLE
+#endif  // HAVE_BLE
 
                 nem_main();
             }

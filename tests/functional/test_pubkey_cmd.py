@@ -22,7 +22,7 @@ def check_get_public_key_resp(backend, public_key):
 def test_get_public_key_non_confirm(backend):
     client = NemClient(backend)
     response = client.send_get_public_key_non_confirm(NEM_PATH).data
-    public_key, address = client.parse_get_public_key_response(response)
+    public_key, _ = client.parse_get_public_key_response(response)
     check_get_public_key_resp(backend, public_key)
 
 
@@ -38,7 +38,7 @@ def test_get_public_key_confirm_accepted(firmware, backend, navigator, test_name
         else:
             scenario_navigator.address_review_approve(ROOT_SCREENSHOT_PATH, test_name)
     response = client.get_async_response().data
-    public_key, address = client.parse_get_public_key_response(response)
+    public_key, _ = client.parse_get_public_key_response(response)
     check_get_public_key_resp(backend, public_key)
 
 

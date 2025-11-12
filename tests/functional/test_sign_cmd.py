@@ -1,5 +1,5 @@
-import pytest
 from json import load
+import pytest
 
 from ragger.backend.interface import RaisePolicy
 from ragger.navigator import NavInsID, NavIns
@@ -14,7 +14,7 @@ NEM_PATH = "m/44'/43'/0'/0'/0'"
 
 
 def load_transaction_from_file(transaction_filename):
-    with open(CORPUS_DIR / transaction_filename, "r") as f:
+    with open(CORPUS_DIR / transaction_filename, encoding="utf-8") as f:
         transaction = load(f)
     return encode_txn_context(transaction)
 
@@ -57,7 +57,7 @@ def test_sign_tx_refused(test_name, firmware, backend, navigator, scenario_navig
         assert rapdu.status == ErrorType.SW_USER_REJECTED
         assert len(rapdu.data) == 0
     else:
-        
+
         try:
             with client.send_async_sign_message(NEM_PATH, transaction):
                 scenario_navigator.review_reject(ROOT_SCREENSHOT_PATH)

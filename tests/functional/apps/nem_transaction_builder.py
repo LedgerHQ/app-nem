@@ -213,19 +213,19 @@ def encode_multisig_transaction(fields):
 def encode_txn_detail(fields, transaction_type, version):
     if transaction_type == 'TRANSFER':
         return encode_transfer_transaction(fields, version)
-    elif transaction_type == 'IMPORTANCE_TRANSFER':
+    if transaction_type == 'IMPORTANCE_TRANSFER':
         return encode_importance_transfer_transaction(fields)
-    elif transaction_type == 'MULTISIG_AGGREGATE_MODIFICATION':
+    if transaction_type == 'MULTISIG_AGGREGATE_MODIFICATION':
         return encode_aggregate_modification_transaction(fields, version)
-    elif transaction_type == 'MULTISIG_SIGNATURE':
+    if transaction_type == 'MULTISIG_SIGNATURE':
         return encode_multisig_signature_transaction(fields)
-    elif transaction_type == 'MULTISIG':
+    if transaction_type == 'MULTISIG':
         return encode_multisig_transaction(fields)
-    elif transaction_type == 'PROVISION_NAMESPACE':
+    if transaction_type == 'PROVISION_NAMESPACE':
         return encode_provision_namespace_transaction(fields)
-    elif transaction_type == 'MOSAIC_DEFINITION':
+    if transaction_type == 'MOSAIC_DEFINITION':
         return encode_mosaic_definition_creation_transaction(fields)
-    elif transaction_type == 'MOSAIC_SUPPLY_CHANGE':
+    if transaction_type == 'MOSAIC_SUPPLY_CHANGE':
         return encode_mosaic_supply_change_transaction(fields)
     assert False
 

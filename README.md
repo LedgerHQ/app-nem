@@ -9,13 +9,13 @@ See the [Ledger's documentation](https://developers.ledger.com) to get started.
 1. Modify `source` path for yourself in `load.sh`.
 2. Run `load.sh` file to make and install app
 
-```console
+```bash
 ./load.sh
 ```
 
 ## Test
 
-1. Setup [Python tools](https://github.com/LedgerHQ/blue-loader-python) for Ledger Nano S.
+1. Setup [Python tools](https://github.com/LedgerHQ/blue-loader-python) for Ledger devices.
 2. Run the test cases on test directory.
 
 ## Permissions

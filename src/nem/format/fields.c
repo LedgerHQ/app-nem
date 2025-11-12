@@ -1,19 +1,19 @@
 /*******************************************************************************
-*   NEM Wallet
-*    (c) 2020 FDS
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   NEM Wallet
+ *    (c) 2020 FDS
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 #include <stdio.h>
 #include "fields.h"
 #include "common.h"
@@ -21,7 +21,7 @@
 #include "readers.h"
 #include "printers.h"
 
-void resolve_fieldname(const field_t *field, char* dst) {
+void resolve_fieldname(const field_t* field, char* dst) {
     if (field->dataType == STI_UINT32) {
         switch (field->id) {
             CASE_FIELDNAME(NEM_UINT32_TRANSACTION_TYPE, "Transaction Type")
@@ -37,9 +37,7 @@ void resolve_fieldname(const field_t *field, char* dst) {
     }
 
     if (field->dataType == STI_UINT64) {
-        switch (field->id) {
-            CASE_FIELDNAME(NEM_UINT64_DURATION, "Duration")
-        }
+        switch (field->id) { CASE_FIELDNAME(NEM_UINT64_DURATION, "Duration") }
     }
 
     if (field->dataType == STI_HASH256) {
@@ -63,11 +61,14 @@ void resolve_fieldname(const field_t *field, char* dst) {
 
     if (field->dataType == STI_PROPERTY) {
         switch (field->id) {
-            case NEM_STR_PROPERTY:
-            {
+            case NEM_STR_PROPERTY: {
                 // field->data = len name, name, len value, value (ignore field->length)
-                snprintf_ascii(dst, 0, MAX_FIELDNAME_LEN, field->data + sizeof(uint32_t), read_uint32(field->data));
-                return ;
+                snprintf_ascii(dst,
+                               0,
+                               MAX_FIELDNAME_LEN,
+                               field->data + sizeof(uint32_t),
+                               read_uint32(field->data));
+                return;
             }
         }
     }

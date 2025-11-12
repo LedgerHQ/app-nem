@@ -22,4 +22,4 @@
 
 int base32_encode(const uint8_t *data, int length, char *result, int bufSize);
 
-#endif //_BASE32_H_
+#endif  //_BASE32_H_

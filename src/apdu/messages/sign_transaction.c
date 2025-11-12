@@ -1,20 +1,20 @@
 /*******************************************************************************
-*    NEM Wallet
-*    (c) 2020 Ledger
-*    (c) 2020 FDS
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *    NEM Wallet
+ *    (c) 2020 Ledger
+ *    (c) 2020 FDS
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 #include "sign_transaction.h"
 #include <os.h>
 #include "global.h"
@@ -24,12 +24,15 @@
 #include "ui/transaction/review_menu.h"
 #include "transaction/transaction.h"
 
-#define PREFIX_LENGTH   4
+#define PREFIX_LENGTH 4
 
 parse_context_t parseContext;
 
-void handle_packet_content(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
-                         uint8_t dataLength, volatile unsigned int *flags);
+void handle_packet_content(uint8_t p1,
+                           uint8_t p2,
+                           uint8_t *workBuffer,
+                           uint8_t dataLength,
+                           volatile unsigned int *flags);
 
 void sign_transaction() {
     uint8_t privateKeyData[64];
@@ -51,14 +54,30 @@ void sign_transaction() {
     BEGIN_TRY {
         TRY {
             io_seproxyhal_io_heartbeat();
-            os_perso_derive_node_bip32_seed_key(HDW_ED25519_SLIP10, CX_CURVE_Ed25519, transactionContext.bip32Path, transactionContext.pathLength, privateKeyData, NULL, (unsigned char*) "ed25519-keccak seed", 19);
-            cx_ecfp_init_private_key(CX_CURVE_Ed25519, privateKeyData, NEM_PRIVATE_KEY_LENGTH, &privateKey);
+            os_perso_derive_node_bip32_seed_key(HDW_ED25519_SLIP10,
+                                                CX_CURVE_Ed25519,
+                                                transactionContext.bip32Path,
+                                                transactionContext.pathLength,
+                                                privateKeyData,
+                                                NULL,
+                                                (unsigned char *) "ed25519-keccak seed",
+                                                19);
+            cx_ecfp_init_private_key(CX_CURVE_Ed25519,
+                                     privateKeyData,
+                                     NEM_PRIVATE_KEY_LENGTH,
+                                     &privateKey);
             explicit_bzero(privateKeyData, sizeof(privateKeyData));
             io_seproxyhal_io_heartbeat();
-            tx = (uint32_t) cx_eddsa_sign(&privateKey, CX_LAST, transactionContext.algo, transactionContext.rawTx,
-                                              transactionContext.rawTxLength, NULL, 0, G_io_apdu_buffer,
-                                              IO_APDU_BUFFER_SIZE, NULL);
-
+            tx = (uint32_t) cx_eddsa_sign(&privateKey,
+                                          CX_LAST,
+                                          transactionContext.algo,
+                                          transactionContext.rawTx,
+                                          transactionContext.rawTxLength,
+                                          NULL,
+                                          0,
+                                          G_io_apdu_buffer,
+                                          IO_APDU_BUFFER_SIZE,
+                                          NULL);
         }
         CATCH_OTHER(e) {
             THROW(e);
@@ -102,17 +121,20 @@ void reject_transaction() {
 }
 
 bool isFirst(uint8_t p1) {
-    //return (p1 & P1_CONFIRM) == 0;
-	return (p1 & P1_MASK_ORDER) == 0;
+    // return (p1 & P1_CONFIRM) == 0;
+    return (p1 & P1_MASK_ORDER) == 0;
 }
 
 bool hasMore(uint8_t p1) {
     // return (p1 & P1_MORE) != 0;
-	return (p1 & P1_MASK_MORE) != 0;
+    return (p1 & P1_MASK_MORE) != 0;
 }
 
-void handle_first_packet(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
-                       uint8_t dataLength, volatile unsigned int *flags) {
+void handle_first_packet(uint8_t p1,
+                         uint8_t p2,
+                         uint8_t *workBuffer,
+                         uint8_t dataLength,
+                         volatile unsigned int *flags) {
     uint32_t i;
     if (!isFirst(p1)) {
         THROW(SW_INCORRECT_DATA);
@@ -138,9 +160,8 @@ void handle_first_packet(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
     }
 
     for (i = 0; i < transactionContext.pathLength; i++) {
-        transactionContext.bip32Path[i] =
-                (workBuffer[0] << 24u) | (workBuffer[1] << 16u) |
-                (workBuffer[2] << 8u) | (workBuffer[3]);
+        transactionContext.bip32Path[i] = (workBuffer[0] << 24u) | (workBuffer[1] << 16u) |
+                                          (workBuffer[2] << 8u) | (workBuffer[3]);
         workBuffer += 4;
         dataLength -= 4;
     }
@@ -153,8 +174,11 @@ void handle_first_packet(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
     handle_packet_content(p1, p2, workBuffer, dataLength, flags);
 }
 
-void handle_subsequent_packet(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
-                            uint8_t dataLength, volatile unsigned int *flags) {
+void handle_subsequent_packet(uint8_t p1,
+                              uint8_t p2,
+                              uint8_t *workBuffer,
+                              uint8_t dataLength,
+                              volatile unsigned int *flags) {
     if (isFirst(p1)) {
         THROW(SW_INCORRECT_DATA);
     }
@@ -162,8 +186,11 @@ void handle_subsequent_packet(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
     handle_packet_content(p1, p2, workBuffer, dataLength, flags);
 }
 
-void handle_packet_content(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
-                         uint8_t dataLength, volatile unsigned int *flags) {
+void handle_packet_content(uint8_t p1,
+                           uint8_t p2,
+                           uint8_t *workBuffer,
+                           uint8_t dataLength,
+                           volatile unsigned int *flags) {
     UNUSED(p2);
 
     uint16_t totalLength = PREFIX_LENGTH + parseContext.length + dataLength;
@@ -199,8 +226,11 @@ void handle_packet_content(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
     }
 }
 
-void handle_sign(uint8_t p1, uint8_t p2, uint8_t *workBuffer,
-                uint8_t dataLength, volatile unsigned int *flags) {
+void handle_sign(uint8_t p1,
+                 uint8_t p2,
+                 uint8_t *workBuffer,
+                 uint8_t dataLength,
+                 volatile unsigned int *flags) {
     switch (signState) {
         case IDLE:
             handle_first_packet(p1, p2, workBuffer, dataLength, flags);

@@ -9,7 +9,9 @@ from ragger.backend import LedgerCommBackend
 
 NEM_LIB_DIRECTORY = (Path(__file__).parent / "../functional/apps").resolve().as_posix()
 sys.path.append(NEM_LIB_DIRECTORY)
+# pylint: disable=wrong-import-position
 from nem import NemClient, TESTNET
+# pylint: enable=wrong-import-position
 
 
 parser = argparse.ArgumentParser()
@@ -37,4 +39,3 @@ with LedgerCommBackend(None, interface="hid") as backend:
     print("length: ", len(address))
     print("Public Key:", public_key.hex())
     print("length: ", len(public_key.hex()))
-

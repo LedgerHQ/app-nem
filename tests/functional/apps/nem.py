@@ -54,13 +54,13 @@ class NemClient:
     def __init__(self, backend: BackendInterface):
         self._backend = backend
 
-    def send_get_version(self) -> (int, int, int):
+    def send_get_version(self) -> tuple[int, int, int]:
         rapdu: RAPDU = self._backend.exchange(CLA, INS.INS_GET_APP_CONFIGURATION, 0, 0, b"")
         response = rapdu.data
         # response = 0x00 (1) ||
-        #            LEDGER_MAJOR_VERSION (1) ||
-        #            LEDGER_MINOR_VERSION (1) ||
-        #            LEDGER_PATCH_VERSION (1)
+        #            MAJOR_VERSION (1) ||
+        #            MINOR_VERSION (1) ||
+        #            PATCH_VERSION (1)
         assert len(response) == 4
         assert int(response[0]) == 0
         major = int(response[1])
@@ -77,7 +77,7 @@ class NemClient:
         buff = b32encode(rawAddress).decode("utf-8")
         return buff
 
-    def parse_get_public_key_response(self, response: bytes, network_type: int = MAINNET) -> (bytes, str, bytes):
+    def parse_get_public_key_response(self, response: bytes, network_type: int = MAINNET) -> tuple[bytes, str, bytes]:
         # response = address_len (1) ||
         #            address (40) ||
         #            public_key_len (1) ||
@@ -109,7 +109,7 @@ class NemClient:
                                           p1, p2, payload):
             yield
 
-    def parse_get_remote_account_response(self, response: bytes, network_type: int = MAINNET) -> (bytes, str, bytes):
+    def parse_get_remote_account_response(self, response: bytes) -> tuple[bytes, str, bytes]:
         # response = delegated_harvesting_key_len (1) ||
         #            delegated_harvesting_key (32)
         assert len(response) == 1 + 32

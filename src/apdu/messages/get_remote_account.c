@@ -1,20 +1,20 @@
 /*******************************************************************************
-*    NEM Wallet
-*    (c) 2020 Ledger
-*    (c) 2020 FDS
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *    NEM Wallet
+ *    (c) 2020 Ledger
+ *    (c) 2020 FDS
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 #include "get_remote_account.h"
 #include "global.h"
 #include "nem_helpers.h"
@@ -52,9 +52,12 @@ void on_privatekey_rejected() {
     display_remote_account_done(false);
 }
 
-void handle_remote_private_key(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
-                            uint16_t dataLength, volatile unsigned int *flags,
-                            volatile unsigned int *tx) {
+void handle_remote_private_key(uint8_t p1,
+                               uint8_t p2,
+                               uint8_t *dataBuffer,
+                               uint16_t dataLength,
+                               volatile unsigned int *flags,
+                               volatile unsigned int *tx) {
     UNUSED(p2);
     uint8_t privateKeyData[NEM_PRIVATE_KEY_LENGTH];
     uint32_t bip32Path[MAX_BIP32_PATH];
@@ -78,21 +81,39 @@ void handle_remote_private_key(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
         THROW(0x6a80);
     }
 
-    //Read and convert path's data
+    // Read and convert path's data
     for (int i = 0; i < bip32PathLength; i++) {
-        bip32Path[i] = (dataBuffer[0] << 24) | (dataBuffer[1] << 16) |
-                       (dataBuffer[2] << 8) | (dataBuffer[3]);
+        bip32Path[i] =
+            (dataBuffer[0] << 24) | (dataBuffer[1] << 16) | (dataBuffer[2] << 8) | (dataBuffer[3]);
         dataBuffer += 4;
     }
     io_seproxyhal_io_heartbeat();
     BEGIN_TRY {
         TRY {
-            os_perso_derive_node_bip32_seed_key(HDW_ED25519_SLIP10, CX_CURVE_Ed25519, bip32Path, bip32PathLength, privateKeyData, NULL, (unsigned char*) "ed25519-keccak seed", 19);
-            cx_ecfp_init_private_key(CX_CURVE_Ed25519, privateKeyData, NEM_PRIVATE_KEY_LENGTH, &privateKey);
+            os_perso_derive_node_bip32_seed_key(HDW_ED25519_SLIP10,
+                                                CX_CURVE_Ed25519,
+                                                bip32Path,
+                                                bip32PathLength,
+                                                privateKeyData,
+                                                NULL,
+                                                (unsigned char *) "ed25519-keccak seed",
+                                                19);
+            cx_ecfp_init_private_key(CX_CURVE_Ed25519,
+                                     privateKeyData,
+                                     NEM_PRIVATE_KEY_LENGTH,
+                                     &privateKey);
             io_seproxyhal_io_heartbeat();
-            nem_get_remote_private_key(privateKey.d, 32, (const uint8_t *) ACC_KEY, 32, (const uint8_t *) ACC_VALUE, 64,
-                                        encrypt, askOnEncrypt, askOnDecrypt,
-                                        nem_remote_private_key, 32);
+            nem_get_remote_private_key(privateKey.d,
+                                       32,
+                                       (const uint8_t *) ACC_KEY,
+                                       32,
+                                       (const uint8_t *) ACC_VALUE,
+                                       64,
+                                       encrypt,
+                                       askOnEncrypt,
+                                       askOnDecrypt,
+                                       nem_remote_private_key,
+                                       32);
             explicit_bzero(privateKeyData, sizeof(privateKeyData));
             explicit_bzero(&privateKey, sizeof(privateKey));
             io_seproxyhal_io_heartbeat();
@@ -110,10 +131,7 @@ void handle_remote_private_key(uint8_t p1, uint8_t p2, uint8_t *dataBuffer,
         *tx = set_result_get_delegated_harvesting_key();
         THROW(0x9000);
     } else {
-        display_remote_account_confirmation_ui(
-                on_privatekey_confirmed,
-                on_privatekey_rejected
-        );
+        display_remote_account_confirmation_ui(on_privatekey_confirmed, on_privatekey_rejected);
         *flags |= IO_ASYNCH_REPLY;
     }
 }

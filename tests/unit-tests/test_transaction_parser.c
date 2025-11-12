@@ -50,7 +50,7 @@ static void check_transaction_results(const char *filename) {
     char field_value[MAX_FIELD_LEN];
 
     size_t tx_length;
-    uint8_t * const tx_data = load_transaction_data(filename, &tx_length);
+    uint8_t *const tx_data = load_transaction_data(filename, &tx_length);
     if (tx_data == NULL) {
         fprintf(stderr, "Loading failed %s\n", filename);
         exit(1);

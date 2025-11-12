@@ -13,9 +13,12 @@ on:
   push:
     branches:
       - master
-      - main
       - develop
   pull_request:
+
+permissions:  # For called workflow
+  contents: read
+  actions: write
 
 jobs:
   guidelines_enforcer:

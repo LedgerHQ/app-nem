@@ -4,6 +4,6 @@ build
 .vscode
 *.pyc
 __pycache__
-tests/unit-tests/build/
-tests/unit-tests/temp_txn.raw
+tests/unit/build/
+tests/unit/temp_txn.raw
 tests/functional/snapshots-tmp/

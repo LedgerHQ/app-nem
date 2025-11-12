@@ -18,11 +18,7 @@
 #ifndef LEDGER_APP_NEM_UX_H
 #define LEDGER_APP_NEM_UX_H
 
-#if defined(TARGET_NANOX) || defined(TARGET_NANOS2)
 #define DEV_SCREEN_H 64
-#elif defined(TARGET_NANOS)
-#define DEV_SCREEN_H 32
-#endif
 
 #define UI_BACKGROUND() {{BAGL_RECTANGLE,0,0,0,128,DEV_SCREEN_H,0,0,BAGL_FILL,0,0xFFFFFF,0,0},NULL}
 #define UI_DUMMY(userid) {{BAGL_RECTANGLE,userid,0,0,0,0,0,0,BAGL_FILL,0,0xFFFFFF,0,0},NULL}

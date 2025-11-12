@@ -12,7 +12,7 @@
         "mdcPublicKey": "9f96df7e7a639b4034b8bee5b88ab1d640db66eb5a47afe018e320cb130c183d",
         "namespace": "test_nem",
         "mosaicName": "ledger_mosaic",
-        "description": "Mosaic created from ledger Nano S",
+        "description": "Mosaic created from ledger Nano",
         "properties": [
             {
                 "propertyName": "divisibility",

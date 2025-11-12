@@ -18,30 +18,13 @@
 #ifndef LEDGER_APP_NEM_LIMITATIONS_H
 #define LEDGER_APP_NEM_LIMITATIONS_H
 
-// Needed to resolve target macros
-#include <bolos_target.h>
-
 // Hardware independent limits
 #define MAX_BIP32_PATH 5
 #define MAX_FIELDNAME_LEN 50
 
-// Hardware dependent limits
-//   Ledger Nano X has 30K RAM
-//   Ledger Nano S has 4K RAM
-#if defined(TARGET_NANOX) || defined(TARGET_NANOS2) || defined(TARGET_STAX)
-
-#define MAX_FIELD_COUNT 60
-#define MAX_FIELD_LEN 1024
-#define MAX_RAW_TX 10000
+#define MAX_FIELD_COUNT        60
+#define MAX_FIELD_LEN          1024
+#define MAX_RAW_TX             10000
 #define DISPLAY_SEGMENTED_ADDR false
-
-#elif defined(TARGET_NANOS)
-
-#define MAX_FIELD_COUNT 24
-#define MAX_FIELD_LEN 128
-#define MAX_RAW_TX 800
-#define DISPLAY_SEGMENTED_ADDR true
-
-#endif
 
 #endif //LEDGER_APP_NEM_LIMITATIONS_H

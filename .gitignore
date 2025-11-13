@@ -7,3 +7,6 @@ __pycache__
 tests/unit/build/
 tests/unit/temp_txn.raw
 tests/functional/snapshots-tmp/
+
+# Nano NBGL reversed icon for Home Screen
+glyphs/home_app_nem.gif

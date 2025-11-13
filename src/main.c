@@ -19,7 +19,6 @@
 #include "os.h"
 #include "os_io_seproxyhal.h"
 #include "ux.h"
-#include "bagl_utils.h"
 #include "entry.h"
 #include "global.h"
 #include "idle_menu.h"

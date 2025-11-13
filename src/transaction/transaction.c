@@ -17,7 +17,6 @@
 
 #include "transaction.h"
 #include "review_menu.h"
-#include "loading.h"
 
 extern action_t approval_action;
 extern action_t rejection_action;
@@ -25,7 +24,7 @@ extern action_t rejection_action;
 void on_approval_menu_result(unsigned int result) {
     switch (result) {
         case OPTION_SIGN:
-            execute_async(approval_action, (char *) "Signing...");
+            approval_action();
             break;
         case OPTION_REJECT:
             rejection_action();

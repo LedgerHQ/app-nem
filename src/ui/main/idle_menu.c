@@ -18,53 +18,9 @@
 #include "idle_menu.h"
 #include "os_io_seproxyhal.h"
 #include "ux.h"
-#include "bagl_utils.h"
-#include "glyphs.h"
-#ifdef HAVE_NBGL
 #include "nbgl_use_case.h"
-#endif
 #include "main_std_app.h"
 #include "display.h"
-
-#ifdef HAVE_BAGL
-UX_STEP_NOCB(ux_idle_flow_1_step,
-             pnn,
-             {
-                 &C_icon_NEM,
-                 "Welcome to",
-                 "NEM Wallet",
-             });
-
-UX_STEP_NOCB(ux_idle_flow_2_step,
-             bn,
-             {
-                 "Version",
-                 APPVERSION,
-             });
-
-UX_STEP_VALID(ux_idle_flow_3_step,
-              pb,
-              app_exit(),
-              {
-                  &C_icon_dashboard_x,
-                  "Quit",
-              });
-
-const ux_flow_step_t* const ux_idle_flow[] = {
-    &ux_idle_flow_1_step,
-    &ux_idle_flow_2_step,
-    &ux_idle_flow_3_step,
-    FLOW_END_STEP,
-};
-
-void display_idle_menu() {
-    if (G_ux.stack_count == 0) {
-        ux_stack_push();
-    }
-    ux_flow_init(0, ux_idle_flow, NULL);
-}
-
-#else  // HAVE_BAGL
 
 // 'About' menu
 #define SETTING_INFO_NB 3
@@ -87,5 +43,3 @@ void display_idle_menu(void) {
                                 NULL,
                                 app_exit);
 }
-
-#endif  // HAVE_BAGL

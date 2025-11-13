@@ -26,6 +26,7 @@
 #ifdef HAVE_NBGL
 #include "nbgl_use_case.h"
 #endif
+#include "display.h"
 
 extern action_t approval_action;
 extern action_t rejection_action;
@@ -78,7 +79,7 @@ void display_remote_account_confirmation_ui(action_t onApprove, action_t onRejec
 #ifdef HAVE_BAGL
     ux_flow_init(0, ux_display_remote_account_flow, NULL);
 #else   // HAVE_BAGL
-    nbgl_useCaseChoice(&C_stax_app_nem_64px,
+    nbgl_useCaseChoice(&ICON_APP_HOME,
                        "Export delegated\nharvesting key?",
                        NULL,
                        "Approve",

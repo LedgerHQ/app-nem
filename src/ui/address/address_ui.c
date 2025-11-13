@@ -26,6 +26,7 @@
 #ifdef HAVE_NBGL
 #include "nbgl_use_case.h"
 #endif
+#include "display.h"
 
 #ifdef HAVE_BAGL
 extern char fieldValue[MAX_FIELD_LEN];
@@ -97,7 +98,7 @@ void display_address_confirmation_ui(char* address, action_t onApprove, action_t
 #else
     nbgl_useCaseAddressReview(fieldValue,
                               NULL,
-                              &C_stax_app_nem_64px,
+                              &ICON_APP_HOME,
                               "Verify NEM\n Address",
                               NULL,
                               display_address_callback);

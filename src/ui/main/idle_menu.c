@@ -24,6 +24,7 @@
 #include "nbgl_use_case.h"
 #endif
 #include "main_std_app.h"
+#include "display.h"
 
 #ifdef HAVE_BAGL
 UX_STEP_NOCB(ux_idle_flow_1_step,
@@ -78,7 +79,7 @@ static const nbgl_contentInfoList_t infoList = {
 
 void display_idle_menu(void) {
     nbgl_useCaseHomeAndSettings(APPNAME,
-                                &C_stax_app_nem_64px,
+                                &ICON_APP_HOME,
                                 NULL,
                                 INIT_HOME_PAGE,
                                 NULL,

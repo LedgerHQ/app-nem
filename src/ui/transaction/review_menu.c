@@ -29,6 +29,7 @@
 #ifdef HAVE_NBGL
 #include "nbgl_use_case.h"
 #endif
+#include "display.h"
 
 result_t *transaction;
 result_action_t approval_menu_callback;
@@ -142,7 +143,7 @@ void display_review_menu(result_t *transactionParam, result_action_t callback) {
 
     nbgl_useCaseReview(TYPE_TRANSACTION,
                        &pairList,
-                       &C_stax_app_nem_64px,
+                       &ICON_APP_HOME,
                        "Review transaction",
                        NULL,
                        "Sign transaction",

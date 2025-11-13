@@ -39,6 +39,8 @@ APP_SOURCE_PATH += src
 ICON_NANOX = icons/nanox_app_nem.gif
 ICON_NANOSP = icons/nanox_app_nem.gif
 ICON_STAX = icons/stax_app_nem_32px.gif
+ICON_FLEX = icons/flex_app_nem_40px.png
+ICON_APEX_P = icons/apex_app_nem_32px.png
 
 # Application allowed derivation curves.
 CURVE_APP_LOAD_PARAMS = secp256k1 ed25519

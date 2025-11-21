@@ -5,9 +5,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "parse/nem_parse.h"
-#include "format/format.h"
-#include "apdu/global.h"  // FIXME: transaction_context_t should be defined elsewhere
+#include "nem_parse.h"
+#include "app_format.h"
+#include "global.h"  // FIXME: transaction_context_t should be defined elsewhere
 
 transaction_context_t transactionContext;
 
@@ -69,10 +69,12 @@ static void check_transaction_results(const char *filename) {
         const field_t *field = &context.result.fields[i];
         resolve_fieldname(field, field_name);
         format_field(field, field_value);
+
         printf("%s::%s\n", field_name, field_value);
     }
 
     free(tx_data);
+
     return;
 }
 

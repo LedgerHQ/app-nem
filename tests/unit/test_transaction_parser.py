@@ -17,7 +17,6 @@ CORPUS_DIR = Path(__file__).resolve().parent.parent / "corpus"
 PARSER_BINARY = (Path(__file__).parent / "build/test_transaction_parser").resolve().as_posix()
 TEMP_TXN_FILE = (Path(__file__).parent / "temp_txn.raw").resolve().as_posix()
 
-
 # pylint: disable=line-too-long
 TESTS_CASES = {
     "transfer_tx.json": [

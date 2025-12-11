@@ -131,44 +131,43 @@ int nem_get_remote_private_key(const uint8_t *privateKey,
     uint8_t *iv = data + 32;
     int error = SWO_PARAMETER_ERROR_NO_INFO;
 
-    UNUSED(valueLen);
 #if defined(IOCUSTOMCRYPT)
+    UNUSED(valueLen);
     strncpy((char *) out, (const char *) value, outLen);
     AES_init_ctx_iv(&ctx, aes, iv);
 #else
-    strncpy((char *) out, (const char *) data, outLen);
+    explicit_bzero(out, outLen);
     CX_CHECK(cx_aes_init_key_no_throw(aes, 32, &ctx));
 #endif
 
     if (encrypt) {
 #if defined(IOCUSTOMCRYPT)
         AES_CBC_encrypt_buffer(&ctx, out, outLen);
-        error = SWO_SUCCESS;
 #else
         CX_CHECK(cx_aes_iv_no_throw(&ctx,
                                     CX_LAST | CX_ENCRYPT | CX_CHAIN_CBC | CX_PAD_NONE,
                                     iv,
                                     16,
                                     value,
-                                    64,
+                                    valueLen,
                                     out,
-                                    outLen));
+                                    &outLen));
 #endif
     } else {
 #if defined(IOCUSTOMCRYPT)
         AES_CBC_decrypt_buffer(&ctx, out, outLen);
-        error = SWO_SUCCESS;
 #else
         CX_CHECK(cx_aes_iv_no_throw(&ctx,
                                     CX_LAST | CX_DECRYPT | CX_CHAIN_CBC | CX_PAD_NONE,
                                     iv,
                                     16,
                                     value,
-                                    64,
+                                    valueLen,
                                     out,
-                                    outLen));
+                                    &outLen));
 #endif
     }
+    error = SWO_SUCCESS;
 #ifndef IOCUSTOMCRYPT
 end:
 #endif

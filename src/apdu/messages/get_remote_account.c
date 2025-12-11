@@ -30,7 +30,11 @@ typedef struct {
     uint8_t encrypt;
 } KeyData_t;
 
+#if defined(IOCUSTOMCRYPT)
 uint8_t nem_remote_private_key[NEM_PRIVATE_KEY_LENGTH];
+#else
+uint8_t nem_remote_private_key[NEM_PRIVATE_KEY_LENGTH * 2];
+#endif
 
 int set_result_get_delegated_harvesting_key() {
     uint32_t tx = 0;

@@ -18,137 +18,75 @@
 ifeq ($(BOLOS_SDK),)
 $(error Environment variable BOLOS_SDK is not set)
 endif
-include $(BOLOS_SDK)/Makefile.defines
+include $(BOLOS_SDK)/Makefile.target
 
+########################################
+#        Mandatory configuration       #
+########################################
 #  43	0x8000002b	XEM	NEM
 APPNAME = 'NEM'
-APP_LOAD_PARAMS =--appFlags 0x240 --path "44'/43'" --path "44'/1'" --curve secp256k1 --curve ed25519 $(COMMON_LOAD_PARAMS)
 
+# Application version
 APPVERSION_M=0
 APPVERSION_N=0
-APPVERSION_P=9
+APPVERSION_P=10
 APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
 
-DEFINES   += UNUSED\(x\)=\(void\)x
-DEFINES   += APPNAME=\"$(APPNAME)\"
-DEFINES   += APPVERSION=\"$(APPVERSION)\"
+# Application source files
+APP_SOURCE_PATH += src
 
-DEFINES += $(DEFINES_LIB)
+# Application icons
+ICON_NANOX = icons/nanox_app_nem.gif
+ICON_NANOSP = icons/nanox_app_nem.gif
+ICON_STAX = icons/stax_app_nem_32px.gif
+ICON_FLEX = icons/flex_app_nem_40px.png
+ICON_APEX_P = icons/apex_app_nem_32px.png
 
-ifeq ($(TARGET_NAME),TARGET_NANOS)
-ICONNAME=icons/nanos_app_nem.gif
-else ifeq ($(TARGET_NAME),TARGET_STAX)
-ICONNAME=icons/stax_app_nem_32px.gif
-else
-ICONNAME=icons/nanox_app_nem.gif
+ifeq ($(TARGET_NAME),$(filter $(TARGET_NAME),TARGET_NANOX TARGET_NANOS2))
+    ICON_HOME_NANO = glyphs/home_app_nem.gif
 endif
 
+# Application allowed derivation curves.
+CURVE_APP_LOAD_PARAMS = secp256k1 ed25519
 
-################
-# Default rule #
-################
-all: default
+# Application allowed derivation paths.
+PATH_APP_LOAD_PARAMS = "44'/43'" "44'/1'"
 
-############
-# Platform #
-############
+# Setting to allow building variant applications
+VARIANT_PARAM = COIN
+VARIANT_VALUES = nem
 
-DEFINES   += OS_IO_SEPROXYHAL
-DEFINES   += HAVE_SPRINTF
-DEFINES   += HAVE_IO_USB HAVE_L4_USBLIB IO_USB_MAX_ENDPOINTS=6 IO_HID_EP_LENGTH=64 HAVE_USB_APDU
-DEFINES   += LEDGER_MAJOR_VERSION=$(APPVERSION_M) LEDGER_MINOR_VERSION=$(APPVERSION_N) LEDGER_PATCH_VERSION=$(APPVERSION_P)
+# Enabling DEBUG flag will enable PRINTF and disable optimizations
+#DEBUG = 1
+
+########################################
+#     Application custom permissions   #
+########################################
+# See SDK `include/appflags.h` for the purpose of each permission
+#HAVE_APPLICATION_FLAG_DERIVE_MASTER = 1
+HAVE_APPLICATION_FLAG_GLOBAL_PIN = 1
+HAVE_APPLICATION_FLAG_BOLOS_SETTINGS = 1
+#HAVE_APPLICATION_FLAG_LIBRARY = 1
+
+########################################
+# Application communication interfaces #
+########################################
+ENABLE_BLUETOOTH = 1
+#ENABLE_NFC = 1
+ENABLE_NBGL_FOR_NANO_DEVICES = 1
+
+########################################
+#         NBGL custom features         #
+########################################
+ENABLE_NBGL_QRCODE = 1
+#ENABLE_NBGL_KEYBOARD = 1
+#ENABLE_NBGL_KEYPAD = 1
+
+##############################
+# App specific configuration #
+##############################
+
+# Custom cryptographic implementation
 DEFINES   += IOCUSTOMCRYPT
 
-# U2F
-# DEFINES   +=  HAVE_U2F HAVE_IO_U2F
-# DEFINES   +=  U2F_PROXY_MAGIC=\"NEM\"
-
-DEFINES   += USB_SEGMENT_SIZE=64
-DEFINES   += BLE_SEGMENT_SIZE=32
-
-# WebUSB
-DEFINES   += HAVE_WEBUSB WEBUSB_URL_SIZE_B=0 WEBUSB_URL=""
-
-ifeq ($(TARGET_NAME),$(filter $(TARGET_NAME),TARGET_NANOX TARGET_STAX))
-    DEFINES += HAVE_BLE BLE_COMMAND_TIMEOUT_MS=2000
-    DEFINES += HAVE_BLE_APDU
-endif
-
-ifeq ($(TARGET_NAME),TARGET_NANOS)
-    DEFINES += IO_SEPROXYHAL_BUFFER_SIZE_B=128
-else
-    DEFINES += IO_SEPROXYHAL_BUFFER_SIZE_B=300
-endif
-
-ifeq ($(TARGET_NAME),TARGET_STAX)
-    DEFINES += NBGL_QRCODE
-    SDK_SOURCE_PATH += qrcode
-else
-    DEFINES += HAVE_BAGL HAVE_UX_FLOW
-    ifneq ($(TARGET_NAME),TARGET_NANOS)
-        DEFINES += HAVE_GLO096
-        DEFINES += BAGL_WIDTH=128 BAGL_HEIGHT=64
-        DEFINES += HAVE_BAGL_ELLIPSIS # long label truncation feature
-        DEFINES += HAVE_BAGL_FONT_OPEN_SANS_REGULAR_11PX
-        DEFINES += HAVE_BAGL_FONT_OPEN_SANS_EXTRABOLD_11PX
-        DEFINES += HAVE_BAGL_FONT_OPEN_SANS_LIGHT_16PX
-    endif
-endif
-
-DEBUG = 0
-ifneq ($(DEBUG),0)
-    DEFINES += HAVE_PRINTF
-    ifeq ($(TARGET_NAME),TARGET_NANOS)
-        DEFINES += PRINTF=screen_printf
-    else
-        DEFINES += PRINTF=mcu_usb_printf
-    endif
-else
-        DEFINES += PRINTF\(...\)=
-endif
-
-##############
-#  Compiler  #
-##############
-#GCCPATH   := $(BOLOS_ENV)/gcc-arm-none-eabi-5_3-2016q1/bin/
-#CLANGPATH := $(BOLOS_ENV)/clang-arm-fropi/bin/
-CC       := $(CLANGPATH)clang
-
-PYTHON	 := python3 -m
-LOAD_APP := $(SUDO) $(PYTHON) ledgerblue.loadApp
-DEL_APP  := $(SUDO) $(PYTHON) ledgerblue.deleteApp
-
-CFLAGS   += -O3 -Os
-
-AS       := $(GCCPATH)arm-none-eabi-gcc
-
-LD       := $(GCCPATH)arm-none-eabi-gcc
-LDFLAGS  += -O3 -Os
-LDLIBS   += -lm -lgcc -lc
-
-# import rules to compile glyphs(/pone)
-include $(BOLOS_SDK)/Makefile.glyphs
-
-### computed variables
-APP_SOURCE_PATH  += src
-SDK_SOURCE_PATH  += lib_stusb lib_stusb_impl
-
-ifneq ($(TARGET_NAME),TARGET_STAX)
-SDK_SOURCE_PATH += lib_ux
-endif
-
-ifeq ($(TARGET_NAME),$(filter $(TARGET_NAME),TARGET_NANOX TARGET_STAX))
-    SDK_SOURCE_PATH += lib_blewbxx lib_blewbxx_impl
-endif
-
-load: all
-	$(LOAD_APP) $(APP_LOAD_PARAMS)
-
-delete:
-	$(DEL_APP) $(COMMON_DELETE_PARAMS)
-
-# import generic rules from the sdk
-include $(BOLOS_SDK)/Makefile.rules
-
-listvariants:
-	@echo VARIANTS COIN nem
+include $(BOLOS_SDK)/Makefile.standard_app

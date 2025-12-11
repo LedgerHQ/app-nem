@@ -5,9 +5,12 @@ on:
   push:
     branches:
       - master
-      - main
       - develop
   pull_request:
+
+permissions:  # For called workflow
+  contents: read
+  actions: write
 
 jobs:
   job_unit_test:
@@ -16,7 +19,13 @@ jobs:
 
     steps:
       - name: Clone
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Clone SDK
+        uses: actions/checkout@v4
+        with:
+          repository: LedgerHQ/ledger-secure-sdk
+          path: sdk
 
       - name: Install make and clang
         run: |
@@ -24,10 +33,9 @@ jobs:
           sudo apt install -y make clang
 
       - name: Run unit tests
+        working-directory: tests/unit
+        env:
+          BOLOS_SDK: ${{ github.workspace }}/sdk
         run: |
-          cd tests/unit-tests
-          mkdir build && cd build
-          cmake ..
-          make
-          cd ..
+          cmake -Bbuild -H. && make -C build
           ./test_transaction_parser.py

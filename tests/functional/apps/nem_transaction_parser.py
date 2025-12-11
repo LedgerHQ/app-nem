@@ -56,7 +56,7 @@ def decode_common_txn_header(buffer):
     buffer, value = read_uint32_t(buffer)
     transactionType = TRANSACTION_TYPES[value]
     buffer, version = read_uint8_t(buffer)
-    buffer, reserved = read_uint16_t(buffer)
+    buffer, _ = read_uint16_t(buffer)
     buffer, networkType = read_uint8_t(buffer)
     buffer, timestamp = read_uint32_t(buffer)
     buffer, public_key = read_public_key(buffer)
@@ -279,19 +279,19 @@ def decode_multisig_transaction(buffer):
 def decode_txn_detail(buffer, transaction_type, version):
     if transaction_type == 'TRANSFER':
         return decode_transfer_transaction(buffer, version)
-    elif transaction_type == 'IMPORTANCE_TRANSFER':
+    if transaction_type == 'IMPORTANCE_TRANSFER':
         return decode_importance_transfer_transaction(buffer)
-    elif transaction_type == 'MULTISIG_AGGREGATE_MODIFICATION':
+    if transaction_type == 'MULTISIG_AGGREGATE_MODIFICATION':
         return decode_aggregate_modification_transaction(buffer, version)
-    elif transaction_type == 'MULTISIG_SIGNATURE':
+    if transaction_type == 'MULTISIG_SIGNATURE':
         return decode_multisig_signature_transaction(buffer)
-    elif transaction_type == 'MULTISIG':
+    if transaction_type == 'MULTISIG':
         return decode_multisig_transaction(buffer)
-    elif transaction_type == 'PROVISION_NAMESPACE':
+    if transaction_type == 'PROVISION_NAMESPACE':
         return decode_provision_namespace_transaction(buffer)
-    elif transaction_type == 'MOSAIC_DEFINITION':
+    if transaction_type == 'MOSAIC_DEFINITION':
         return decode_mosaic_definition_creation_transaction(buffer)
-    elif transaction_type == 'MOSAIC_SUPPLY_CHANGE':
+    if transaction_type == 'MOSAIC_SUPPLY_CHANGE':
         return decode_mosaic_supply_change_transaction(buffer)
     assert False
 

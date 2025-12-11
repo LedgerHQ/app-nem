@@ -1,18 +1,23 @@
-# nem-ledger-app
-NEM wallet application for Nano S.
+# app-nem
 
-See the [Ledger's documentation](https://ledger.readthedocs.io/en/latest/) to get started.
+NEM wallet application for Ledger devices.
 
-# Install the application on your Ledger Nano S device
+See the [Ledger's documentation](https://developers.ledger.com) to get started.
+
+## Install the application on your Ledger device
+
 1. Modify `source` path for yourself in `load.sh`.
-1. Run `load.sh` file to make and install app
-    ```
-    ./load.sh
-    ```
+2. Run `load.sh` file to make and install app
 
-# Test
-1. Setup [Python tools](https://github.com/LedgerHQ/blue-loader-python) for Ledger Nano S.
-1. Run the test cases on test directory.
+```bash
+./load.sh
+```
 
-# Permissions
+## Test
+
+1. Setup [Python tools](https://github.com/LedgerHQ/blue-loader-python) for Ledger devices.
+2. Run the test cases on test directory.
+
+## Permissions
+
 You have to give permissions to connect your Ledger device. See `specs` directory for more information.

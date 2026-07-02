@@ -21,6 +21,6 @@
 #include <stdint.h>
 #include "parser.h"
 
-int handle_remote_private_key(const command_t* cmd);
+int handle_remote_private_key(const command_t *cmd);
 
 #endif  // LEDGER_APP_NEM_GETREMOTEACCOUNT_H

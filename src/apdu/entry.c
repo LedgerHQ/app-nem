@@ -27,7 +27,7 @@
 
 static unsigned char lastINS = 0;
 
-int handle_apdu(const command_t* cmd) {
+int handle_apdu(const command_t *cmd) {
     if (cmd->cla != CLA) {
         return io_send_sw(SWO_INVALID_CLA);
     }

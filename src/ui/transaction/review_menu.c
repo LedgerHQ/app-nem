@@ -27,7 +27,7 @@
 #include "nbgl_use_case.h"
 #include "display.h"
 
-result_t* transaction;
+result_t *transaction;
 result_action_t approval_menu_callback;
 
 static nbgl_contentTagValue_t pair = {0};
@@ -48,8 +48,8 @@ static void review_choice(bool confirm) {
 }
 
 // function called by NBGL to get the pair indexed by "index"
-static nbgl_contentTagValue_t* get_review_pair(uint8_t index) {
-    const field_t* field = &transaction->fields[index];
+static nbgl_contentTagValue_t *get_review_pair(uint8_t index) {
+    const field_t *field = &transaction->fields[index];
 
     // Backup review argument as MAX_TAG_VALUE_PAIRS_DISPLAYED can be displayed
     // simultaneously and their content must be store on app side buffer as
@@ -68,7 +68,7 @@ static nbgl_contentTagValue_t* get_review_pair(uint8_t index) {
     return &pair;
 }
 
-void display_review_menu(result_t* transactionParam, result_action_t callback) {
+void display_review_menu(result_t *transactionParam, result_action_t callback) {
     transaction = transactionParam;
     approval_menu_callback = callback;
 

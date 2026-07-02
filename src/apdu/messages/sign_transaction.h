@@ -24,6 +24,6 @@
 
 extern parse_context_t parseContext;
 
-int handle_sign(const command_t* cmd);
+int handle_sign(const command_t *cmd);
 
 #endif  // LEDGER_APP_NEM_SIGNTRANSACTION_H

@@ -33,7 +33,13 @@ result_action_t approval_menu_callback;
 static nbgl_contentTagValue_t pair = {0};
 static nbgl_contentTagValueList_t pairList = {0};
 
-#define MAX_TAG_VALUE_PAIRS_DISPLAYED 4
+// Stax geometry (TAG_VALUE_AREA_HEIGHT=548px, margins=12px, fonts=68px/pair)
+// fits up to 6 pairs per page, exceeding NB_MAX_DISPLAYED_PAIRS_IN_REVIEW=4.
+#ifdef TARGET_STAX
+#define MAX_TAG_VALUE_PAIRS_DISPLAYED 7
+#else
+#define MAX_TAG_VALUE_PAIRS_DISPLAYED NB_MAX_DISPLAYED_PAIRS_IN_REVIEW
+#endif
 
 typedef struct review_argument_t {
     char name[MAX_FIELDNAME_LEN];

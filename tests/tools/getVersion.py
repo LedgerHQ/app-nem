@@ -8,9 +8,7 @@ from ragger.backend import LedgerCommBackend
 
 NEM_LIB_DIRECTORY = (Path(__file__).parent / "../functional/apps").resolve().as_posix()
 sys.path.append(NEM_LIB_DIRECTORY)
-# pylint: disable=wrong-import-position
-from nem import NemClient
-# pylint: enable=wrong-import-position
+from nem import NemClient  # noqa: E402
 
 
 def main():

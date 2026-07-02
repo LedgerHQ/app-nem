@@ -9,12 +9,12 @@ from subprocess import run
 
 NEM_LIB_DIRECTORY = (Path(__file__).parent / "../functional/apps").resolve().as_posix()
 sys.path.append(NEM_LIB_DIRECTORY)
-# pylint: disable=wrong-import-position
-from nem_transaction_builder import encode_txn_context
-# pylint: enable=wrong-import-position
+from nem_transaction_builder import encode_txn_context  # noqa: E402
 
 CORPUS_DIR = Path(__file__).resolve().parent.parent / "corpus"
-PARSER_BINARY = (Path(__file__).parent / "build/test_transaction_parser").resolve().as_posix()
+PARSER_BINARY = (
+    (Path(__file__).parent / "build/test_transaction_parser").resolve().as_posix()
+)
 TEMP_TXN_FILE = (Path(__file__).parent / "temp_txn.raw").resolve().as_posix()
 
 # pylint: disable=line-too-long
@@ -24,21 +24,21 @@ TESTS_CASES = {
         ("Recipient", "TBE56Z7MLQZ4S755JZL46VRYM7OD37SLPGFZPO5O"),
         ("Amount", "5 XEM"),
         ("Message", "ttest"),
-        ("Fee", "0.1 XEM")
+        ("Fee", "0.1 XEM"),
     ],
     "transfer_hex_message_tx.json": [
         ("Transaction Type", "Transfer TX"),
         ("Recipient", "TB7IB6DSJKWBVQEK7PD7TWO66ECW5LY6SISM2CJJ"),
         ("Amount", "10 XEM"),
         ("Message", "0123456789abcdef"),
-        ("Fee", "0.1 XEM")
+        ("Fee", "0.1 XEM"),
     ],
     "transfer_encrypted_message_tx.json": [
         ("Transaction Type", "Transfer TX"),
         ("Recipient", "TB7IB6DSJKWBVQEK7PD7TWO66ECW5LY6SISM2CJJ"),
         ("Amount", "0 XEM"),
         ("Message", "<encrypted msg>"),
-        ("Fee", "0.2 XEM")
+        ("Fee", "0.2 XEM"),
     ],
     "multiple_mosaic_tx.json": [
         ("Transaction Type", "Transfer TX"),
@@ -49,7 +49,7 @@ TESTS_CASES = {
         ("Amount", "1 XEM"),
         ("Unknown Mosaic", "Divisibility and levy cannot be shown"),
         ("Namespace", "testnet: token"),
-        ("Micro Units", "1")
+        ("Micro Units", "1"),
     ],
     "multiple_mosaic_2_tx.json": [
         ("Transaction Type", "Transfer TX"),
@@ -60,7 +60,7 @@ TESTS_CASES = {
         ("Amount", "10 XEM"),
         ("Unknown Mosaic", "Divisibility and levy cannot be shown"),
         ("Namespace", "xarleecm.zodiac: gemini"),
-        ("Micro Units", "10")
+        ("Micro Units", "10"),
     ],
     "create_namespace_tx.json": [
         ("Transaction Type", "Provision Namespace TX"),
@@ -68,7 +68,7 @@ TESTS_CASES = {
         ("Parent Name", "test_nem"),
         ("Sink Address", "TAMESPACEWH4MKFMBCVFERDPOOP4FK7MTDJEYP35"),
         ("Rental Fee", "10 XEM"),
-        ("Fee", "0.15 XEM")
+        ("Fee", "0.15 XEM"),
     ],
     "create_mosaic_tx.json": [
         ("Transaction Type", "Mosaic Definition TX"),
@@ -81,7 +81,7 @@ TESTS_CASES = {
         ("transferable", "true"),
         ("Sink Address", "TBMOSAICOD4F54EE5CDMR23CCBGOAM2XSJBR5OLC"),
         ("Rental Fee", "10 XEM"),
-        ("Fee", "0.15 XEM")
+        ("Fee", "0.15 XEM"),
     ],
     "create_mosaic_levy_tx.json": [
         ("Transaction Type", "Mosaic Definition TX"),
@@ -98,7 +98,7 @@ TESTS_CASES = {
         ("Levy Fee", "0.000005 micro"),
         ("Sink Address", "TBMOSAICOD4F54EE5CDMR23CCBGOAM2XSJBR5OLC"),
         ("Rental Fee", "10 XEM"),
-        ("Fee", "0.15 XEM")
+        ("Fee", "0.15 XEM"),
     ],
     "multisig_transfer_transaction_tx.json": [
         ("Transaction Type", "Multisig TX"),
@@ -107,7 +107,7 @@ TESTS_CASES = {
         ("Recipient", "TB7IB6DSJKWBVQEK7PD7TWO66ECW5LY6SISM2CJJ"),
         ("Amount", "10 XEM"),
         ("Message", "Send a transfer transaction from a multisig account using Ledger"),
-        ("Fee", "0.2 XEM")
+        ("Fee", "0.2 XEM"),
     ],
     "multisig_create_namespace_tx.json": [
         ("Transaction Type", "Multisig TX"),
@@ -117,7 +117,7 @@ TESTS_CASES = {
         ("Create new root", "namespace"),
         ("Sink Address", "TAMESPACEWH4MKFMBCVFERDPOOP4FK7MTDJEYP35"),
         ("Rental Fee", "100 XEM"),
-        ("Fee", "0.15 XEM")
+        ("Fee", "0.15 XEM"),
     ],
     "multisig_create_mosaic_tx.json": [
         ("Transaction Type", "Multisig TX"),
@@ -140,7 +140,10 @@ TESTS_CASES = {
         ("Inner TX Type", "Mosaic Definition TX"),
         ("Parent Name", "test_nem"),
         ("Mosaic Name", "mosaic_create_from_ledger"),
-        ("Description", "This mosaic is created by a ledger wallet from a multisig account"),
+        (
+            "Description",
+            "This mosaic is created by a ledger wallet from a multisig account",
+        ),
         ("divisibility", "3"),
         ("initialSupply", "1000"),
         ("supplyMutable", "true"),
@@ -151,22 +154,28 @@ TESTS_CASES = {
         ("Levy Fee", "0.000005 micro"),
         ("Sink Address", "TBMOSAICOD4F54EE5CDMR23CCBGOAM2XSJBR5OLC"),
         ("Rental Fee", "10 XEM"),
-        ("Fee", "0.15 XEM")
+        ("Fee", "0.15 XEM"),
     ],
     "multisig_signature_transfer_transaction.json": [
         ("Transaction Type", "Multi Sig. TX"),
-        ("SHA3 Tx Hash", "9298E6A7255F269D88BA5D096341B3C56C3E65A511B72A947097C0CFAB95D4B1"),
+        (
+            "SHA3 Tx Hash",
+            "9298E6A7255F269D88BA5D096341B3C56C3E65A511B72A947097C0CFAB95D4B1",
+        ),
         ("Multisig Address", "TA6DD3TAAW7DIOFJKWHNJJZQLTSRWAQ67YKWYQBG"),
         ("Multisig Fee", "0.15 XEM"),
         ("Detail TX Type", "Transfer TX"),
         ("Recipient", "TB7IB6DSJKWBVQEK7PD7TWO66ECW5LY6SISM2CJJ"),
         ("Amount", "0.4 XEM"),
         ("Message", "test message"),
-        ("Fee", "0.1 XEM")
+        ("Fee", "0.1 XEM"),
     ],
     "multisig_signature_provision_namespace_transaction.json": [
         ("Transaction Type", "Multi Sig. TX"),
-        ("SHA3 Tx Hash", "39D64C1602FA48D49C59A464EF109235472134EA854D1B70284EA32AEC6DD17A"),
+        (
+            "SHA3 Tx Hash",
+            "39D64C1602FA48D49C59A464EF109235472134EA854D1B70284EA32AEC6DD17A",
+        ),
         ("Multisig Address", "TA6DD3TAAW7DIOFJKWHNJJZQLTSRWAQ67YKWYQBG"),
         ("Multisig Fee", "0.15 XEM"),
         ("Detail TX Type", "Provision Namespace TX"),
@@ -175,7 +184,7 @@ TESTS_CASES = {
         ("Sink Address", "TAMESPACEWH4MKFMBCVFERDPOOP4FK7MTDJEYP35"),
         ("Rental Fee", "100 XEM"),
         ("Fee", "0.15 XEM"),
-    ]
+    ],
 }
 # pylint: enable=line-too-long
 
@@ -189,12 +198,12 @@ def assert_equal(a, b, text):
 
 def test_parsing(filename, expected):
     print("[ RUN      ] ", filename)
-    with open(CORPUS_DIR / filename, encoding='utf-8') as f:
+    with open(CORPUS_DIR / filename, encoding="utf-8") as f:
         transaction = json.load(f)
 
     tx_data = encode_txn_context(transaction)
 
-    with open(TEMP_TXN_FILE, 'wb') as f:
+    with open(TEMP_TXN_FILE, "wb") as f:
         f.write(tx_data)
 
     cmd = [PARSER_BINARY, TEMP_TXN_FILE]
@@ -232,6 +241,7 @@ def main() -> None:
             status = res
 
     sys.exit(status)
+
 
 if __name__ == "__main__":
     main()

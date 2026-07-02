@@ -32,6 +32,7 @@ jobs:
     permissions:  # For called workflow
       contents: read
       actions: write
+      pull-requests: write
     with:
       upload_app_binaries_artifact: compiled_app_binaries
 

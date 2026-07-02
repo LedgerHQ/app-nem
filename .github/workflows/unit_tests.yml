@@ -8,34 +8,16 @@ on:
       - develop
   pull_request:
 
-permissions:  # For called workflow
+permissions:
   contents: read
   actions: write
+  pull-requests: write
+  code-quality: write
 
 jobs:
   job_unit_test:
-    name: Unit test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Clone
-        uses: actions/checkout@v4
-
-      - name: Clone SDK
-        uses: actions/checkout@v4
-        with:
-          repository: LedgerHQ/ledger-secure-sdk
-          path: sdk
-
-      - name: Install make and clang
-        run: |
-          sudo apt update
-          sudo apt install -y make clang
-
-      - name: Run unit tests
-        working-directory: tests/unit
-        env:
-          BOLOS_SDK: ${{ github.workspace }}/sdk
-        run: |
-          cmake -Bbuild -H. && make -C build
-          ./test_transaction_parser.py
+    name: Call Ledger unit_test
+    uses: LedgerHQ/ledger-app-workflows/.github/workflows/reusable_unit_tests.yml@v1
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
+      codecov_token: ${{ secrets.CODECOV_TOKEN }}

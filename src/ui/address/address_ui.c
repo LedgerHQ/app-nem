@@ -37,7 +37,7 @@ static void display_address_callback(bool confirm) {
     }
 }
 
-void display_address_confirmation_ui(char* address, action_t onApprove, action_t onReject) {
+void display_address_confirmation_ui(char *address, action_t onApprove, action_t onReject) {
     approval_action = onApprove;
     rejection_action = onReject;
 

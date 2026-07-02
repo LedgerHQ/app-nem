@@ -20,6 +20,6 @@
 
 #include "parser.h"
 
-int handle_public_key(const command_t* cmd);
+int handle_public_key(const command_t *cmd);
 
 #endif  // LEDGER_APP_NEM_GETPUBLICKEY_H

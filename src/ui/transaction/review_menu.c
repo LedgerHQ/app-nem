@@ -27,13 +27,19 @@
 #include "nbgl_use_case.h"
 #include "display.h"
 
-result_t* transaction;
+result_t *transaction;
 result_action_t approval_menu_callback;
 
 static nbgl_contentTagValue_t pair = {0};
 static nbgl_contentTagValueList_t pairList = {0};
 
-#define MAX_TAG_VALUE_PAIRS_DISPLAYED 4
+// Stax geometry (TAG_VALUE_AREA_HEIGHT=548px, margins=12px, fonts=68px/pair)
+// fits up to 6 pairs per page, exceeding NB_MAX_DISPLAYED_PAIRS_IN_REVIEW=4.
+#ifdef TARGET_STAX
+#define MAX_TAG_VALUE_PAIRS_DISPLAYED 7
+#else
+#define MAX_TAG_VALUE_PAIRS_DISPLAYED NB_MAX_DISPLAYED_PAIRS_IN_REVIEW
+#endif
 
 typedef struct review_argument_t {
     char name[MAX_FIELDNAME_LEN];
@@ -48,8 +54,8 @@ static void review_choice(bool confirm) {
 }
 
 // function called by NBGL to get the pair indexed by "index"
-static nbgl_contentTagValue_t* get_review_pair(uint8_t index) {
-    const field_t* field = &transaction->fields[index];
+static nbgl_contentTagValue_t *get_review_pair(uint8_t index) {
+    const field_t *field = &transaction->fields[index];
 
     // Backup review argument as MAX_TAG_VALUE_PAIRS_DISPLAYED can be displayed
     // simultaneously and their content must be store on app side buffer as
@@ -68,7 +74,7 @@ static nbgl_contentTagValue_t* get_review_pair(uint8_t index) {
     return &pair;
 }
 
-void display_review_menu(result_t* transactionParam, result_action_t callback) {
+void display_review_menu(result_t *transactionParam, result_action_t callback) {
     transaction = transactionParam;
     approval_menu_callback = callback;
 

@@ -5,6 +5,7 @@ from ragger.backend import BackendInterface
 
 from apps.nem import NemClient
 
+
 def verify_version(version: str) -> None:
     """Verify the app version, based on defines in Makefile
 
@@ -29,7 +30,7 @@ def verify_version(version: str) -> None:
 
 
 def _read_makefile() -> list[str]:
-    """Read lines from the parent Makefile """
+    """Read lines from the parent Makefile"""
 
     parent = Path(__file__).parent.parent.parent.resolve()
     makefile = f"{parent}/Makefile"

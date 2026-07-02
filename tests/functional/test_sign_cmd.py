@@ -19,10 +19,14 @@ def load_transaction_from_file(transaction_filename: str) -> bytes:
 
 
 @pytest.mark.parametrize("transaction_filename", CORPUS_FILES)
-def test_sign_tx_accepted(transaction_filename: str, scenario_navigator: NavigateWithScenario):
+def test_sign_tx_accepted(
+    transaction_filename: str, scenario_navigator: NavigateWithScenario
+):
     transaction = load_transaction_from_file(transaction_filename)
     client = NemClient(scenario_navigator.backend)
-    test_name = scenario_navigator.test_name + "/" + transaction_filename.replace(".json", "")
+    test_name = (
+        scenario_navigator.test_name + "/" + transaction_filename.replace(".json", "")
+    )
     with client.send_async_sign_message(NEM_PATH, transaction):
         scenario_navigator.review_approve(ROOT_SCREENSHOT_PATH, test_name)
 

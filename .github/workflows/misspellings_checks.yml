@@ -19,3 +19,5 @@ jobs:
   misspell:
     name: Check misspellings
     uses: LedgerHQ/ledger-app-workflows/.github/workflows/reusable_spell_check.yml@v1
+    with:
+      ignore_words_list: ttest

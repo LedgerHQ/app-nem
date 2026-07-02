@@ -20,6 +20,6 @@
 
 #include "parser.h"
 
-int handle_apdu(const command_t* cmd);
+int handle_apdu(const command_t *cmd);
 
 #endif  // LEDGER_APP_NEM_ENTRY_H

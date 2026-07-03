@@ -100,9 +100,7 @@ def decode_transfer_transaction(buffer, version):
             buffer, namespace = read_len_prefixed_string(buffer)
             buffer, mosaicName = read_len_prefixed_string(buffer)
             buffer, quantity = read_uint64_t(buffer)
-            mosaicList.append(
-                {"namespace": namespace, "mosaicName": mosaicName, "quantity": quantity}
-            )
+            mosaicList.append({"namespace": namespace, "mosaicName": mosaicName, "quantity": quantity})
 
         data["mosaicList"] = mosaicList
 
@@ -270,14 +268,12 @@ def decode_txn_detail(buffer, transaction_type, version):
         return decode_mosaic_definition_creation_transaction(buffer)
     if transaction_type == "MOSAIC_SUPPLY_CHANGE":
         return decode_mosaic_supply_change_transaction(buffer)
-    assert False
+    raise AssertionError(f"Unsupported transaction type: {transaction_type}")
 
 
 def _decode_txn_context(buffer):
     buffer, header = decode_common_txn_header(buffer)
-    buffer, fields = decode_txn_detail(
-        buffer, header["transactionType"], header["version"]
-    )
+    buffer, fields = decode_txn_detail(buffer, header["transactionType"], header["version"])
     return buffer, {"common_txn_header": header, "fields": fields}
 
 

@@ -1,9 +1,8 @@
-from pathlib import Path
 import re
-
-from ragger.backend import BackendInterface
+from pathlib import Path
 
 from apps.nem import NemClient
+from ragger.backend import BackendInterface
 
 
 def verify_version(version: str) -> None:
@@ -34,7 +33,7 @@ def _read_makefile() -> list[str]:
 
     parent = Path(__file__).parent.parent.parent.resolve()
     makefile = f"{parent}/Makefile"
-    with open(makefile, "r", encoding="utf-8") as f_p:
+    with open(makefile, encoding="utf-8") as f_p:
         lines = f_p.readlines()
     return lines
 

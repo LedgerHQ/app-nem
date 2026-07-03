@@ -1,16 +1,14 @@
+from base64 import b32encode
+from collections.abc import Generator
 from contextlib import contextmanager
 from enum import IntEnum
-from typing import Generator, Optional
 from struct import pack
-from base64 import b32encode
 
 from bip_utils.utils.crypto.ripemd import Ripemd160  # type: ignore
 from bip_utils.utils.crypto.sha3 import Kekkak256  # type: ignore
-
-from ragger.backend.interface import BackendInterface, RAPDU
-from ragger.utils import split_message
+from ragger.backend.interface import RAPDU, BackendInterface
 from ragger.bip import pack_derivation_path
-
+from ragger.utils import split_message
 
 TESTNET = 152
 MAINNET = 104
@@ -55,9 +53,7 @@ class NemClient:
         self._backend = backend
 
     def send_get_version(self) -> tuple[int, int, int]:
-        rapdu: RAPDU = self._backend.exchange(
-            CLA, INS.INS_GET_APP_CONFIGURATION, 0, 0, b""
-        )
+        rapdu: RAPDU = self._backend.exchange(CLA, INS.INS_GET_APP_CONFIGURATION, 0, 0, b"")
         response = rapdu.data
         # response = 0x00 (1) ||
         #            MAJOR_VERSION (1) ||
@@ -70,9 +66,7 @@ class NemClient:
         patch = int(response[3])
         return (major, minor, patch)
 
-    def compute_adress_from_public_key(
-        self, public_key: bytes, network_type: int = MAINNET
-    ) -> str:
+    def compute_adress_from_public_key(self, public_key: bytes, network_type: int = MAINNET) -> str:
         assert network_type in [TESTNET, MAINNET]
         buffer1 = Kekkak256.QuickDigest(public_key)
         rawAddress = pack("<B", network_type) + Ripemd160.QuickDigest(buffer1)[:20]
@@ -81,9 +75,7 @@ class NemClient:
         buff = b32encode(rawAddress).decode("utf-8")
         return buff
 
-    def parse_get_public_key_response(
-        self, response: bytes, network_type: int = MAINNET
-    ) -> tuple[bytes, str]:
+    def parse_get_public_key_response(self, response: bytes, network_type: int = MAINNET) -> tuple[bytes, str]:
         # response = address_len (1) ||
         #            address (40) ||
         #            public_key_len (1) ||
@@ -97,18 +89,14 @@ class NemClient:
         assert self.compute_adress_from_public_key(public_key, network_type) == address
         return public_key, address
 
-    def send_get_public_key_non_confirm(
-        self, derivation_path: str, network_type: int = MAINNET
-    ) -> RAPDU:
+    def send_get_public_key_non_confirm(self, derivation_path: str, network_type: int = MAINNET) -> RAPDU:
         p1 = P1_NON_CONFIRM
         p2 = 0  # Unused
         payload = pack_derivation_path(derivation_path) + pack("<B", network_type)
         return self._backend.exchange(CLA, INS.INS_GET_PUBLIC_KEY, p1, p2, payload)
 
     @contextmanager
-    def send_async_get_public_key_confirm(
-        self, derivation_path: str, network_type: int = MAINNET
-    ) -> Generator[None, None, None]:
+    def send_async_get_public_key_confirm(self, derivation_path: str, network_type: int = MAINNET) -> Generator[None, None, None]:
         p1 = P1_CONFIRM
         p2 = 0  # Unused
         payload = pack_derivation_path(derivation_path) + pack("<B", network_type)
@@ -130,15 +118,11 @@ class NemClient:
         return self._backend.exchange(CLA, INS.INS_GET_REMOTE_ACCOUNT, p1, p2, payload)
 
     @contextmanager
-    def send_async_get_remote_account_confirm(
-        self, derivation_path: str
-    ) -> Generator[None, None, None]:
+    def send_async_get_remote_account_confirm(self, derivation_path: str) -> Generator[None, None, None]:
         p1 = P1_CONFIRM
         p2 = 0  # Unused
         payload = pack_derivation_path(derivation_path)
-        with self._backend.exchange_async(
-            CLA, INS.INS_GET_REMOTE_ACCOUNT, p1, p2, payload
-        ):
+        with self._backend.exchange_async(CLA, INS.INS_GET_REMOTE_ACCOUNT, p1, p2, payload):
             yield
 
     def _send_sign_message(self, message: bytes, first: bool, last: bool) -> RAPDU:
@@ -150,9 +134,7 @@ class NemClient:
         return self._backend.exchange(CLA, INS.INS_SIGN, p1, 0, message)
 
     @contextmanager
-    def _send_async_sign_message(
-        self, message: bytes, first: bool, last: bool
-    ) -> Generator[None, None, None]:
+    def _send_async_sign_message(self, message: bytes, first: bool, last: bool) -> Generator[None, None, None]:
         p1 = 0
         if not first:
             p1 |= P1_MASK_ORDER
@@ -162,12 +144,8 @@ class NemClient:
             yield
 
     @contextmanager
-    def send_async_sign_message(
-        self, derivation_path: str, message: bytes
-    ) -> Generator[None, None, None]:
-        messages = split_message(
-            pack_derivation_path(derivation_path) + message, MAX_CHUNK_SIZE
-        )
+    def send_async_sign_message(self, derivation_path: str, message: bytes) -> Generator[None, None, None]:
+        messages = split_message(pack_derivation_path(derivation_path) + message, MAX_CHUNK_SIZE)
         first = True
 
         if len(messages) > 1:
@@ -179,5 +157,5 @@ class NemClient:
         with self._send_async_sign_message(messages[-1], first, True):
             yield
 
-    def get_async_response(self) -> Optional[RAPDU]:
+    def get_async_response(self) -> RAPDU | None:
         return self._backend.last_async_response

@@ -1,7 +1,7 @@
 from json import load
 
-from apps.nem_transaction_parser import decode_txn_context
 from apps.nem_transaction_builder import encode_txn_context
+from apps.nem_transaction_parser import decode_txn_context
 from utils import CORPUS_DIR, CORPUS_FILES
 
 

@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 
-import sys
 import argparse
-
+import sys
 from pathlib import Path
 
 from ragger.backend import LedgerCommBackend
 
 NEM_LIB_DIRECTORY = (Path(__file__).parent / "../functional/apps").resolve().as_posix()
 sys.path.append(NEM_LIB_DIRECTORY)
-from nem import NemClient, TESTNET  # noqa: E402
-
+from nem import TESTNET, NemClient  # noqa: E402
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--path", help="BIP 32 path to use")

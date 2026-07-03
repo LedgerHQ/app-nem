@@ -1,6 +1,6 @@
-from ragger.backend import SpeculosBackend
+from ragger.backend import BackendInterface, SpeculosBackend
 from ragger.backend.interface import RaisePolicy
-from ragger.navigator import NavInsID
+from ragger.navigator import Navigator, NavInsID
 
 from apps.nem import NemClient, ErrorType
 from utils import ROOT_SCREENSHOT_PATH
@@ -8,59 +8,77 @@ from utils import ROOT_SCREENSHOT_PATH
 # Proposed NEM derivation paths for tests ###
 NEM_PATH = "m/44'/43'/0'/0'/0'"
 
-SPECULOS_EXPECTED_DELEGATED_HARVESTING_KEY = "328a20f8900fd5e2fc0f9f02d949feb6"\
-                                             "6a8a448f8822c914b22aba9bcddaa46f"
+SPECULOS_EXPECTED_DELEGATED_HARVESTING_KEY = (
+    "328a20f8900fd5e2fc0f9f02d949feb66a8a448f8822c914b22aba9bcddaa46f"
+)
 
 
-def check_get_remote_account_resp(backend, delegated_harvesting_key):
+def check_get_remote_account_resp(
+    backend: BackendInterface, delegated_harvesting_key: bytes
+):
     if isinstance(backend, SpeculosBackend):
         # Check against nominal Speculos seed expected results
-        assert delegated_harvesting_key.hex() == SPECULOS_EXPECTED_DELEGATED_HARVESTING_KEY
+        assert (
+            delegated_harvesting_key.hex() == SPECULOS_EXPECTED_DELEGATED_HARVESTING_KEY
+        )
 
 
-def test_get_remote_account_non_confirm(backend):
+def test_get_remote_account_non_confirm(backend: BackendInterface):
     client = NemClient(backend)
     response = client.send_get_remote_account_non_confirm(NEM_PATH).data
     delegated_harvesting_key = client.parse_get_remote_account_response(response)
     check_get_remote_account_resp(backend, delegated_harvesting_key)
 
 
-def test_get_remote_account_confirm_accepted(firmware, backend, navigator, test_name):
+def test_get_remote_account_confirm_accepted(
+    backend: BackendInterface, navigator: Navigator, test_name: str
+):
     client = NemClient(backend)
     with client.send_async_get_remote_account_confirm(NEM_PATH):
-        if firmware.device.startswith("nano"):
-            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
-                                                      [NavInsID.BOTH_CLICK],
-                                                      "Approve",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+        if backend.device.is_nano:
+            navigator.navigate_until_text_and_compare(
+                NavInsID.RIGHT_CLICK,
+                [NavInsID.BOTH_CLICK],
+                "Approve",
+                ROOT_SCREENSHOT_PATH,
+                test_name,
+            )
         else:
             instructions = [
                 NavInsID.USE_CASE_CHOICE_CONFIRM,
-                NavInsID.USE_CASE_STATUS_DISMISS
+                NavInsID.USE_CASE_STATUS_DISMISS,
             ]
-            navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH, test_name, instructions)
-    response = client.get_async_response().data
-    delegated_harvesting_key = client.parse_get_remote_account_response(response)
+            navigator.navigate_and_compare(
+                ROOT_SCREENSHOT_PATH, test_name, instructions
+            )
+    response = client.get_async_response()
+    assert response is not None
+    delegated_harvesting_key = client.parse_get_remote_account_response(response.data)
     check_get_remote_account_resp(backend, delegated_harvesting_key)
 
 
-def test_get_remote_account_confirm_refused(firmware, backend, navigator, test_name):
+def test_get_remote_account_confirm_refused(
+    backend: BackendInterface, navigator: Navigator, test_name: str
+):
     client = NemClient(backend)
     with client.send_async_get_remote_account_confirm(NEM_PATH):
         backend.raise_policy = RaisePolicy.RAISE_NOTHING
-        if firmware.device.startswith("nano"):
-            navigator.navigate_until_text_and_compare(NavInsID.RIGHT_CLICK,
-                                                      [NavInsID.BOTH_CLICK],
-                                                      "Reject",
-                                                      ROOT_SCREENSHOT_PATH,
-                                                      test_name)
+        if backend.device.is_nano:
+            navigator.navigate_until_text_and_compare(
+                NavInsID.RIGHT_CLICK,
+                [NavInsID.BOTH_CLICK],
+                "Reject",
+                ROOT_SCREENSHOT_PATH,
+                test_name,
+            )
         else:
             instructions = [
                 NavInsID.USE_CASE_CHOICE_REJECT,
-                NavInsID.USE_CASE_STATUS_DISMISS
+                NavInsID.USE_CASE_STATUS_DISMISS,
             ]
-            navigator.navigate_and_compare(ROOT_SCREENSHOT_PATH, test_name, instructions)
+            navigator.navigate_and_compare(
+                ROOT_SCREENSHOT_PATH, test_name, instructions
+            )
     rapdu = client.get_async_response()
-    assert rapdu.status == ErrorType.SW_USER_REJECTED
+    assert rapdu and rapdu.status == ErrorType.SW_USER_REJECTED
     assert len(rapdu.data) == 0

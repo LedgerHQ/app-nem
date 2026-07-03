@@ -4,6 +4,9 @@ build
 .vscode
 *.pyc
 __pycache__
-tests/unit-tests/build/
-tests/unit-tests/temp_txn.raw
+tests/unit/build/
+tests/unit/temp_txn.raw
 tests/functional/snapshots-tmp/
+
+# Nano NBGL reversed icon for Home Screen
+glyphs/home_app_nem.gif

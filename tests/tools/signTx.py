@@ -11,12 +11,12 @@ from ragger.backend import LedgerCommBackend
 
 NEM_LIB_DIRECTORY = (Path(__file__).parent / "../functional/apps").resolve().as_posix()
 sys.path.append(NEM_LIB_DIRECTORY)
-from nem import NemClient
-from nem_transaction_builder import encode_txn_context
+from nem_transaction_builder import encode_txn_context  # noqa: E402
+from nem import NemClient  # noqa: E402
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--path', help="BIP 32 path to use")
-parser.add_argument('--file', help="Transaction in JSON format")
+parser.add_argument("--path", help="BIP 32 path to use")
+parser.add_argument("--file", help="Transaction in JSON format")
 args = parser.parse_args()
 
 if args.path is None:
@@ -24,9 +24,9 @@ if args.path is None:
     args.path = "m/44'/1'/0'/0'/0'"
 
 if args.file is None:
-    args.file = '../corpus/transfer_tx.json'
+    args.file = "../corpus/transfer_tx.json"
 
-with open(args.file) as f:
+with open(args.file, encoding="utf-8") as f:
     obj = json.load(f)
 message = encode_txn_context(obj)
 

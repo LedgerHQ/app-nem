@@ -227,12 +227,10 @@ def encode_txn_detail(fields, transaction_type, version):
         return encode_mosaic_definition_creation_transaction(fields)
     if transaction_type == "MOSAIC_SUPPLY_CHANGE":
         return encode_mosaic_supply_change_transaction(fields)
-    assert False
+    raise AssertionError(f"Unsupported transaction type: {transaction_type}")
 
 
 def encode_txn_context(transaction):
-    data, transaction_type, version = encode_common_txn_header(
-        transaction["common_txn_header"]
-    )
+    data, transaction_type, version = encode_common_txn_header(transaction["common_txn_header"])
     data += encode_txn_detail(transaction["fields"], transaction_type, version)
     return data

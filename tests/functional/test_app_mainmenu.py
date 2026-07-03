@@ -1,7 +1,5 @@
-from ragger.navigator import NavInsID
 from ragger.backend import BackendInterface
-from ragger.navigator import Navigator
-
+from ragger.navigator import Navigator, NavInsID
 from utils import ROOT_SCREENSHOT_PATH
 
 

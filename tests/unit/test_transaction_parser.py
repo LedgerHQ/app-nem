@@ -1,20 +1,16 @@
 #!/usr/bin/env python3
 
-import sys
 import json
-
+import sys
 from pathlib import Path
 from subprocess import run
-
 
 NEM_LIB_DIRECTORY = (Path(__file__).parent / "../functional/apps").resolve().as_posix()
 sys.path.append(NEM_LIB_DIRECTORY)
 from nem_transaction_builder import encode_txn_context  # noqa: E402
 
 CORPUS_DIR = Path(__file__).resolve().parent.parent / "corpus"
-PARSER_BINARY = (
-    (Path(__file__).parent / "build/test_transaction_parser").resolve().as_posix()
-)
+PARSER_BINARY = (Path(__file__).parent / "build/test_transaction_parser").resolve().as_posix()
 TEMP_TXN_FILE = (Path(__file__).parent / "temp_txn.raw").resolve().as_posix()
 
 # pylint: disable=line-too-long

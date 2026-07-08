@@ -26,6 +26,7 @@
 #include "transaction.h"
 
 #define PREFIX_LENGTH 4
+#define ED25519_SIGNATURE_LENGTH 64
 
 parse_context_t parseContext;
 
@@ -67,7 +68,9 @@ void sign_transaction(void) {
                                     G_io_apdu_buffer,
                                     IO_APDU_BUFFER_SIZE));
 
-    io_send_sw(SWO_SUCCESS);
+    if (io_send_response_pointer(G_io_apdu_buffer, ED25519_SIGNATURE_LENGTH, SWO_SUCCESS) < 0) {
+        goto end;
+    }
     display_review_done(true);
 end:
     explicit_bzero(privateKeyData, sizeof(privateKeyData));

@@ -1,16 +1,13 @@
+from apps.nem import ErrorType, NemClient
 from ragger.backend import BackendInterface, SpeculosBackend
-from ragger.navigator.navigation_scenario import NavigateWithScenario
 from ragger.error import ExceptionRAPDU
-
-from apps.nem import NemClient, ErrorType
+from ragger.navigator.navigation_scenario import NavigateWithScenario
 from utils import ROOT_SCREENSHOT_PATH
 
 # Proposed NEM derivation paths for tests ###
 NEM_PATH = "m/44'/43'/0'/0'/0'"
 
-SPECULOS_EXPECTED_PUBLIC_KEY = (
-    "8e494cb179a5acef773c1bbf83ad2cd797673149e3ccdb7df739a1f5deb2fad0"
-)
+SPECULOS_EXPECTED_PUBLIC_KEY = "8e494cb179a5acef773c1bbf83ad2cd797673149e3ccdb7df739a1f5deb2fad0"
 
 
 def check_get_public_key_resp(backend: BackendInterface, public_key: bytes):

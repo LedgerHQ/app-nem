@@ -33,6 +33,8 @@ parse_context_t parseContext;
 void sign_transaction(void) {
     uint8_t privateKeyData[64];
     cx_ecfp_private_key_t privateKey;
+    unsigned char signature[IO_APDU_BUFFER_SIZE];
+    buffer_t response = {NULL, ED25519_SIGNATURE_LENGTH, 0};
     int error = SWO_PARAMETER_ERROR_NO_INFO;
 
     if (signState != PENDING_REVIEW) {
@@ -65,12 +67,14 @@ void sign_transaction(void) {
                                     transactionContext.algo,
                                     transactionContext.rawTx,
                                     transactionContext.rawTxLength,
-                                    G_io_apdu_buffer,
+                                    signature,
                                     IO_APDU_BUFFER_SIZE));
 
-    if (io_send_response_pointer(G_io_apdu_buffer, ED25519_SIGNATURE_LENGTH, SWO_SUCCESS) < 0) {
-        goto end;
-    }
+    // send response
+    response.ptr = signature;
+    io_send_response_buffer(&response, SWO_SUCCESS);
+    explicit_bzero(signature, sizeof(signature));
+
     display_review_done(true);
 end:
     explicit_bzero(privateKeyData, sizeof(privateKeyData));

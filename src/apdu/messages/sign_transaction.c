@@ -25,7 +25,7 @@
 #include "review_menu.h"
 #include "transaction.h"
 
-#define PREFIX_LENGTH 4
+#define PREFIX_LENGTH            4
 #define ED25519_SIGNATURE_LENGTH 64
 
 parse_context_t parseContext;
